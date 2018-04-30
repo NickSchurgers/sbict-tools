@@ -2,25 +2,21 @@
 using Prism.Modularity;
 using Prism.Regions;
 using System;
-using Microsoft.Practices.Unity;
+using Prism.Ioc;
 using Prism.Unity;
 
 namespace SBICT.Module.SystemLog
 {
     public class SystemLogModule : IModule
     {
-        private IRegionManager _regionManager;
-        private IUnityContainer _container;
-
-        public SystemLogModule(IUnityContainer container, IRegionManager regionManager)
+        public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            _container = container;
-            _regionManager = regionManager;
+            throw new NotImplementedException();
         }
 
-        public void Initialize()
+        public void OnInitialized(IContainerProvider containerProvider)
         {
-            _container.RegisterTypeForNavigation<ViewA>();
+            throw new NotImplementedException();
         }
     }
 }

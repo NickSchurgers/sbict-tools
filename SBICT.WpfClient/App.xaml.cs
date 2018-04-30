@@ -1,4 +1,8 @@
-﻿using System;
+﻿using CommonServiceLocator;
+using Prism.Ioc;
+using Prism.Unity;
+using SBICT.WpfClient.Views;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -11,14 +15,16 @@ namespace SBICT.WpfClient
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App : Application
+    public partial class App : PrismApplication
     {
-        protected override void OnStartup(StartupEventArgs e)
+        protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            base.OnStartup(e);
 
-            var bootstrapper = new Bootstrapper();
-            bootstrapper.Run();
+        }
+
+        protected override Window CreateShell()
+        {
+            return ServiceLocator.Current.GetInstance<MainWindow>();
         }
     }
 }

@@ -110,13 +110,13 @@
       <Project>{29dfcf73-e521-41b4-a01b-8c8eee2b30a3}</Project>
       <Name>SBICT.Infrastructure</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SBICT.Module.SystemLog\SBICT.Module.SystemLog.csproj">
-      <Project>{2df3d854-221d-455b-94c4-0655d084d295}</Project>
-      <Name>SBICT.Module.SystemLog</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SBICT.Modules.Chat\SBICT.Modules.Chat.csproj">
       <Project>{d50beed1-8788-4629-8407-2aea3caecf36}</Project>
       <Name>SBICT.Modules.Chat</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SBICT.Modules.SystemLog\SBICT.Modules.SystemLog.csproj">
+      <Project>{2df3d854-221d-455b-94c4-0655d084d295}</Project>
+      <Name>SBICT.Modules.SystemLog</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

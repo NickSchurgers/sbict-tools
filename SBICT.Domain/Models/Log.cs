@@ -7,7 +7,7 @@ namespace SBICT.Data.Models
 {
     public class Log
     {
-        public DateTime DateTime { get; set; }
+        public DateTime DateTime { get; set; } = DateTime.Now;
 
         public string Message { get; set; }
 

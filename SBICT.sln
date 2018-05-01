@@ -1,23 +1,23 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
+# Blend for Visual Studio 15
 VisualStudioVersion = 15.0.27617.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SBICT.Infrastructure", "SBICT.Infrastructure\SBICT.Infrastructure.csproj", "{29DFCF73-E521-41B4-A01B-8C8EEE2B30A3}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{B696BB7D-A44C-4990-93C9-09F4FE00D604}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SBICT.Data", "SBICT.Domain\SBICT.Data.csproj", "{0EFB1BDC-D15F-4CC4-8045-AA4DB57BA16D}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{C47FA4AF-4462-433D-BF0F-6FDA939DF87C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SBICT.API", "SBICT.API\SBICT.API.csproj", "{0ED03CD3-10D1-495E-B62E-765D871FAA5F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SBICT.Infrastructure", "SBICT.Infrastructure\SBICT.Infrastructure.csproj", "{29DFCF73-E521-41B4-A01B-8C8EEE2B30A3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SBICT.Data", "SBICT.Domain\SBICT.Data.csproj", "{0EFB1BDC-D15F-4CC4-8045-AA4DB57BA16D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SBICT.API", "SBICT.API\SBICT.API.csproj", "{0ED03CD3-10D1-495E-B62E-765D871FAA5F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SBICT.WpfClient", "SBICT.WpfClient\SBICT.WpfClient.csproj", "{B8052D11-538C-414F-B6FF-237230CA22DE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SBICT.Modules.Chat", "SBICT.Modules.Chat\SBICT.Modules.Chat.csproj", "{D50BEED1-8788-4629-8407-2AEA3CAECF36}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{C47FA4AF-4462-433D-BF0F-6FDA939DF87C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SBICT.Module.SystemLog", "SBICT.Module.SystemLog\SBICT.Module.SystemLog.csproj", "{2DF3D854-221D-455B-94C4-0655D084D295}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SBICT.Modules.SystemLog", "SBICT.Modules.SystemLog\SBICT.Modules.SystemLog.csproj", "{2DF3D854-221D-455B-94C4-0655D084D295}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

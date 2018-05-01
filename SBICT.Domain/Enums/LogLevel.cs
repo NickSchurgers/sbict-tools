@@ -1,6 +1,11 @@
 ﻿namespace SBICT.Data.Enums
 {
-    public class LogLevel
+    public enum LogLevel
     {
+        Debug,
+        Info,
+        Warning,
+        Error,
+        Broadcast
     }
 }

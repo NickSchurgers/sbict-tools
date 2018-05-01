@@ -9,6 +9,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using Prism.Modularity;
 
 namespace SBICT.WpfClient
 {
@@ -19,12 +20,16 @@ namespace SBICT.WpfClient
     {
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
-
         }
 
         protected override Window CreateShell()
         {
             return ServiceLocator.Current.GetInstance<MainWindow>();
+        }
+
+        protected override IModuleCatalog CreateModuleCatalog()
+        {
+            return new DirectoryModuleCatalog{ModulePath = @".\Modules"};
         }
     }
 }

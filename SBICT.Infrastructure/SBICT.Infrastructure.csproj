@@ -1,5 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>2.0</OldToolsVersion>
   </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Prism, Version=7.1.0.123, Culture=neutral, PublicKeyToken=40ee6c3a2184dc59">
+      <HintPath>..\..\..\Users\schürgersn\.nuget\packages\prism.core\7.1.0.123-pre\lib\net45\Prism.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SBICT.Domain\SBICT.Data.csproj" />
+  </ItemGroup>
 </Project>

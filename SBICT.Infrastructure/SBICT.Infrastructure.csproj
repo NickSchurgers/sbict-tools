@@ -8,11 +8,21 @@
     <OldToolsVersion>2.0</OldToolsVersion>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\SBICT.Domain\SBICT.Data.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Authorization, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+      <HintPath>..\..\..\.nuget\packages\microsoft.aspnetcore.authorization\2.1.0-preview2-final\lib\netstandard2.0\Microsoft.AspNetCore.Authorization.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.SignalR.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+      <HintPath>..\..\..\.nuget\packages\microsoft.aspnetcore.signalr.core\1.0.0-preview2-final\lib\netstandard2.0\Microsoft.AspNetCore.SignalR.Core.dll</HintPath>
+    </Reference>
     <Reference Include="Prism, Version=7.1.0.123, Culture=neutral, PublicKeyToken=40ee6c3a2184dc59">
-      <HintPath>..\..\..\Users\schürgersn\.nuget\packages\prism.core\7.1.0.123-pre\lib\net45\Prism.dll</HintPath>
+      <HintPath>..\..\..\.nuget\packages\prism.core\7.1.0.123-pre\lib\net45\Prism.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SBICT.Domain\SBICT.Data.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="1.0.0-preview2-final" />
+    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0-preview2-26406-04" />
   </ItemGroup>
 </Project>

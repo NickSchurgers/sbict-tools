@@ -1,37 +1,24 @@
-﻿using SBICT.Modules.Chat.Views;
-using Prism.Modularity;
-using Prism.Regions;
-using System;
+﻿using Prism.Modularity;
 using Prism.Ioc;
-using Prism.Unity;
-using Unity;
+using Prism.Regions;
+using SBICT.Infrastructure;
+using SBICT.Modules.Chat.Views;
+
 
 namespace SBICT.Modules.Chat
 {
+    [ModuleDependency("SystemLogModule")]
     public class ChatModule : IModule
     {
-//        private IRegionManager _regionManager;
-//        private readonly IUnityContainer _container;
-//
-//        public ChatModule(IUnityContainer container, IRegionManager regionManager)
-//        {
-//            _container = container;
-//            _regionManager = regionManager;
-//        }
-//
-//        public void Initialize()
-//        {
-//            _container.RegisterTypeForNavigation<ViewA>();
-//        }
-
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-
+            containerRegistry.Register<ChatWindow>();
         }
 
         public void OnInitialized(IContainerProvider containerProvider)
         {
-
+            var regionManager = containerProvider.Resolve<IRegionManager>();
+            regionManager.RegisterViewWithRegion(RegionNames.SideTopRegion, typeof(ChatWindow));
         }
     }
 }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SBICT.Infrastructure.Hubs;
 
 namespace SBICT.API
 {
@@ -51,7 +52,7 @@ namespace SBICT.API
 
             app.UseSignalR(routes =>
             {
-               // routes.MapHub<SystemHub>("/hubs/system");
+               routes.MapHub<SystemHub>("/hubs/system");
             });
 
             app.UseMvc(routes =>

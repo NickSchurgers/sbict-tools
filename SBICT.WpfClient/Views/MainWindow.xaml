@@ -5,7 +5,7 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:inf="clr-namespace:SBICT.Infrastructure.Enums;assembly=SBICT.Infrastructure"
+        xmlns:inf="clr-namespace:SBICT.Infrastructure;assembly=SBICT.Infrastructure"
         xmlns:viewModels="clr-namespace:SBICT.WpfClient.ViewModels"
         mc:Ignorable="d"
         prism:ViewModelLocator.AutoWireViewModel="True"
@@ -25,7 +25,7 @@
         </Menu>
 
         <StatusBar x:Name="StatusBar" DockPanel.Dock="Bottom">
-            <StatusBarItem x:Name="StatusText" Content="Test" />
+            <StatusBarItem x:Name="StatusText" Content="{Binding StatusText}" />
         </StatusBar>
 
         <Grid x:Name="RootGrid">

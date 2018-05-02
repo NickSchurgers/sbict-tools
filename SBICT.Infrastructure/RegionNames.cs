@@ -1,4 +1,4 @@
-﻿namespace SBICT.Infrastructure.Enums
+﻿namespace SBICT.Infrastructure
 {
     public static class RegionNames
     {

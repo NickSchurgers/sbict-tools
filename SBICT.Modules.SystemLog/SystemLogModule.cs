@@ -1,9 +1,7 @@
 ﻿using Prism.Modularity;
 using Prism.Regions;
-using System;
 using Prism.Ioc;
-using Prism.Unity;
-using SBICT.Infrastructure.Enums;
+using SBICT.Infrastructure;
 using SBICT.Modules.SystemLog.Views;
 
 namespace SBICT.Modules.SystemLog

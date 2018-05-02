@@ -21,7 +21,7 @@ namespace SBICT.Modules.SystemLog.ViewModels
 
         public SystemLogWindowViewModel(IEventAggregator eventAggregator)
         {
-            eventAggregator.GetEvent<SystemLogEvent>().Subscribe(WriteLine);
+            eventAggregator.GetEvent<SystemLogEvent>().Subscribe(WriteLine, ThreadOption.UIThread);
         }
 
         private void WriteLine(Log log)

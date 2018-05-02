@@ -18,9 +18,9 @@ namespace SBICT.Modules.Chat.Views
     /// <summary>
     /// Interaction logic for ViewA.xaml
     /// </summary>
-    public partial class ViewA : UserControl
+    public partial class ChatWindow : UserControl
     {
-        public ViewA()
+        public ChatWindow()
         {
             InitializeComponent();
         }

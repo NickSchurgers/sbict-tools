@@ -9,7 +9,13 @@ namespace SBICT.Infrastructure
 {
     public class SystemLogger
     {
+        #region Properties
+
         public static IEventAggregator EventAggregator { private get; set; }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Publish an event to the systemlog
@@ -21,5 +27,7 @@ namespace SBICT.Infrastructure
             EventAggregator?.GetEvent<SystemLogEvent>()
                 .Publish(new Log {Message = message, LogLevel = logLevel});
         }
+
+        #endregion
     }
 }

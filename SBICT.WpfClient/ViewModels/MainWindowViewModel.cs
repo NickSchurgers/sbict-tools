@@ -62,6 +62,7 @@ namespace SBICT.WpfClient.ViewModels
         public MainWindowViewModel(IModuleManager moduleManager, IEventAggregator eventAggregator,
             IConnectionManager<Connection> connectionManager)
         {
+            //Set event aggreggator te event logger
             SystemLogger.EventAggregator = eventAggregator;
             
             //Set up commands

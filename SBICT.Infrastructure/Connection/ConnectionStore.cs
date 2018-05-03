@@ -3,10 +3,24 @@ using System.Linq;
 
 namespace SBICT.Infrastructure.Connection
 {
+    /// <summary>
+    /// Class used to store connections by client
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class ConnectionStore<T>
     {
+        #region Fields
+
         private readonly Dictionary<T, HashSet<string>> _connections = new Dictionary<T, HashSet<string>>();
-        
+
+        #endregion
+
+
+        #region Methods
+
+        /// <summary>
+        /// Return the amount of connections stored
+        /// </summary>
         public int Count
         {
             get
@@ -18,6 +32,11 @@ namespace SBICT.Infrastructure.Connection
             }
         }
 
+        /// <summary>
+        /// Add a connection to the store
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="connectionId"></param>
         public void Add(T key, string connectionId)
         {
             lock (_connections)
@@ -35,6 +54,11 @@ namespace SBICT.Infrastructure.Connection
             }
         }
 
+        /// <summary>
+        /// Return all collections belonging to a single client
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         public IEnumerable<string> GetConnections(T key)
         {
             lock (_connections)
@@ -48,6 +72,10 @@ namespace SBICT.Infrastructure.Connection
             return Enumerable.Empty<string>();
         }
 
+        /// <summary>
+        /// Return a list of all connected clients
+        /// </summary>
+        /// <returns></returns>
         public List<T> GetConnections()
         {
             lock (_connections)
@@ -56,6 +84,11 @@ namespace SBICT.Infrastructure.Connection
             }
         }
 
+        /// <summary>
+        /// Remove a connection with a client from the store
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="connectionId"></param>
         public void Remove(T key, string connectionId)
         {
             lock (_connections)
@@ -76,5 +109,7 @@ namespace SBICT.Infrastructure.Connection
                 }
             }
         }
+
+        #endregion
     }
 }

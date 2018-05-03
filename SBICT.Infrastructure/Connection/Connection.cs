@@ -30,11 +30,22 @@ namespace SBICT.Infrastructure.Connection
 
         #endregion
 
+        #region Methods
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="connection"></param>
         public Connection(HubConnection connection)
         {
             Hub = connection;
         }
 
+        /// <summary>
+        /// Start the connection withe the hub
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="HubException"></exception>
         public async Task StartAsync()
         {
             if (!_isStarted)
@@ -68,6 +79,10 @@ namespace SBICT.Infrastructure.Connection
             }
         }
 
+        /// <summary>
+        /// Dispose of the connection with the hub
+        /// </summary>
+        /// <returns></returns>
         public async Task StopAsync()
         {
             if (_isStarted)
@@ -78,14 +93,23 @@ namespace SBICT.Infrastructure.Connection
             }
         }
 
+        #endregion
 
         #region Event Handlers
 
+        /// <summary>
+        /// Triggered when the status of this connection changes
+        /// </summary>
+        /// <param name="e"></param>
         protected virtual void OnConnectionStatusChanged(ConnectionEventArgs e)
         {
             ConnectionStatusChanged?.Invoke(this, e);
         }
 
+        /// <summary>
+        /// Triggered when another client (dis)connects or updates it's status
+        /// </summary>
+        /// <param name="args"></param>
         protected virtual void OnUserStatusChanged(ConnectionEventArgs args)
         {
             UserStatusChanged?.Invoke(this, args);

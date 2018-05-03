@@ -23,6 +23,7 @@ namespace SBICT.WpfClient.ViewModels
 
         private string _title = "SBICT Application";
         private readonly IEventAggregator _eventAggregator;
+        private readonly IConnectionManager<Connection> _connectionManager;
         private Connection _systemConnection;
         private string _statusText;
 
@@ -57,13 +58,18 @@ namespace SBICT.WpfClient.ViewModels
         /// </summary>
         /// <param name="moduleManager"></param>
         /// <param name="eventAggregator"></param>
-        public MainWindowViewModel(IModuleManager moduleManager, IEventAggregator eventAggregator)
+        /// <param name="connectionManager"></param>
+        public MainWindowViewModel(IModuleManager moduleManager, IEventAggregator eventAggregator,
+            IConnectionManager<Connection> connectionManager)
         {
+            SystemLogger.EventAggregator = eventAggregator;
+            
             //Set up commands
             WindowClosing = new DelegateCommand(DeInitializeSystemHub);
             WindowLoaded = new DelegateCommand(OnWindowLoaded);
 
             _eventAggregator = eventAggregator;
+            _connectionManager = connectionManager;
             moduleManager.LoadModuleCompleted += ModuleManagerOnLoadModuleCompleted;
         }
 
@@ -75,8 +81,7 @@ namespace SBICT.WpfClient.ViewModels
             //TODO: Refactor url to config
             _systemConnection = ConnectionFactory.Create("http://localhost:5000/hubs/system");
             _systemConnection.ConnectionStatusChanged += SystemConnectionOnConnectionStatusChanged;
-            _systemConnection.UserStatusChanged += SystemConnectionOnUserStatusChanged;
-
+            _connectionManager.Set("System", _systemConnection);
             await _systemConnection.StartAsync();
         }
 
@@ -86,17 +91,7 @@ namespace SBICT.WpfClient.ViewModels
         private async void DeInitializeSystemHub()
         {
             await _systemConnection.StopAsync();
-        }
-
-        /// <summary>
-        /// Publish an event to the systemlog
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="logLevel"></param>
-        private void LogEvent(string message, LogLevel logLevel = LogLevel.Info)
-        {
-            _eventAggregator.GetEvent<SystemLogEvent>()
-                .Publish(new Log {Message = message, LogLevel = logLevel});
+            _connectionManager.Unset("System");
         }
 
         /// <summary>
@@ -111,31 +106,6 @@ namespace SBICT.WpfClient.ViewModels
         #endregion
 
         #region Event Handlers
-
-        /// <summary>
-        /// Triggered when a user (dis)connects from the suystem hub
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        private void SystemConnectionOnUserStatusChanged(object sender, ConnectionEventArgs e)
-        {
-            var message = $"{e.User} has ";
-            switch (e.Status)
-            {
-                case ConnectionStatus.Connected:
-                    LogEvent($"{message} joined");
-                    break;
-                case ConnectionStatus.Disconnected:
-                    LogEvent($"{message} left");
-                    break;
-                case ConnectionStatus.Connecting:
-                case ConnectionStatus.Reconnecting:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
 
         /// <summary>
         /// Triggerd when connection with the system hub changes
@@ -154,8 +124,7 @@ namespace SBICT.WpfClient.ViewModels
         /// <param name="e"></param>
         private void ModuleManagerOnLoadModuleCompleted(object sender, LoadModuleCompletedEventArgs e)
         {
-            Console.WriteLine(e.ModuleInfo.ModuleName);
-            LogEvent($"{e.ModuleInfo.ModuleName} has been loaded");
+            SystemLogger.LogEvent($"{e.ModuleInfo.ModuleName} has been loaded");
         }
 
         /// <summary>
@@ -163,8 +132,8 @@ namespace SBICT.WpfClient.ViewModels
         /// </summary>
         private void OnWindowLoaded()
         {
-            LogEvent("Application Loaded");
             InitializeSystemHub();
+            SystemLogger.LogEvent("Application Loaded");
         }
 
         #endregion

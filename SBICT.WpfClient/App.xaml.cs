@@ -10,6 +10,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using Prism.Modularity;
+using SBICT.Infrastructure;
+using SBICT.Infrastructure.Connection;
 
 namespace SBICT.WpfClient
 {
@@ -20,6 +22,7 @@ namespace SBICT.WpfClient
     {
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
+            containerRegistry.Register<IConnectionManager<Connection>, ConnectionManager>();
         }
 
         protected override Window CreateShell()
@@ -29,7 +32,7 @@ namespace SBICT.WpfClient
 
         protected override IModuleCatalog CreateModuleCatalog()
         {
-            return new DirectoryModuleCatalog{ModulePath = @".\Modules"};
+            return new DirectoryModuleCatalog {ModulePath = @".\Modules"};
         }
     }
 }

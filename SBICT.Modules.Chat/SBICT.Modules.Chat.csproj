@@ -41,6 +41,9 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Windows.Interactivity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <HintPath>..\..\..\Users\schürgersn\.nuget\packages\system.windows.interactivity.wpf\2.0.20525\lib\net40\System.Windows.Interactivity.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -55,6 +58,8 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Chat.cs" />
+    <Compile Include="ChatGroup.cs" />
     <Compile Include="ChatModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -84,6 +89,10 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\SBICT.Domain\SBICT.Data.csproj">
+      <Project>{0efb1bdc-d15f-4cc4-8045-aa4db57ba16d}</Project>
+      <Name>SBICT.Data</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SBICT.Infrastructure\SBICT.Infrastructure.csproj">
       <Project>{29dfcf73-e521-41b4-a01b-8c8eee2b30a3}</Project>
       <Name>SBICT.Infrastructure</Name>

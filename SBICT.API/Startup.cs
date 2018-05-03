@@ -53,6 +53,7 @@ namespace SBICT.API
             app.UseSignalR(routes =>
             {
                routes.MapHub<SystemHub>("/hubs/system");
+               routes.MapHub<ChatHub>("/hubs/chat");
             });
 
             app.UseMvc(routes =>

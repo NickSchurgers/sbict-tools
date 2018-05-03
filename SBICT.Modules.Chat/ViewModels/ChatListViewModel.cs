@@ -55,9 +55,9 @@ namespace SBICT.Modules.Chat.ViewModels
         private async void CreateChatList()
         {
             var users = await _chatConnection.Hub.InvokeAsync<IEnumerable<string>>("GetUserList");
-            _chatGroups.Add(new ChatGroup {Name = "Users", Chats = CreateUserList(users)});
-            _chatGroups.Add(new ChatGroup {Name = "Groups"});
-            _chatGroups.Add(new ChatGroup {Name = "Projects"});
+            ChatGroups.Add(new ChatGroup {Name = "Users", Chats = CreateUserList(users)});
+            ChatGroups.Add(new ChatGroup {Name = "Groups"});
+            ChatGroups.Add(new ChatGroup {Name = "Projects"});
         }
 
         /// <summary>
@@ -115,6 +115,8 @@ namespace SBICT.Modules.Chat.ViewModels
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+
+
         }
 
         /// <summary>

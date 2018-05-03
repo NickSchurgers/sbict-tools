@@ -10,9 +10,9 @@
              prism:ViewModelLocator.AutoWireViewModel="True"
              d:DataContext="{d:DesignInstance viewModels:ChatListViewModel, IsDesignTimeCreatable=True}">
     <Grid>
-        <TreeView ItemsSource="{Binding ChatGroups}">
+        <TreeView ItemsSource="{Binding ChatGroups, UpdateSourceTrigger=PropertyChanged}" >
             <TreeView.ItemTemplate>
-                <HierarchicalDataTemplate ItemsSource="{Binding Items}">
+                <HierarchicalDataTemplate ItemsSource="{Binding Chats, UpdateSourceTrigger=PropertyChanged}">
                     <Label Content="{Binding Name}" />
                 </HierarchicalDataTemplate>
             </TreeView.ItemTemplate>

@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="SBICT.Modules.Chat.Views.ChatWindow"
+﻿<UserControl x:Class="SBICT.Modules.Chat.Views.ChatList"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -10,6 +10,12 @@
              prism:ViewModelLocator.AutoWireViewModel="True"
              d:DataContext="{d:DesignInstance viewModels:ChatListViewModel, IsDesignTimeCreatable=True}">
     <Grid>
-
+        <TreeView ItemsSource="{Binding ChatGroups}">
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding Items}">
+                    <Label Content="{Binding Name}" />
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
     </Grid>
 </UserControl>

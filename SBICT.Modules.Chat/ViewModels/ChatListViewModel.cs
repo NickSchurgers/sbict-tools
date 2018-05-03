@@ -14,7 +14,7 @@ using SBICT.Infrastructure.Connection;
 
 namespace SBICT.Modules.Chat.ViewModels
 {
-    public class ChatWindowViewModel : BindableBase
+    public class ChatListViewModel : BindableBase
     {
         private ObservableCollection<ChatGroup> _chatGroups = new ObservableCollection<ChatGroup>();
         private Connection _chatConnection;
@@ -25,7 +25,7 @@ namespace SBICT.Modules.Chat.ViewModels
             set => SetProperty(ref _chatGroups, value);
         }
 
-        public ChatWindowViewModel()
+        public ChatListViewModel()
         {
             InitializeChatHub();
             CreateChatList();

@@ -15,7 +15,6 @@ namespace SBICT.Infrastructure.Connection
 
         #endregion
 
-
         #region Methods
 
         /// <summary>

@@ -8,6 +8,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.SignalR.Client;
 using SBICT.Infrastructure;
 using SBICT.Infrastructure.Connection;
@@ -36,7 +38,6 @@ namespace SBICT.Modules.Chat.ViewModels
 
         #endregion
 
-
         #region Methods
 
         /// <summary>
@@ -55,9 +56,12 @@ namespace SBICT.Modules.Chat.ViewModels
         private async void CreateChatList()
         {
             var users = await _chatConnection.Hub.InvokeAsync<IEnumerable<string>>("GetUserList");
-            ChatGroups.Add(new ChatGroup {Name = "Users", Chats = CreateUserList(users)});
-            ChatGroups.Add(new ChatGroup {Name = "Groups"});
-            ChatGroups.Add(new ChatGroup {Name = "Projects"});
+            ChatGroups = new ObservableCollection<ChatGroup>
+            {
+                new ChatGroup {Name = "Users", Chats = CreateUserList(users)},
+                new ChatGroup {Name = "Groups"},
+                new ChatGroup {Name = "Projects"}
+            };
         }
 
         /// <summary>
@@ -105,9 +109,11 @@ namespace SBICT.Modules.Chat.ViewModels
             {
                 case ConnectionStatus.Connected:
                     SystemLogger.LogEvent($"{message} joined");
+                    CreateChatList();
                     break;
                 case ConnectionStatus.Disconnected:
                     SystemLogger.LogEvent($"{message} left");
+                    CreateChatList();
                     break;
                 case ConnectionStatus.Connecting:
                 case ConnectionStatus.Reconnecting:
@@ -115,8 +121,6 @@ namespace SBICT.Modules.Chat.ViewModels
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-
-
         }
 
         /// <summary>

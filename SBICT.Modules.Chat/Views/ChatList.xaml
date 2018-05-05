@@ -7,15 +7,19 @@
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300"
              xmlns:prism="http://prismlibrary.com/"
+             xmlns:module="clr-namespace:SBICT.Modules.Chat"
              prism:ViewModelLocator.AutoWireViewModel="True"
              d:DataContext="{d:DesignInstance viewModels:ChatListViewModel, IsDesignTimeCreatable=True}">
+    <UserControl.Resources>
+        <HierarchicalDataTemplate DataType="{x:Type module:ChatGroup}" ItemsSource="{Binding Items, UpdateSourceTrigger=PropertyChanged}">
+            <Label Content="{Binding Name}" />
+        </HierarchicalDataTemplate>
+        <DataTemplate DataType="{x:Type module:Chat}">
+            <Label Content="{Binding Name}"></Label>
+        </DataTemplate>
+    </UserControl.Resources>
     <Grid>
-        <TreeView ItemsSource="{Binding ChatGroups, UpdateSourceTrigger=PropertyChanged}" >
-            <TreeView.ItemTemplate>
-                <HierarchicalDataTemplate ItemsSource="{Binding Chats, UpdateSourceTrigger=PropertyChanged}">
-                    <Label Content="{Binding Name}" />
-                </HierarchicalDataTemplate>
-            </TreeView.ItemTemplate>
+        <TreeView ItemsSource="{Binding ChatGroups, UpdateSourceTrigger=PropertyChanged}">
         </TreeView>
     </Grid>
 </UserControl>

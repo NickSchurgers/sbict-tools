@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace SBICT.Modules.Chat
     {
         #region Fields
 
-        private ObservableCollection<Chat> _chats = new ObservableCollection<Chat>();
+        private List<Chat> _chats = new List<Chat>();
         private ObservableCollection<ChatGroup> _chatGroups = new ObservableCollection<ChatGroup>();
 
         #endregion
@@ -20,7 +21,7 @@ namespace SBICT.Modules.Chat
         /// <summary>
         /// Collection of chats 
         /// </summary>
-        public ObservableCollection<Chat> Chats
+        public List<Chat> Chats
         {
             get => _chats;
             set => SetProperty(ref _chats, value);
@@ -34,6 +35,8 @@ namespace SBICT.Modules.Chat
             get => _chatGroups;
             set => SetProperty(ref _chatGroups, value);
         }
+
+        public bool IsExpanded { get; set; }
 
         /// <summary>
         /// Property used for enumerating items in the treeview

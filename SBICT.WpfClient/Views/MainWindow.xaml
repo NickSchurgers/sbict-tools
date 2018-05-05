@@ -16,7 +16,7 @@
             <prism:InvokeCommandAction Command="{Binding WindowClosing}" />
         </i:EventTrigger>
         <i:EventTrigger EventName="Loaded">
-            <prism:InvokeCommandAction Command="{Binding WindowLoaded}"></prism:InvokeCommandAction>
+            <prism:InvokeCommandAction Command="{Binding WindowLoaded}" />
         </i:EventTrigger>
     </i:Interaction.Triggers>
     <DockPanel>
@@ -53,7 +53,12 @@
             <GridSplitter Grid.Row="0" Grid.Column="0" x:Name="GridSplitter" Margin="0" Width="5" />
 
             <Grid Grid.Row="0" Grid.Column="1">
-                <TabControl prism:RegionManager.RegionName="{x:Static inf:RegionNames.MainRegion}" >
+                <TabControl prism:RegionManager.RegionName="{x:Static inf:RegionNames.MainRegion}">
+                    <TabControl.Resources>
+                        <Style TargetType="{x:Type TabItem}">
+                            <Setter Property="Header" Value="{Binding DataContext.Header}" />
+                        </Style>
+                    </TabControl.Resources>
                 </TabControl>
             </Grid>
 

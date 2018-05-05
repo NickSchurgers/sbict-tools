@@ -20,6 +20,7 @@ namespace SBICT.Modules.Chat
         {
             var regionManager = containerProvider.Resolve<IRegionManager>();
             regionManager.RegisterViewWithRegion(RegionNames.SideTopRegion, typeof(ChatList));
+            regionManager.RegisterViewWithRegion(RegionNames.MainRegion, typeof(ChatWindow));
         }
     }
 }

@@ -4,12 +4,11 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewModels="clr-namespace:SBICT.Modules.Chat.ViewModels"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:module="clr-namespace:SBICT.Modules.Chat"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300"
-             xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True"
-             d:DataContext="{d:DesignInstance viewModels:ChatListViewModel, IsDesignTimeCreatable=True}">
-    <Grid>
-
-    </Grid>
+             d:DataContext="{d:DesignInstance {x:Type viewModels:ChatWindowMockViewModel}, IsDesignTimeCreatable=True}">
+    <Grid />
 </UserControl>

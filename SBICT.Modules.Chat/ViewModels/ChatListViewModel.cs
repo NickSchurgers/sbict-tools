@@ -21,6 +21,9 @@ namespace SBICT.Modules.Chat.ViewModels
         #region Fields
 
         private ObservableCollection<ChatGroup> _chatGroups = new ObservableCollection<ChatGroup>();
+        private readonly ChatGroup _userChannel = new ChatGroup {Name = "Users"};
+        private readonly ChatGroup _groupChannel = new ChatGroup {Name = "Groups"};
+        private readonly ChatGroup _projectChannel = new ChatGroup {Name = "Projects"};
         private Connection _chatConnection;
 
         #endregion
@@ -46,38 +49,31 @@ namespace SBICT.Modules.Chat.ViewModels
         public ChatListViewModel()
         {
             InitializeChatHub();
-            CreateChatList();
+            RefreshChatList();
             if (Application.Current.MainWindow != null) Application.Current.MainWindow.Closing += MainWindowOnClosing;
         }
 
         /// <summary>
         /// Create list of root nodes and populate the users node with a list off active users
         /// </summary>
-        private async void CreateChatList()
+        private async void RefreshChatList()
         {
-            var users = await _chatConnection.Hub.InvokeAsync<IEnumerable<string>>("GetUserList");
-            ChatGroups = new ObservableCollection<ChatGroup>
+            if (_userChannel.Chats.Count == 0)
             {
-                new ChatGroup {Name = "Users", Chats = CreateUserList(users)},
-                new ChatGroup {Name = "Groups"},
-                new ChatGroup {Name = "Projects"}
-            };
-        }
+                var users = await _chatConnection.Hub.InvokeAsync<IEnumerable<string>>("GetUserList");
+                _userChannel.Chats = new List<Chat>(users.Select(u => new Chat {Name = u}));
+                _userChannel.IsExpanded = true;
+            }
 
-#if DEBUG
-        private async void CreateChatList2()
-        {
-            var users = await _chatConnection.Hub.InvokeAsync<IEnumerable<string>>("GetUserList");
-            var chats = CreateUserList(users);
-            chats.Add(new Chat {Name = "Henk"});
+
+            //TODO: Add group & project
             ChatGroups = new ObservableCollection<ChatGroup>
             {
-                new ChatGroup {Name = "Users", Chats = chats},
-                new ChatGroup {Name = "Groups"},
-                new ChatGroup {Name = "Projects"}
+                _userChannel,
+                _groupChannel,
+                _projectChannel
             };
         }
-#endif
 
         /// <summary>
         /// Initiate the connection with the chat hub
@@ -95,16 +91,6 @@ namespace SBICT.Modules.Chat.ViewModels
         private async void DeInitializeChatHub()
         {
             await _chatConnection.StopAsync();
-        }
-
-        /// <summary>
-        /// Parse the list of strings returned by the chat hub getuserlist action, to a list of chats
-        /// </summary>
-        /// <param name="users"></param>
-        /// <returns></returns>
-        private ObservableCollection<Chat> CreateUserList(IEnumerable<string> users)
-        {
-            return new ObservableCollection<Chat>(users.Select(u => new Chat {Name = u}));
         }
 
         #endregion
@@ -125,14 +111,20 @@ namespace SBICT.Modules.Chat.ViewModels
                 case ConnectionStatus.Connected:
                     SystemLogger.LogEvent($"{message} joined");
 #if DEBUG
-                    CreateChatList2();
+                    _userChannel.Chats.Add(new Chat {Name = "Henk"});
 #else
-                    CreateChatList();
+                    _userChannel.Chats.Add(new Chat{Name = e.User});
 #endif
+                    RefreshChatList();
                     break;
                 case ConnectionStatus.Disconnected:
                     SystemLogger.LogEvent($"{message} left");
-                    CreateChatList();
+#if DEBUG
+                    _userChannel.Chats.RemoveAll(c => c.Name == "Henk");
+#else
+                    _userChannel.Chats.RemoveAll(c => c.Name == e.User);
+#endif
+                    RefreshChatList();
                     break;
                 case ConnectionStatus.Connecting:
                 case ConnectionStatus.Reconnecting:

@@ -64,6 +64,21 @@ namespace SBICT.Modules.Chat.ViewModels
             };
         }
 
+#if DEBUG
+        private async void CreateChatList2()
+        {
+            var users = await _chatConnection.Hub.InvokeAsync<IEnumerable<string>>("GetUserList");
+            var chats = CreateUserList(users);
+            chats.Add(new Chat {Name = "Henk"});
+            ChatGroups = new ObservableCollection<ChatGroup>
+            {
+                new ChatGroup {Name = "Users", Chats = chats},
+                new ChatGroup {Name = "Groups"},
+                new ChatGroup {Name = "Projects"}
+            };
+        }
+#endif
+
         /// <summary>
         /// Initiate the connection with the chat hub
         /// </summary>
@@ -109,7 +124,11 @@ namespace SBICT.Modules.Chat.ViewModels
             {
                 case ConnectionStatus.Connected:
                     SystemLogger.LogEvent($"{message} joined");
+#if DEBUG
+                    CreateChatList2();
+#else
                     CreateChatList();
+#endif
                     break;
                 case ConnectionStatus.Disconnected:
                     SystemLogger.LogEvent($"{message} left");

@@ -13,8 +13,11 @@ namespace SBICT.Infrastructure.Hubs
     {
         public IEnumerable<string> GetUserList()
         {
-            //return ConnectedUsers.GetConnections().Where(u => u != Context.User.Identity.Name); 
+#if DEBUG
             return ConnectedUsers.GetConnections();
+#else
+            return ConnectedUsers.GetConnections().Where(u => u != Context.User.Identity.Name); 
+#endif
         }
 
 //        

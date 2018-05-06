@@ -1,5 +1,4 @@
 ﻿using System;
-using SBICT.Data.Enums;
 
 namespace SBICT.Infrastructure.Logger
 {

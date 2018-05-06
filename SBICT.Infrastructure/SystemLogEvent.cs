@@ -1,6 +1,5 @@
 ﻿using Prism.Events;
-using SBICT.Data.Enums;
-using SBICT.Data.Models;
+using SBICT.Infrastructure.Logger;
 
 namespace SBICT.Infrastructure
 {

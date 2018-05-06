@@ -1,17 +1,8 @@
-﻿using Prism.Commands;
-using Prism.Mvvm;
-using SBICT.Data.Models;
-using System;
-using System.Activities.Statements;
-using System.Collections.Generic;
+﻿using Prism.Mvvm;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
 using Prism.Events;
-using SBICT.Data.Enums;
 using SBICT.Infrastructure;
+using SBICT.Infrastructure.Logger;
 
 namespace SBICT.Modules.SystemLog.ViewModels
 {

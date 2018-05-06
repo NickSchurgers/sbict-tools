@@ -1,4 +1,4 @@
-﻿namespace SBICT.Data.Enums
+﻿namespace SBICT.Infrastructure.Logger
 {
     public enum LogLevel
     {

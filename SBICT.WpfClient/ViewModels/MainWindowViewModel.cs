@@ -3,8 +3,6 @@ using Prism.Commands;
 using Prism.Events;
 using Prism.Modularity;
 using Prism.Mvvm;
-using SBICT.Data.Enums;
-using SBICT.Data.Models;
 using SBICT.Infrastructure;
 using SBICT.Infrastructure.Connection;
 

@@ -1,6 +1,4 @@
-﻿using SBICT.Data.Models;
-
-namespace SBICT.Infrastructure.Logger
+﻿namespace SBICT.Infrastructure.Logger
 {
     public class LoggerEventArgs
     {

@@ -1,9 +1,6 @@
-﻿using SBICT.Data.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
 
-namespace SBICT.Data.Models
+namespace SBICT.Infrastructure.Logger
 {
     public class Log
     {

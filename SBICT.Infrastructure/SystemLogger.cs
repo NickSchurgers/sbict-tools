@@ -1,8 +1,5 @@
-﻿using CommonServiceLocator;
-using SBICT.Data.Enums;
-using SBICT.Data.Models;
-using SBICT.Infrastructure;
-using Prism.Events;
+﻿using Prism.Events;
+using SBICT.Infrastructure.Logger;
 
 
 namespace SBICT.Infrastructure

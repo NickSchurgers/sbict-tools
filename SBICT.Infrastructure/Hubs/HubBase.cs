@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -11,7 +13,7 @@ namespace SBICT.Infrastructure.Hubs
     {
         #region Fields
 
-        protected static readonly ConnectionStore<string> ConnectedUsers =
+        protected static readonly ConnectionStore<string> UserStore =
             new ConnectionStore<string>();
 
         #endregion
@@ -25,9 +27,16 @@ namespace SBICT.Infrastructure.Hubs
         public override async Task OnConnectedAsync()
         {
             var name = Context.User.Identity.Name;
-            ConnectedUsers.Add(name, Context.ConnectionId);
-
+            UserStore.Add(name, Context.ConnectionId);
+#if DEBUG
             await Clients.Others.SendAsync("Connected", name, ConnectionScope.System);
+#endif
+            if (UserStore.GetConnections(name).Count() == 1)
+            {
+                await Clients.AllExcept(UserStore.GetConnections(name).ToList())
+                    .SendAsync("Connected", name, ConnectionScope.System);
+            }
+
             await base.OnConnectedAsync();
         }
 
@@ -39,9 +48,15 @@ namespace SBICT.Infrastructure.Hubs
         public override async Task OnDisconnectedAsync(Exception ex)
         {
             var name = Context.User.Identity.Name;
-            ConnectedUsers.Remove(name, Context.ConnectionId);
-
+            UserStore.Remove(name, Context.ConnectionId);
+#if DEBUG
             await Clients.Others.SendAsync("Disconnected", name, ConnectionScope.System);
+#endif
+            if (!UserStore.GetConnections(name).Any())
+            {
+                await Clients.All.SendAsync("Disconnected", name, ConnectionScope.System);
+            }
+
             await base.OnDisconnectedAsync(ex);
         }
 

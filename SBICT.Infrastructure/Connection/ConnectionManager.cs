@@ -6,11 +6,11 @@ namespace SBICT.Infrastructure.Connection
     /// <summary>
     /// Class to store the active connections and retrieve them as needed
     /// </summary>
-    public class ConnectionManager : IConnectionManager<Connection>
+    public class ConnectionManager : IConnectionManager<IConnection>
     {
         #region Properties
 
-        public Dictionary<string, Connection> Connections { get; } = new Dictionary<string, Connection>();
+        public Dictionary<string, IConnection> Connections { get; } = new Dictionary<string, IConnection>();
 
         #endregion
 
@@ -21,7 +21,7 @@ namespace SBICT.Infrastructure.Connection
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public Connection Get(string name)
+        public IConnection Get(string name)
         {
             return Connections.ContainsKey(name) ? Connections.First(c => c.Key == name).Value : null;
         }
@@ -31,7 +31,7 @@ namespace SBICT.Infrastructure.Connection
         /// </summary>
         /// <param name="name"></param>
         /// <param name="connection"></param>
-        public void Set(string name, Connection connection)
+        public void Set(string name, IConnection connection)
         {
             if (!Connections.ContainsKey(name))
             {

@@ -10,7 +10,7 @@ namespace SBICT.Infrastructure.Connection
         /// </summary>
         /// <param name="url"></param>
         /// <returns></returns>
-        public static Connection Create(string url)
+        public static IConnection Create(string url)
         {
             return new Connection(new HubConnectionBuilder().WithUrl(url)
                 .WithConsoleLogger()

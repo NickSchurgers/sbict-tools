@@ -127,7 +127,6 @@ namespace SBICT.Infrastructure.Hubs
             switch (scope)
             {
                 case ConnectionScope.Group:
-                case ConnectionScope.Project:
                     target = Clients.Group(recipient);
                     break;
                 case ConnectionScope.User:

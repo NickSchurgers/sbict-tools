@@ -22,7 +22,8 @@ namespace SBICT.WpfClient
     {
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            containerRegistry.Register<IConnectionManager<Connection>, ConnectionManager>();
+            containerRegistry.Register<IConnection, Connection>();
+            containerRegistry.Register<IConnectionManager<IConnection>, ConnectionManager>();
         }
 
         protected override Window CreateShell()

@@ -21,8 +21,8 @@ namespace SBICT.WpfClient.ViewModels
 
         private string _title = "SBICT Application";
         private readonly IEventAggregator _eventAggregator;
-        private readonly IConnectionManager<Connection> _connectionManager;
-        private Connection _systemConnection;
+        private readonly IConnectionManager<IConnection> _connectionManager;
+        private IConnection _systemConnection;
         private string _statusText;
 
         #endregion
@@ -58,7 +58,7 @@ namespace SBICT.WpfClient.ViewModels
         /// <param name="eventAggregator"></param>
         /// <param name="connectionManager"></param>
         public MainWindowViewModel(IModuleManager moduleManager, IEventAggregator eventAggregator,
-            IConnectionManager<Connection> connectionManager)
+            IConnectionManager<IConnection> connectionManager)
         {
             //Set event aggreggator te event logger
             SystemLogger.EventAggregator = eventAggregator;

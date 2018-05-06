@@ -5,7 +5,6 @@
         System,
         User,
         Group,
-        Project,
         Broadcast
     }
 }

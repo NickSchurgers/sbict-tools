@@ -23,8 +23,8 @@ namespace SBICT.Modules.Chat.ViewModels
         private ObservableCollection<ChatGroup> _chatGroups = new ObservableCollection<ChatGroup>();
         private readonly ChatGroup _userChannel = new ChatGroup {Name = "Users"};
         private readonly ChatGroup _groupChannel = new ChatGroup {Name = "Groups"};
-        private readonly ChatGroup _projectChannel = new ChatGroup {Name = "Projects"};
-        private Connection _chatConnection;
+//        private readonly ChatGroup _projectChannel = new ChatGroup {Name = "Projects"};
+        private IConnection _chatConnection;
 
         #endregion
 
@@ -71,7 +71,7 @@ namespace SBICT.Modules.Chat.ViewModels
             {
                 _userChannel,
                 _groupChannel,
-                _projectChannel
+//                _projectChannel
             };
         }
 

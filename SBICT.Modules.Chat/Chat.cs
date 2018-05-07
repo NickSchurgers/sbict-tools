@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Prism.Events;
 using Prism.Mvvm;
+using SBICT.Infrastructure;
 
 namespace SBICT.Modules.Chat
 {
@@ -26,6 +28,8 @@ namespace SBICT.Modules.Chat
             get => _chatMessages;
             set => SetProperty(ref _chatMessages, value);
         }
+
+        public bool IsOpen { get; set; }
 
         #endregion
     }

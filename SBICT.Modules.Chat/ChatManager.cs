@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using Microsoft.AspNetCore.SignalR.Client;
 using Prism.Events;
 using Prism.Mvvm;
@@ -71,7 +72,9 @@ namespace SBICT.Modules.Chat
             if (UserChannel.Chats.Count == 0)
             {
                 var users = await Connection.Hub.InvokeAsync<IEnumerable<string>>("GetUserList");
-                UserChannel.Chats = new ObservableCollection<Chat>(users.Select(u => new Chat {Name = u}));
+                UserChannel.Chats =
+                    new ObservableCollection<Chat>(users.Select(u =>
+                        new Chat {Name = u}));
                 UserChannel.IsExpanded = true;
             }
 
@@ -89,16 +92,20 @@ namespace SBICT.Modules.Chat
 
         private void OnMessageReceived(string sender, string message, ConnectionScope scope)
         {
+            var newMessage = new ChatMessage
+            {
+                Sender = sender,
+                Scope = scope,
+                Message = message,
+                Received = DateTime.Now
+            };
+            
             if (scope == ConnectionScope.User)
             {
-                _eventAggregator.GetEvent<ChatMessageReceivedEvent>().Publish(new ChatMessage
-                {
-                    Sender = sender,
-                    Scope = scope,
-                    Message = message,
-                    Received = DateTime.Now
-                });
+                UserChannel.Chats.Single(c => c.Name == sender && c.IsOpen != true).ChatMessages.Add(newMessage);
             }
+
+            _eventAggregator.GetEvent<ChatMessageReceivedEvent>().Publish(newMessage);
         }
     }
 }

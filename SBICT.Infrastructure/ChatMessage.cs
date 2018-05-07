@@ -1,7 +1,7 @@
 ﻿using System;
 using SBICT.Infrastructure.Connection;
 
-namespace SBICT.Modules.Chat
+namespace SBICT.Infrastructure
 {
     public struct ChatMessage
     {

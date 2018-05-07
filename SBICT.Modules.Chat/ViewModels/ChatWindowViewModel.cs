@@ -8,13 +8,14 @@ using Prism.Regions;
 using SBICT.Infrastructure.Connection;
 using Microsoft.AspNetCore.SignalR.Client;
 using Prism.Events;
+using SBICT.Infrastructure;
 
 namespace SBICT.Modules.Chat.ViewModels
 {
     public class ChatWindowViewModel : BindableBase, INavigationAware
     {
         private readonly IChatManager _chatManager;
-        private readonly IEventAggregator _eventAggregator;
+        private readonly IEventAggregator _aggregator;
         public DelegateCommand SendMessage { get; set; }
 
         private Chat _chat;
@@ -29,10 +30,18 @@ namespace SBICT.Modules.Chat.ViewModels
 
         public string Message { get; set; }
 
-        public ChatWindowViewModel(IChatManager chatManager)
+        public ChatWindowViewModel(IChatManager chatManager, IEventAggregator aggregator)
         {
             _chatManager = chatManager;
+            _aggregator = aggregator;
+            _aggregator.GetEvent<ChatMessageReceivedEvent>()
+                .Subscribe(OnMessageReceived, ThreadOption.UIThread, false, message => message.Sender == Chat.Name);
             SendMessage = new DelegateCommand(OnMessageSent);
+        }
+
+        private void OnMessageReceived(ChatMessage chatMessage)
+        {
+            Chat.ChatMessages.Add(chatMessage);
         }
 
         private void OnMessageSent()
@@ -45,6 +54,10 @@ namespace SBICT.Modules.Chat.ViewModels
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
             Chat = navigationContext.Parameters["Chat"] as Chat;
+            if (Chat != null)
+            {
+                Chat.IsOpen = true;
+            }
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
@@ -54,6 +67,7 @@ namespace SBICT.Modules.Chat.ViewModels
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
+            
         }
     }
 }

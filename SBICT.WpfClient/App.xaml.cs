@@ -9,6 +9,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using Prism.Events;
 using Prism.Modularity;
 using SBICT.Infrastructure;
 using SBICT.Infrastructure.Connection;

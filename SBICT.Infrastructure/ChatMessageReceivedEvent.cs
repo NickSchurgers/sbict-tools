@@ -1,6 +1,6 @@
 ﻿using Prism.Events;
 
-namespace SBICT.Modules.Chat
+namespace SBICT.Infrastructure
 {
     public class ChatMessageReceivedEvent: PubSubEvent<ChatMessage>
     {

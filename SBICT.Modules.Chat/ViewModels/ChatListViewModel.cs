@@ -8,9 +8,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Threading;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.SignalR.Client;
+using Prism.Regions;
 using SBICT.Infrastructure;
 using SBICT.Infrastructure.Connection;
 
@@ -18,11 +20,21 @@ namespace SBICT.Modules.Chat.ViewModels
 {
     public class ChatListViewModel : BindableBase
     {
+        private readonly IRegionManager _regionManager;
+
+        #region Commands
+
+        public DelegateCommand<object> ChatListSelectedItemChanged { get; set; }
+
+        #endregion
+
         #region Fields
 
-        private ObservableCollection<ChatGroup> _chatGroups = new ObservableCollection<ChatGroup>();
-        private readonly ChatGroup _userChannel = new ChatGroup {Name = "Users"};
-        private readonly ChatGroup _groupChannel = new ChatGroup {Name = "Groups"};
+        private ObservableCollection<ChatChannel> _chatGroups = new ObservableCollection<ChatChannel>();
+        private readonly ChatChannel _userChannel = new ChatChannel {Name = "Users"};
+
+        private readonly ChatChannel _groupChannel = new ChatChannel {Name = "Groups"};
+
 //        private readonly ChatGroup _projectChannel = new ChatGroup {Name = "Projects"};
         private IConnection _chatConnection;
 
@@ -33,7 +45,7 @@ namespace SBICT.Modules.Chat.ViewModels
         /// <summary>
         /// Collection of chatgroups used as root node in the treeview
         /// </summary>
-        public ObservableCollection<ChatGroup> ChatGroups
+        public ObservableCollection<ChatChannel> ChatGroups
         {
             get => _chatGroups;
             set => SetProperty(ref _chatGroups, value);
@@ -46,11 +58,23 @@ namespace SBICT.Modules.Chat.ViewModels
         /// <summary>
         /// Constructor
         /// </summary>
-        public ChatListViewModel()
+        public ChatListViewModel(IRegionManager regionManager)
         {
+            _regionManager = regionManager;
+            ChatListSelectedItemChanged = new DelegateCommand<object>(OnSelectedItemChanged);
+
             InitializeChatHub();
             RefreshChatList();
             if (Application.Current.MainWindow != null) Application.Current.MainWindow.Closing += MainWindowOnClosing;
+        }
+
+        private void OnSelectedItemChanged(object obj)
+        {
+            if (obj.GetType() == typeof(Chat))
+            {
+                var param = new NavigationParameters {{"Chat", (Chat) obj}};
+                _regionManager.RequestNavigate(RegionNames.MainRegion, new Uri("ChatWindow", UriKind.Relative), param);
+            }
         }
 
         /// <summary>
@@ -67,7 +91,7 @@ namespace SBICT.Modules.Chat.ViewModels
 
 
             //TODO: Add group & project
-            ChatGroups = new ObservableCollection<ChatGroup>
+            ChatGroups = new ObservableCollection<ChatChannel>
             {
                 _userChannel,
                 _groupChannel,

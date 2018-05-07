@@ -9,9 +9,23 @@ namespace SBICT.Modules.Chat.ViewModels
     public class ChatWindowMockViewModel : BindableBase
     {
         public string Header { get; } = "Chat";
+        public Chat Chat { get; set; }
 
         public ChatWindowMockViewModel()
         {
+            Chat = new Chat
+            {
+                Name = "Henk",
+                ChatMessages = new List<ChatMessage>
+                {
+                    new ChatMessage
+                    {
+                        Message = "Test",
+                        Received = DateTime.Now,
+                        Sender = "Henk"
+                    }
+                }
+            };
         }
     }
 }

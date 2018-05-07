@@ -18,11 +18,17 @@ namespace SBICT.Modules.Chat.ViewModels
 {
     public class ChatListMockViewModel : BindableBase
     {
+        #region Commands
+
+        public DelegateCommand ChatListSelectedItemChanged { get; set; }
+
+        #endregion
+        
         #region Fields
 
-        private ObservableCollection<ChatGroup> _chatGroups = new ObservableCollection<ChatGroup>();
-        private readonly ChatGroup _userChannel = new ChatGroup {Name = "Users"};
-        private readonly ChatGroup _groupChannel = new ChatGroup {Name = "Groups"};
+        private ObservableCollection<ChatChannel> _chatGroups = new ObservableCollection<ChatChannel>();
+        private readonly ChatChannel _userChannel = new ChatChannel {Name = "Users"};
+        private readonly ChatChannel _groupChannel = new ChatChannel {Name = "Groups"};
 //        private readonly ChatGroup _projectChannel = new ChatGroup {Name = "Projects"};
 
         #endregion
@@ -32,7 +38,7 @@ namespace SBICT.Modules.Chat.ViewModels
         /// <summary>
         /// Collection of chatgroups used as root node in the treeview
         /// </summary>
-        public ObservableCollection<ChatGroup> ChatGroups
+        public ObservableCollection<ChatChannel> ChatGroups
         {
             get => _chatGroups;
             set => SetProperty(ref _chatGroups, value);
@@ -65,7 +71,7 @@ namespace SBICT.Modules.Chat.ViewModels
 //            _projectChannel.Chats.Add(new Chat {Name = "Windows2.0"});
 //            _projectChannel.Chats.Add(new Chat {Name = "TestProject"});
 
-            ChatGroups = new ObservableCollection<ChatGroup>
+            ChatGroups = new ObservableCollection<ChatChannel>
             {
                 _userChannel,
                 _groupChannel,

@@ -10,5 +10,27 @@
              d:DesignHeight="300" d:DesignWidth="300"
              prism:ViewModelLocator.AutoWireViewModel="True"
              d:DataContext="{d:DesignInstance {x:Type viewModels:ChatWindowMockViewModel}, IsDesignTimeCreatable=True}">
-    <Grid />
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="25" />
+            <RowDefinition Height="50*"/>
+            <RowDefinition Height="25" />
+
+        </Grid.RowDefinitions>
+        <ListView x:Name="chatMessages" ItemsSource="{Binding Chat.ChatMessages}" Grid.Row="1" Grid.RowSpan="1">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Received.Date, StringFormat={}[{0}]}"></TextBlock>
+                        <TextBlock Text="{Binding Sender, StringFormat={}{0}:}"></TextBlock>
+                        <TextBlock Text="{Binding Message}" Margin="5,0,0,0"></TextBlock>
+                    </StackPanel>
+                </DataTemplate>
+
+            </ListView.ItemTemplate>
+        </ListView>
+        <TextBox x:Name="chatMessage" Margin="0,0,75,0" Grid.Row="2" TextWrapping="Wrap" />
+        <Button x:Name="sendMessage" Content="Send" HorizontalAlignment="Right" Grid.Row="2" Width="75" />
+        <TextBlock TextWrapping="Wrap" Text="{Binding Chat.Name}" VerticalAlignment="Center" />
+    </Grid>
 </UserControl>

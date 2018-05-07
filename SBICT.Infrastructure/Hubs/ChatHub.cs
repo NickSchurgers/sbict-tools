@@ -140,7 +140,7 @@ namespace SBICT.Infrastructure.Hubs
                     throw new ArgumentOutOfRangeException(nameof(scope), scope, null);
             }
 
-            await target.SendAsync("ReceiveMessage", sender, message, scope == ConnectionScope.Broadcast);
+            await target.SendAsync("MessageReceived", sender, message, scope);
         }
     }
 }

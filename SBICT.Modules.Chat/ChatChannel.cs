@@ -11,7 +11,7 @@ namespace SBICT.Modules.Chat
     {
         #region Fields
 
-        private List<Chat> _chats = new List<Chat>();
+        private ObservableCollection<Chat> _chats = new ObservableCollection<Chat>();
         private ObservableCollection<ChatChannel> _chatChannels = new ObservableCollection<ChatChannel>();
 
         #endregion
@@ -21,7 +21,7 @@ namespace SBICT.Modules.Chat
         /// <summary>
         /// Collection of chats 
         /// </summary>
-        public List<Chat> Chats
+        public ObservableCollection<Chat> Chats
         {
             get => _chats;
             set => SetProperty(ref _chats, value);

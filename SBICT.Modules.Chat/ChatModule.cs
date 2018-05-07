@@ -12,6 +12,7 @@ namespace SBICT.Modules.Chat
     {
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
+            containerRegistry.RegisterSingleton<IChatManager, ChatManager>();
             containerRegistry.Register<ChatList>();
             containerRegistry.Register<ChatWindow>();
         }

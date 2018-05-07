@@ -7,15 +7,17 @@ using System.Windows;
 using Prism.Regions;
 using SBICT.Infrastructure.Connection;
 using Microsoft.AspNetCore.SignalR.Client;
+using Prism.Events;
 
 namespace SBICT.Modules.Chat.ViewModels
 {
     public class ChatWindowViewModel : BindableBase, INavigationAware
     {
+        private readonly IChatManager _chatManager;
+        private readonly IEventAggregator _eventAggregator;
         public DelegateCommand SendMessage { get; set; }
 
         private Chat _chat;
-        private readonly IConnection _chatConnection;
 
         public string Header { get; } = "Chat";
 
@@ -25,17 +27,19 @@ namespace SBICT.Modules.Chat.ViewModels
             set => SetProperty(ref _chat, value);
         }
 
+        public string Message { get; set; }
 
-        public ChatWindowViewModel(IConnectionManager<IConnection> connectionManager)
+        public ChatWindowViewModel(IChatManager chatManager)
         {
+            _chatManager = chatManager;
             SendMessage = new DelegateCommand(OnMessageSent);
-            _chatConnection = connectionManager.Get("Chat");
         }
 
-        private async void OnMessageSent()
+        private void OnMessageSent()
         {
-            Chat.ChatMessages.Add(new ChatMessage {Message = "Test"});
-            await _chatConnection.Hub.InvokeAsync("SendMessage", Chat.Name, "Message", ConnectionScope.User);
+            Chat.ChatMessages.Add(new ChatMessage {Message = Message});
+            _chatManager.SendMessage(Chat.Name, Message, ConnectionScope.User);
+            Message = string.Empty;
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)

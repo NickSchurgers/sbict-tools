@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,16 +13,18 @@ using System.Windows.Controls;
 using System.Windows.Threading;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.SignalR.Client;
+using Prism.Events;
 using Prism.Regions;
 using SBICT.Infrastructure;
 using SBICT.Infrastructure.Connection;
+using SBICT.Infrastructure.Extensions;
 
 namespace SBICT.Modules.Chat.ViewModels
 {
     public class ChatListViewModel : BindableBase
     {
-        private readonly IConnectionManager<IConnection> _connectionManager;
         private readonly IRegionManager _regionManager;
+        private readonly IChatManager _chatManager;
 
         #region Commands
 
@@ -31,13 +34,7 @@ namespace SBICT.Modules.Chat.ViewModels
 
         #region Fields
 
-        private ObservableCollection<ChatChannel> _chatGroups = new ObservableCollection<ChatChannel>();
-        private readonly ChatChannel _userChannel = new ChatChannel {Name = "Users"};
-
-        private readonly ChatChannel _groupChannel = new ChatChannel {Name = "Groups"};
-
-//        private readonly ChatGroup _projectChannel = new ChatGroup {Name = "Projects"};
-        private IConnection _chatConnection;
+        private ObservableCollection<ChatChannel> _channels = new ObservableCollection<ChatChannel>();
 
         #endregion
 
@@ -46,10 +43,10 @@ namespace SBICT.Modules.Chat.ViewModels
         /// <summary>
         /// Collection of chatgroups used as root node in the treeview
         /// </summary>
-        public ObservableCollection<ChatChannel> ChatGroups
+        public ObservableCollection<ChatChannel> Channels
         {
-            get => _chatGroups;
-            set => SetProperty(ref _chatGroups, value);
+            get => _channels;
+            set => SetProperty(ref _channels, value);
         }
 
         #endregion
@@ -59,66 +56,21 @@ namespace SBICT.Modules.Chat.ViewModels
         /// <summary>
         /// Constructor
         /// </summary>
-        public ChatListViewModel(IConnectionManager<IConnection> connectionManager, IRegionManager regionManager)
+        public ChatListViewModel(IRegionManager regionManager, IChatManager chatManager)
         {
-            _connectionManager = connectionManager;
             _regionManager = regionManager;
+            _chatManager = chatManager;
+
             ChatListSelectedItemChanged = new DelegateCommand<object>(OnSelectedItemChanged);
-
-            InitializeChatHub();
-            RefreshChatList();
+            _chatManager.Connection.UserStatusChanged += ChatConnectionOnUserStatusChanged;
             if (Application.Current.MainWindow != null) Application.Current.MainWindow.Closing += MainWindowOnClosing;
+
+            InitChannels();
         }
 
-        private void OnSelectedItemChanged(object obj)
+        private async void InitChannels()
         {
-            if (obj.GetType() == typeof(Chat))
-            {
-                var param = new NavigationParameters {{"Chat", (Chat) obj}};
-                _regionManager.RequestNavigate(RegionNames.MainRegion, new Uri("ChatWindow", UriKind.Relative), param);
-            }
-        }
-
-        /// <summary>
-        /// Create list of root nodes and populate the users node with a list off active users
-        /// </summary>
-        private async void RefreshChatList()
-        {
-            if (_userChannel.Chats.Count == 0)
-            {
-                var users = await _chatConnection.Hub.InvokeAsync<IEnumerable<string>>("GetUserList");
-                _userChannel.Chats = new List<Chat>(users.Select(u => new Chat {Name = u}));
-                _userChannel.IsExpanded = true;
-            }
-
-
-            //TODO: Add group & project
-            ChatGroups = new ObservableCollection<ChatChannel>
-            {
-                _userChannel,
-                _groupChannel,
-//                _projectChannel
-            };
-        }
-
-        /// <summary>
-        /// Initiate the connection with the chat hub
-        /// </summary>
-        private async void InitializeChatHub()
-        {
-            _chatConnection = ConnectionFactory.Create("http://localhost:5000/hubs/chat");
-            _chatConnection.UserStatusChanged += ChatConnectionOnUserStatusChanged;
-            _connectionManager.Set("Chat", _chatConnection);
-            await _chatConnection.StartAsync();
-        }
-
-        /// <summary>
-        /// Dispose of the chat hub connection
-        /// </summary>
-        private async void DeInitializeChatHub()
-        {
-            _connectionManager.Unset("Chat");
-            await _chatConnection.StopAsync();
+            Channels = await _chatManager.InitHub();
         }
 
         #endregion
@@ -131,7 +83,7 @@ namespace SBICT.Modules.Chat.ViewModels
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        private void ChatConnectionOnUserStatusChanged(object sender, ConnectionEventArgs e)
+        private async void ChatConnectionOnUserStatusChanged(object sender, ConnectionEventArgs e)
         {
             var message = $"{e.User} has ";
             switch (e.Status)
@@ -139,20 +91,20 @@ namespace SBICT.Modules.Chat.ViewModels
                 case ConnectionStatus.Connected:
                     SystemLogger.LogEvent($"{message} joined");
 #if DEBUG
-                    _userChannel.Chats.Add(new Chat {Name = "Henk"});
+                    _chatManager.UserChannel.Chats.Add(new Chat {Name = "Henk"});
 #else
-                    _userChannel.Chats.Add(new Chat{Name = e.User});
+                     _chatManager.UserChannel.Chats.Add(new Chat{Name = e.User});
 #endif
-                    RefreshChatList();
+                    Channels = await _chatManager.RefreshChannels();
                     break;
                 case ConnectionStatus.Disconnected:
                     SystemLogger.LogEvent($"{message} left");
 #if DEBUG
-                    _userChannel.Chats.RemoveAll(c => c.Name == "Henk");
+                    _chatManager.UserChannel.Chats.RemoveAll(c => c.Name == "Henk");
 #else
-                    _userChannel.Chats.RemoveAll(c => c.Name == e.User);
+                  / _chatManager.UserChannel.Chats.RemoveAll(c => c.Name == e.User);
 #endif
-                    RefreshChatList();
+                    Channels = await _chatManager.RefreshChannels();
                     break;
                 case ConnectionStatus.Connecting:
                 case ConnectionStatus.Reconnecting:
@@ -169,7 +121,16 @@ namespace SBICT.Modules.Chat.ViewModels
         /// <param name="e"></param>
         private void MainWindowOnClosing(object sender, CancelEventArgs e)
         {
-            DeInitializeChatHub();
+            _chatManager.DeinitHub();
+        }
+
+        private void OnSelectedItemChanged(object obj)
+        {
+            if (obj.GetType() == typeof(Chat))
+            {
+                var param = new NavigationParameters {{"Chat", (Chat) obj}};
+                _regionManager.RequestNavigate(RegionNames.MainRegion, new Uri("ChatWindow", UriKind.Relative), param);
+            }
         }
 
         #endregion

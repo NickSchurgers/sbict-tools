@@ -25,7 +25,7 @@
 
     </UserControl.Resources>
     <Grid>
-        <TreeView x:Name="ChatTree" ItemsSource="{Binding ChatGroups}">
+        <TreeView x:Name="ChatTree" ItemsSource="{Binding Channels}">
             <i:Interaction.Triggers>
                 <i:EventTrigger EventName="SelectedItemChanged">
                     <prism:InvokeCommandAction Command="{Binding ChatListSelectedItemChanged}"

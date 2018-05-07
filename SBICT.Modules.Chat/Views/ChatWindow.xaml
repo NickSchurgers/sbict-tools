@@ -29,7 +29,7 @@
 
             </ListView.ItemTemplate>
         </ListView>
-        <TextBox x:Name="chatMessage" Margin="0,0,75,0" Grid.Row="2" TextWrapping="Wrap" />
+        <TextBox x:Name="chatMessage" Margin="0,0,75,0" Grid.Row="2" TextWrapping="Wrap" Text="{Binding Message}" />
         <Button x:Name="sendMessage" Content="Send" HorizontalAlignment="Right" Grid.Row="2" Width="75" Command="{Binding SendMessage}" />
         <TextBlock Grid.Row="0" TextWrapping="Wrap" Text="{Binding Chat.Name}" VerticalAlignment="Center" />
     </Grid>

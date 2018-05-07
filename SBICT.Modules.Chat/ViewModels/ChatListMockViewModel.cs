@@ -21,6 +21,7 @@ namespace SBICT.Modules.Chat.ViewModels
         #region Commands
 
         public DelegateCommand ChatListSelectedItemChanged { get; set; }
+        public DelegateCommand SendMessage { get; set; }
 
         #endregion
         

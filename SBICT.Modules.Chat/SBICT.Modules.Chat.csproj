@@ -61,6 +61,7 @@
     <Compile Include="Chat.cs" />
     <Compile Include="ChatChannel.cs" />
     <Compile Include="ChatGroup.cs" />
+    <Compile Include="ChatManager.cs" />
     <Compile Include="ChatMessage.cs" />
     <Compile Include="ChatModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">

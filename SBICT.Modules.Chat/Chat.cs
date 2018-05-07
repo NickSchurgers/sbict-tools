@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Prism.Mvvm;
 
 namespace SBICT.Modules.Chat
@@ -7,7 +8,7 @@ namespace SBICT.Modules.Chat
     public class Chat : BindableBase
     {
         private string _name;
-        private List<ChatMessage> _chatMessages;
+        private ObservableCollection<ChatMessage> _chatMessages = new ObservableCollection<ChatMessage>();
 
         #region Properties
 
@@ -20,7 +21,7 @@ namespace SBICT.Modules.Chat
             set => SetProperty(ref _name, value);
         }
 
-        public List<ChatMessage> ChatMessages
+        public ObservableCollection<ChatMessage> ChatMessages
         {
             get => _chatMessages;
             set => SetProperty(ref _chatMessages, value);

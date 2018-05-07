@@ -20,6 +20,7 @@ namespace SBICT.Modules.Chat.ViewModels
 {
     public class ChatListViewModel : BindableBase
     {
+        private readonly IConnectionManager<IConnection> _connectionManager;
         private readonly IRegionManager _regionManager;
 
         #region Commands
@@ -58,8 +59,9 @@ namespace SBICT.Modules.Chat.ViewModels
         /// <summary>
         /// Constructor
         /// </summary>
-        public ChatListViewModel(IRegionManager regionManager)
+        public ChatListViewModel(IConnectionManager<IConnection> connectionManager, IRegionManager regionManager)
         {
+            _connectionManager = connectionManager;
             _regionManager = regionManager;
             ChatListSelectedItemChanged = new DelegateCommand<object>(OnSelectedItemChanged);
 
@@ -106,6 +108,7 @@ namespace SBICT.Modules.Chat.ViewModels
         {
             _chatConnection = ConnectionFactory.Create("http://localhost:5000/hubs/chat");
             _chatConnection.UserStatusChanged += ChatConnectionOnUserStatusChanged;
+            _connectionManager.Set("Chat", _chatConnection);
             await _chatConnection.StartAsync();
         }
 
@@ -114,6 +117,7 @@ namespace SBICT.Modules.Chat.ViewModels
         /// </summary>
         private async void DeInitializeChatHub()
         {
+            _connectionManager.Unset("Chat");
             await _chatConnection.StopAsync();
         }
 

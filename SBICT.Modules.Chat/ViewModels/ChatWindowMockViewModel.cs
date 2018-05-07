@@ -2,6 +2,7 @@
 using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace SBICT.Modules.Chat.ViewModels
@@ -16,7 +17,7 @@ namespace SBICT.Modules.Chat.ViewModels
             Chat = new Chat
             {
                 Name = "Henk",
-                ChatMessages = new List<ChatMessage>
+                ChatMessages = new ObservableCollection<ChatMessage>
                 {
                     new ChatMessage
                     {

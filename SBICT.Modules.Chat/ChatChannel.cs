@@ -12,7 +12,7 @@ namespace SBICT.Modules.Chat
         #region Fields
 
         private ObservableCollection<Chat> _chats = new ObservableCollection<Chat>();
-        private ObservableCollection<ChatChannel> _chatChannels = new ObservableCollection<ChatChannel>();
+        private ObservableCollection<ChatGroup> _chatGroups = new ObservableCollection<ChatGroup>();
 
         #endregion
 
@@ -30,10 +30,10 @@ namespace SBICT.Modules.Chat
         /// <summary>
         /// Collection of the chatgroups
         /// </summary>
-        public ObservableCollection<ChatChannel> ChatChannels
+        public ObservableCollection<ChatGroup> ChatGroups
         {
-            get => _chatChannels;
-            set => SetProperty(ref _chatChannels, value);
+            get => _chatGroups;
+            set => SetProperty(ref _chatGroups, value);
         }
 
         public bool IsExpanded { get; set; }
@@ -41,7 +41,7 @@ namespace SBICT.Modules.Chat
         /// <summary>
         /// Property used for enumerating items in the treeview
         /// </summary>
-        public IEnumerable Items => ChatChannels?.Cast<object>().Concat(Chats);
+        public IEnumerable Items => ChatGroups?.Cast<object>().Concat(Chats);
 
         /// <summary>
         /// Name of this group

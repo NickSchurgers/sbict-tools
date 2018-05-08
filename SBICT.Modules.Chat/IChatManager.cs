@@ -8,14 +8,14 @@ namespace SBICT.Modules.Chat
     {
         IConnection Connection { get; set; }
         Chat ActiveChat { get; set; }
+        ChatGroup ActiveGroup { get; set; }
         ChatChannel UserChannel { get; set; }
         ChatChannel GroupChannel { get; set; }
         ObservableCollection<ChatChannel> Channels { get; set; }
-        
+
         Task<ObservableCollection<ChatChannel>> InitHub();
         void DeinitHub();
         Task<ObservableCollection<ChatChannel>> RefreshChannels();
         void SendMessage(string recipient, string message, ConnectionScope scope);
-        
     }
 }

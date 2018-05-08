@@ -26,6 +26,7 @@ namespace SBICT.Modules.Chat.ViewModels
         #region Commands
 
         public DelegateCommand<object> ChatListSelectedItemChanged { get; set; }
+        public DelegateCommand<object> ChatListAddGroup { get; set; }
 
         #endregion
 
@@ -61,11 +62,17 @@ namespace SBICT.Modules.Chat.ViewModels
             _chatManager = chatManager;
 
             ChatListSelectedItemChanged = new DelegateCommand<object>(OnSelectedItemChanged);
+            ChatListAddGroup = new DelegateCommand<object>(OnChatListAddGroup);
             _chatManager.Connection.UserStatusChanged += OnUserStatusChanged;
             if (Application.Current.MainWindow != null)
                 Application.Current.MainWindow.Closing += OnMainWindowClosing;
 
             InitChannels();
+        }
+
+        private void OnChatListAddGroup(object obj)
+        {
+            throw new NotImplementedException();
         }
 
         private async void InitChannels()

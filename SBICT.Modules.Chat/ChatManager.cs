@@ -27,6 +27,7 @@ namespace SBICT.Modules.Chat
 
         public IConnection Connection { get; set; }
         public Chat ActiveChat { get; set; }
+        public ChatGroup ActiveGroup { get; set; }
         public ObservableCollection<ChatChannel> Channels { get; set; } = new ObservableCollection<ChatChannel>();
 
         public ChatChannel UserChannel
@@ -78,9 +79,8 @@ namespace SBICT.Modules.Chat
             if (UserChannel.Chats.Count == 0)
             {
                 var users = await Connection.Hub.InvokeAsync<IEnumerable<string>>("GetUserList");
-                var chats = new ObservableCollection<Chat>(users.Select(u =>
+                UserChannel.Chats = new ObservableCollection<Chat>(users.Select(u =>
                     new Chat {Name = u}));
-                UserChannel.Chats = chats;
                 UserChannel.IsExpanded = true;
             }
 

@@ -65,9 +65,9 @@ namespace SBICT.Modules.Chat.ViewModels
             UserChannel.Chats.Add(new Chat {Name = "Henk"});
             UserChannel.Chats.Add(new Chat {Name = "Piet"});
             UserChannel.IsExpanded = true;
-            GroupChannel.Chats.Add(new Chat {Name = "Alpha"});
-            GroupChannel.Chats.Add(new Chat {Name = "Beta"});
-            GroupChannel.Chats.Add(new Chat {Name = "Gamma"});
+            GroupChannel.ChatGroups.Add(new ChatGroup {Name = "Alpha"});
+            GroupChannel.ChatGroups.Add(new ChatGroup {Name = "Beta"});
+            GroupChannel.ChatGroups.Add(new ChatGroup {Name = "Gamma"});
 
             Channels = new ObservableCollection<ChatChannel>
             {

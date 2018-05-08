@@ -61,6 +61,7 @@
   <ItemGroup>
     <Compile Include="Chat.cs" />
     <Compile Include="ChatChannel.cs" />
+    <Compile Include="ChatGroup.cs" />
     <Compile Include="ChatManager.cs" />
     <Compile Include="ChatModule.cs" />
     <Compile Include="IChatManager.cs" />

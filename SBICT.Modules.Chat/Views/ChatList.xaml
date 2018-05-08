@@ -15,6 +15,7 @@
     <UserControl.Resources>
         <Style TargetType="{x:Type TreeViewItem}">
             <Setter Property="IsExpanded" Value="{Binding IsExpanded}" />
+            <Setter Property="IsSelected" Value="{Binding IsOpen}" />
         </Style>
         <HierarchicalDataTemplate DataType="{x:Type module:ChatChannel}" ItemsSource="{Binding Items}">
             <Label Content="{Binding Name}" />

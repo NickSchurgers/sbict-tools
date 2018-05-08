@@ -14,13 +14,18 @@ namespace SBICT.Modules.Chat.ViewModels
 {
     public class ChatWindowViewModel : BindableBase, INavigationAware
     {
-        private readonly IChatManager _chatManager;
-        private readonly IEventAggregator _aggregator;
-        public DelegateCommand SendMessage { get; set; }
+        #region Fields
 
+        private readonly IChatManager _chatManager;
         private Chat _chat;
+        private string _message;
+
+        #endregion
+
+        #region Properties
 
         public string Header { get; } = "Chat";
+        public DelegateCommand SendMessage { get; set; }
 
         public Chat Chat
         {
@@ -28,16 +33,35 @@ namespace SBICT.Modules.Chat.ViewModels
             set => SetProperty(ref _chat, value);
         }
 
-        public string Message { get; set; }
+        public string Message
+        {
+            get => _message;
+            set => SetProperty(ref _message, value);
+        }
+
+        #endregion
+
+        #region Methods
 
         public ChatWindowViewModel(IChatManager chatManager, IEventAggregator aggregator)
         {
             _chatManager = chatManager;
-            _aggregator = aggregator;
-            _aggregator.GetEvent<ChatMessageReceivedEvent>()
+
+            aggregator.GetEvent<ChatMessageReceivedEvent>()
                 .Subscribe(OnMessageReceived, ThreadOption.UIThread, false, message => message.Sender == Chat.Name);
+
             SendMessage = new DelegateCommand(OnMessageSent);
         }
+
+
+        public bool IsNavigationTarget(NavigationContext navigationContext)
+        {
+            return true;
+        }
+
+        #endregion
+
+        #region Event Handlers 
 
         private void OnMessageReceived(ChatMessage chatMessage)
         {
@@ -54,20 +78,12 @@ namespace SBICT.Modules.Chat.ViewModels
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
             Chat = navigationContext.Parameters["Chat"] as Chat;
-            if (Chat != null)
-            {
-                Chat.IsOpen = true;
-            }
-        }
-
-        public bool IsNavigationTarget(NavigationContext navigationContext)
-        {
-            return true;
         }
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-            
         }
+
+        #endregion
     }
 }

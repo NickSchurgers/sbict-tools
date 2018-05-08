@@ -62,8 +62,9 @@ namespace SBICT.Modules.Chat.ViewModels
             _chatManager = chatManager;
 
             ChatListSelectedItemChanged = new DelegateCommand<object>(OnSelectedItemChanged);
-            _chatManager.Connection.UserStatusChanged += ChatConnectionOnUserStatusChanged;
-            if (Application.Current.MainWindow != null) Application.Current.MainWindow.Closing += MainWindowOnClosing;
+            _chatManager.Connection.UserStatusChanged += OnUserStatusChanged;
+            if (Application.Current.MainWindow != null)
+                Application.Current.MainWindow.Closing += OnMainWindowClosing;
 
             InitChannels();
         }
@@ -83,7 +84,7 @@ namespace SBICT.Modules.Chat.ViewModels
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        private async void ChatConnectionOnUserStatusChanged(object sender, ConnectionEventArgs e)
+        private async void OnUserStatusChanged(object sender, ConnectionEventArgs e)
         {
             var message = $"{e.User} has ";
             switch (e.Status)
@@ -114,23 +115,33 @@ namespace SBICT.Modules.Chat.ViewModels
             }
         }
 
-        /// <summary>
-        /// Triggered on closing of the main window
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void MainWindowOnClosing(object sender, CancelEventArgs e)
-        {
-            _chatManager.DeinitHub();
-        }
 
         private void OnSelectedItemChanged(object obj)
         {
             if (obj.GetType() == typeof(Chat))
             {
-                var param = new NavigationParameters {{"Chat", (Chat) obj}};
+                var chat = (Chat) obj;
+                var param = new NavigationParameters {{"Chat", chat}};
+
+                if (_chatManager.ActiveChat != null)
+                {
+                    _chatManager.ActiveChat.IsOpen = false;
+                }
+
+                chat.IsOpen = true;
+                _chatManager.ActiveChat = chat;
                 _regionManager.RequestNavigate(RegionNames.MainRegion, new Uri("ChatWindow", UriKind.Relative), param);
             }
+        }
+
+        /// <summary>
+        /// Triggered on closing of the main window
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnMainWindowClosing(object sender, CancelEventArgs e)
+        {
+            _chatManager.DeinitHub();
         }
 
         #endregion

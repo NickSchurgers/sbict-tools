@@ -19,12 +19,15 @@ namespace SBICT.Modules.Chat
         private readonly IEventAggregator _eventAggregator;
         private readonly IConnectionManager<IConnection> _connectionManager;
         private ChatChannel _userChannel = new ChatChannel {Name = "Users"};
+        private ChatChannel _groupChannel = new ChatChannel {Name = "Groups"};
 
         #endregion
 
         #region Properties
 
         public IConnection Connection { get; set; }
+        public Chat ActiveChat { get; set; }
+        public ObservableCollection<ChatChannel> Channels { get; set; } = new ObservableCollection<ChatChannel>();
 
         public ChatChannel UserChannel
         {
@@ -32,8 +35,11 @@ namespace SBICT.Modules.Chat
             set => SetProperty(ref _userChannel, value);
         }
 
-        public ChatChannel GroupChannel { get; set; } = new ChatChannel {Name = "Groups"};
-        public ObservableCollection<ChatChannel> Channels { get; set; } = new ObservableCollection<ChatChannel>();
+        public ChatChannel GroupChannel
+        {
+            get => _groupChannel;
+            set => SetProperty(ref _groupChannel, value);
+        }
 
         #endregion
 
@@ -72,9 +78,9 @@ namespace SBICT.Modules.Chat
             if (UserChannel.Chats.Count == 0)
             {
                 var users = await Connection.Hub.InvokeAsync<IEnumerable<string>>("GetUserList");
-                UserChannel.Chats =
-                    new ObservableCollection<Chat>(users.Select(u =>
-                        new Chat {Name = u}));
+                var chats = new ObservableCollection<Chat>(users.Select(u =>
+                    new Chat {Name = u}));
+                UserChannel.Chats = chats;
                 UserChannel.IsExpanded = true;
             }
 
@@ -85,10 +91,18 @@ namespace SBICT.Modules.Chat
             };
         }
 
+        /// <summary>
+        /// Send a message
+        /// </summary>
+        /// <param name="recipient"></param>
+        /// <param name="message"></param>
+        /// <param name="scope"></param>
         public async void SendMessage(string recipient, string message, ConnectionScope scope)
         {
             await Connection.Hub.InvokeAsync("SendMessage", recipient, message, scope);
         }
+
+        #region Event Handlers
 
         private void OnMessageReceived(string sender, string message, ConnectionScope scope)
         {
@@ -99,13 +113,47 @@ namespace SBICT.Modules.Chat
                 Message = message,
                 Received = DateTime.Now
             };
-            
-            if (scope == ConnectionScope.User)
+
+            switch (scope)
             {
-                UserChannel.Chats.Single(c => c.Name == sender && c.IsOpen != true).ChatMessages.Add(newMessage);
+                case ConnectionScope.System:
+                    break;
+                case ConnectionScope.User:
+                    UserMessageReceived(newMessage);
+                    break;
+                case ConnectionScope.Group:
+                    GroupMessageReceived(newMessage);
+                    break;
+                case ConnectionScope.Broadcast:
+                    BroadcastReceived(newMessage);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(scope), scope, null);
             }
 
             _eventAggregator.GetEvent<ChatMessageReceivedEvent>().Publish(newMessage);
         }
+
+
+        private void BroadcastReceived(ChatMessage newMessage)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void GroupMessageReceived(ChatMessage newMessage)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void UserMessageReceived(ChatMessage newMessage)
+        {
+            //Active chat is handled by the window to avoid UI refreshing issues
+            if (newMessage.Sender != ActiveChat.Name)
+            {
+                UserChannel.Chats.Single(c => c.Name == newMessage.Sender).ChatMessages.Add(newMessage);
+            }
+        }
+
+        #endregion
     }
 }

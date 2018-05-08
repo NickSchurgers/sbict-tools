@@ -23,9 +23,6 @@ namespace SBICT.Modules.Chat.ViewModels
 {
     public class ChatListViewModel : BindableBase
     {
-        private readonly IRegionManager _regionManager;
-        private readonly IChatManager _chatManager;
-
         #region Commands
 
         public DelegateCommand<object> ChatListSelectedItemChanged { get; set; }
@@ -34,6 +31,8 @@ namespace SBICT.Modules.Chat.ViewModels
 
         #region Fields
 
+        private readonly IRegionManager _regionManager;
+        private readonly IChatManager _chatManager;
         private ObservableCollection<ChatChannel> _channels = new ObservableCollection<ChatChannel>();
 
         #endregion

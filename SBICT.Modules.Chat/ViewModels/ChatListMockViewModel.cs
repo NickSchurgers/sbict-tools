@@ -18,31 +18,31 @@ namespace SBICT.Modules.Chat.ViewModels
 {
     public class ChatListMockViewModel : BindableBase
     {
+
         #region Commands
 
         public DelegateCommand ChatListSelectedItemChanged { get; set; }
         public DelegateCommand SendMessage { get; set; }
 
         #endregion
-        
+
         #region Fields
 
-        private ObservableCollection<ChatChannel> _chatGroups = new ObservableCollection<ChatChannel>();
-        private readonly ChatChannel _userChannel = new ChatChannel {Name = "Users"};
-        private readonly ChatChannel _groupChannel = new ChatChannel {Name = "Groups"};
-//        private readonly ChatGroup _projectChannel = new ChatGroup {Name = "Projects"};
+        private ObservableCollection<ChatChannel> _channels = new ObservableCollection<ChatChannel>();
 
         #endregion
 
         #region Properties
-
+        public ChatChannel UserChannel { get; set; } = new ChatChannel { Name = "Users" };
+        public ChatChannel GroupChannel { get; set; } = new ChatChannel { Name = "Groups"};
+        
         /// <summary>
         /// Collection of chatgroups used as root node in the treeview
         /// </summary>
-        public ObservableCollection<ChatChannel> ChatGroups
+        public ObservableCollection<ChatChannel> Channels
         {
-            get => _chatGroups;
-            set => SetProperty(ref _chatGroups, value);
+            get => _channels;
+            set => SetProperty(ref _channels, value);
         }
 
         #endregion
@@ -62,21 +62,17 @@ namespace SBICT.Modules.Chat.ViewModels
         /// </summary>
         private void RefreshChatList()
         {
-            _userChannel.Chats.Add(new Chat {Name = "Henk"});
-            _userChannel.Chats.Add(new Chat {Name = "Piet"});
-            _userChannel.IsExpanded = true;
-            _groupChannel.Chats.Add(new Chat {Name = "Alpha"});
-            _groupChannel.Chats.Add(new Chat {Name = "Beta"});
-            _groupChannel.Chats.Add(new Chat {Name = "Gamma"});
-//            _projectChannel.Chats.Add(new Chat {Name = "Alphabet"});
-//            _projectChannel.Chats.Add(new Chat {Name = "Windows2.0"});
-//            _projectChannel.Chats.Add(new Chat {Name = "TestProject"});
+            UserChannel.Chats.Add(new Chat {Name = "Henk"});
+            UserChannel.Chats.Add(new Chat {Name = "Piet"});
+            UserChannel.IsExpanded = true;
+            GroupChannel.Chats.Add(new Chat {Name = "Alpha"});
+            GroupChannel.Chats.Add(new Chat {Name = "Beta"});
+            GroupChannel.Chats.Add(new Chat {Name = "Gamma"});
 
-            ChatGroups = new ObservableCollection<ChatChannel>
+            Channels = new ObservableCollection<ChatChannel>
             {
-                _userChannel,
-                _groupChannel,
-//                _projectChannel
+                UserChannel,
+                GroupChannel
             };
         }
 

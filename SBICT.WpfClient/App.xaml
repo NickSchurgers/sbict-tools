@@ -5,5 +5,7 @@
              xmlns:local="clr-namespace:SBICT.WpfClient">
     <prism:PrismApplication.Resources>
 
+        <ResourceDictionary/>
+
     </prism:PrismApplication.Resources>
 </prism:PrismApplication>

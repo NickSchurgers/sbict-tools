@@ -2,6 +2,7 @@
 using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using Prism.Regions;
@@ -17,8 +18,10 @@ namespace SBICT.Modules.Chat.ViewModels
         #region Fields
 
         private readonly IChatManager _chatManager;
-        private Chat _chat;
+        private string _name;
         private string _message;
+        private ObservableCollection<ChatMessage> _chatMessages;
+        private ObservableCollection<string> _participants;
 
         #endregion
 
@@ -27,10 +30,16 @@ namespace SBICT.Modules.Chat.ViewModels
         public string Header { get; } = "Chat";
         public DelegateCommand SendMessage { get; set; }
 
-        public Chat Chat
+        public string Name
         {
-            get => _chat;
-            set => SetProperty(ref _chat, value);
+            get => _name;
+            set => SetProperty(ref _name, value);
+        }
+
+        public ObservableCollection<ChatMessage> ChatMessages
+        {
+            get => _chatMessages;
+            set => SetProperty(ref _chatMessages, value);
         }
 
         public string Message
@@ -39,16 +48,19 @@ namespace SBICT.Modules.Chat.ViewModels
             set => SetProperty(ref _message, value);
         }
 
+        public ObservableCollection<string> Participants
+        {
+            get => _participants;
+            set => SetProperty(ref _participants, value);
+        }
+
         #endregion
 
         #region Methods
 
-        public ChatWindowViewModel(IChatManager chatManager, IEventAggregator aggregator)
+        public ChatWindowViewModel(IChatManager chatManager)
         {
             _chatManager = chatManager;
-
-            aggregator.GetEvent<ChatMessageReceivedEvent>()
-                .Subscribe(OnMessageReceived, ThreadOption.UIThread, false, message => message.Sender == Chat.Name);
 
             SendMessage = new DelegateCommand(OnMessageSent);
         }
@@ -63,22 +75,28 @@ namespace SBICT.Modules.Chat.ViewModels
 
         #region Event Handlers 
 
-        private void OnMessageReceived(ChatMessage chatMessage)
-        {
-            Chat.ChatMessages.Add(chatMessage);
-        }
-
         private void OnMessageSent()
         {
-            Chat.ChatMessages.Add(new ChatMessage {Message = Message});
-            _chatManager.SendMessage(Chat.Name, Message, ConnectionScope.User);
+            _chatManager.SendMessage(Name, Message, ConnectionScope.User);
+            ChatMessages.Add(new ChatMessage {Message = Message});
             Message = string.Empty;
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
-            Chat = navigationContext.Parameters["Chat"] as Chat;
+            navigationContext.Parameters.TryGetValue("Chat", out Chat chat);
+
+            if (chat == null)
+            {
+                navigationContext.Parameters.TryGetValue("ChatGroup", out ChatGroup chatGroup);
+                Participants = chatGroup.Participants;
+                chat = chatGroup;
+            }
+
+            ChatMessages = chat.ChatMessages;
+            Name = chat.Name;
         }
+
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {

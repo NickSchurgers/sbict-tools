@@ -60,17 +60,12 @@ namespace SBICT.Modules.Chat.ViewModels
         public ChatListViewModel(IChatManager chatManager)
         {
             _chatManager = chatManager;
-            
+            _chatManager.InitChannels();
+
             ChatListSelectedItemChanged = new DelegateCommand<object>(OnSelectedItemChanged);
             ChatListAddGroup = new DelegateCommand<object>(OnChatListAddGroup);
 
-            
-            InitChannels();
-        }
-
-        private async void InitChannels()
-        {
-            Channels = await _chatManager.RefreshChannels();
+            Channels = _chatManager.Channels;
         }
 
         #endregion

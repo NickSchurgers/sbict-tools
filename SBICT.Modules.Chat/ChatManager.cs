@@ -26,8 +26,8 @@ namespace SBICT.Modules.Chat
         private readonly IConnectionManager<IConnection> _connectionManager;
         private readonly IRegionManager _regionManager;
 
-        private ChatChannel _userChannel = new ChatChannel {Name = "Users"};
-        private ChatChannel _groupChannel = new ChatChannel {Name = "Groups"};
+        private readonly ChatChannel _userChannel = new ChatChannel {Name = "Users"};
+        private readonly ChatChannel _groupChannel = new ChatChannel {Name = "Groups"};
 
         #endregion
 
@@ -79,22 +79,15 @@ namespace SBICT.Modules.Chat
         /// <summary>
         /// Create list of root nodes and populate the users node with a list off active users
         /// </summary>
-        public async Task<ObservableCollection<ChatChannel>> RefreshChannels()
+        public async void InitChannels()
         {
-
-            if (_userChannel.Chats.Count == 0)
-            {
-                var users = await Connection.Hub.InvokeAsync<IEnumerable<string>>("GetUserList");
-                _userChannel.Chats = new ObservableCollection<Chat>(users.Select(u =>
-                    new Chat {Name = u}));
+               var users = await Connection.Hub.InvokeAsync<IEnumerable<string>>("GetUserList");
+                _userChannel.Chats = new ObservableCollection<Chat>(users.Select(u => new Chat {Name = u}));
                 _userChannel.IsExpanded = true;
-            }
-
-            return Channels = new ObservableCollection<ChatChannel>
-            {
-                _userChannel,
-                _groupChannel
-            };
+            
+            Channels.Add(_userChannel);
+            Channels.Add(_groupChannel);
+            
         }
 
         public void AddChatChannel(ChatChannel channel)
@@ -127,7 +120,7 @@ namespace SBICT.Modules.Chat
             _regionManager.RequestNavigate(RegionNames.MainRegion, new Uri("ChatWindow", UriKind.Relative), param);
         }
 
-        public void ActivateChatGroup(ChatGroup @group)
+        public void ActivateChatGroup(ChatGroup chatGroup)
         {
             throw new NotImplementedException();
         }
@@ -199,11 +192,8 @@ namespace SBICT.Modules.Chat
 
         private void OnUserMessageReceived(ChatMessage newMessage)
         {
-            //Active chat is handled by the window to avoid UI refreshing issues
-            if (newMessage.Sender != ActiveChat.Name)
-            {
-                _userChannel.Chats.Single(c => c.Name == newMessage.Sender).ChatMessages.Add(newMessage);
-            }
+            _uiContext.Send(
+                x => _userChannel.Chats.Single(c => c.Name == newMessage.Sender).ChatMessages.Add(newMessage), null);
         }
 
         /// <summary>

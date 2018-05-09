@@ -32,7 +32,6 @@ namespace SBICT.Modules.Chat.ViewModels
 
         #region Fields
 
-        private readonly IRegionManager _regionManager;
         private readonly IChatManager _chatManager;
         private ObservableCollection<ChatChannel> _channels = new ObservableCollection<ChatChannel>();
 
@@ -56,9 +55,8 @@ namespace SBICT.Modules.Chat.ViewModels
         /// <summary>
         /// Constructor
         /// </summary>
-        public ChatListViewModel(IRegionManager regionManager, IChatManager chatManager)
+        public ChatListViewModel(IChatManager chatManager)
         {
-            _regionManager = regionManager;
             _chatManager = chatManager;
 
             ChatListSelectedItemChanged = new DelegateCommand<object>(OnSelectedItemChanged);
@@ -90,28 +88,25 @@ namespace SBICT.Modules.Chat.ViewModels
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        private async void OnUserStatusChanged(object sender, ConnectionEventArgs e)
+        private void OnUserStatusChanged(object sender, ConnectionEventArgs e)
         {
-            var message = $"{e.User} has ";
             switch (e.Status)
             {
                 case ConnectionStatus.Connected:
-                    SystemLogger.LogEvent($"{message} joined");
 #if DEBUG
-                    _chatManager.UserChannel.Chats.Add(new Chat {Name = "Henk"});
+                    _chatManager.AddChat(new Chat {Name = "Henk"});
 #else
-                     _chatManager.UserChannel.Chats.Add(new Chat{Name = e.User});
+                     _chatManager.AddChat(new Chat{Name = e.User});
 #endif
-                    Channels = await _chatManager.RefreshChannels();
+                    Channels = _chatManager.Channels;
                     break;
                 case ConnectionStatus.Disconnected:
-                    SystemLogger.LogEvent($"{message} left");
 #if DEBUG
-                    _chatManager.UserChannel.Chats.RemoveAll(c => c.Name == "Henk");
+                    _chatManager.RemoveChat(new Chat {Name = "Henk"});
 #else
-                  / _chatManager.UserChannel.Chats.RemoveAll(c => c.Name == e.User);
+                   _chatManager.RemoveChat(new Chat {Name = e.User});
 #endif
-                    Channels = await _chatManager.RefreshChannels();
+                    Channels = _chatManager.Channels;
                     break;
                 case ConnectionStatus.Connecting:
                 case ConnectionStatus.Reconnecting:
@@ -126,17 +121,7 @@ namespace SBICT.Modules.Chat.ViewModels
         {
             if (obj.GetType() == typeof(Chat))
             {
-                var chat = (Chat) obj;
-                var param = new NavigationParameters {{"Chat", chat}};
-
-                if (_chatManager.ActiveChat != null)
-                {
-                    _chatManager.ActiveChat.IsOpen = false;
-                }
-
-                chat.IsOpen = true;
-                _chatManager.ActiveChat = chat;
-                _regionManager.RequestNavigate(RegionNames.MainRegion, new Uri("ChatWindow", UriKind.Relative), param);
+                _chatManager.ActivateChat((Chat) obj);
             }
         }
 

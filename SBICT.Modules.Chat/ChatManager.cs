@@ -7,8 +7,10 @@ using System.Windows;
 using Microsoft.AspNetCore.SignalR.Client;
 using Prism.Events;
 using Prism.Mvvm;
+using Prism.Regions;
 using SBICT.Infrastructure;
 using SBICT.Infrastructure.Connection;
+using SBICT.Infrastructure.Extensions;
 
 namespace SBICT.Modules.Chat
 {
@@ -18,6 +20,7 @@ namespace SBICT.Modules.Chat
 
         private readonly IEventAggregator _eventAggregator;
         private readonly IConnectionManager<IConnection> _connectionManager;
+        private readonly IRegionManager _regionManager;
         private ChatChannel _userChannel = new ChatChannel {Name = "Users"};
         private ChatChannel _groupChannel = new ChatChannel {Name = "Groups"};
 
@@ -30,24 +33,13 @@ namespace SBICT.Modules.Chat
         public ChatGroup ActiveGroup { get; set; }
         public ObservableCollection<ChatChannel> Channels { get; set; } = new ObservableCollection<ChatChannel>();
 
-        public ChatChannel UserChannel
-        {
-            get => _userChannel;
-            set => SetProperty(ref _userChannel, value);
-        }
-
-        public ChatChannel GroupChannel
-        {
-            get => _groupChannel;
-            set => SetProperty(ref _groupChannel, value);
-        }
-
         #endregion
 
-        public ChatManager(IEventAggregator eventAggregator, IConnectionManager<IConnection> connectionManager)
+        public ChatManager(IEventAggregator eventAggregator, IConnectionManager<IConnection> connectionManager, IRegionManager regionManager)
         {
             _eventAggregator = eventAggregator;
             _connectionManager = connectionManager;
+            _regionManager = regionManager;
             Connection = ConnectionFactory.Create("http://localhost:5000/hubs/chat");
         }
 
@@ -61,6 +53,7 @@ namespace SBICT.Modules.Chat
             await Connection.StartAsync();
             return await RefreshChannels();
         }
+
 
         /// <summary>
         /// Dispose of the chat hub connection
@@ -76,19 +69,67 @@ namespace SBICT.Modules.Chat
         /// </summary>
         public async Task<ObservableCollection<ChatChannel>> RefreshChannels()
         {
-            if (UserChannel.Chats.Count == 0)
+            if (_userChannel.Chats.Count == 0)
             {
                 var users = await Connection.Hub.InvokeAsync<IEnumerable<string>>("GetUserList");
-                UserChannel.Chats = new ObservableCollection<Chat>(users.Select(u =>
+                _userChannel.Chats = new ObservableCollection<Chat>(users.Select(u =>
                     new Chat {Name = u}));
-                UserChannel.IsExpanded = true;
+                _userChannel.IsExpanded = true;
             }
 
             return Channels = new ObservableCollection<ChatChannel>
             {
-                UserChannel,
-                GroupChannel
+                _userChannel,
+                _groupChannel
             };
+        }
+
+        public void AddChatChannel(ChatChannel channel)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddChatGroup(ChatGroup group, ChatChannel channel = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async void AddChat(Chat chat)
+        {
+            _userChannel.Chats.Add(chat);
+            await RefreshChannels();
+            SystemLogger.LogEvent($"{chat.Name} has joined");
+        }
+
+        public void ActivateChat(Chat chat)
+        {
+            var param = new NavigationParameters {{"Chat", chat}};
+
+            if (ActiveChat != null)
+            {
+                ActiveChat.IsOpen = false;
+            }
+
+            chat.IsOpen = true;
+            ActiveChat = chat;
+            _regionManager.RequestNavigate(RegionNames.MainRegion, new Uri("ChatWindow", UriKind.Relative), param);
+        }
+
+        public void ActivateChatGroup(ChatGroup @group)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async void RemoveChat(Chat chat)
+        {
+            _userChannel.Chats.RemoveAll(c => c.Name == chat.Name);
+            await RefreshChannels();
+            SystemLogger.LogEvent($"{chat.Name} has left");
+        }
+
+        public void RemoveChatGroup(ChatGroup chatGroup)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -119,13 +160,13 @@ namespace SBICT.Modules.Chat
                 case ConnectionScope.System:
                     break;
                 case ConnectionScope.User:
-                    UserMessageReceived(newMessage);
+                    OnUserMessageReceived(newMessage);
                     break;
                 case ConnectionScope.Group:
-                    GroupMessageReceived(newMessage);
+                    OnGroupMessageReceived(newMessage);
                     break;
                 case ConnectionScope.Broadcast:
-                    BroadcastReceived(newMessage);
+                    OnBroadcastReceived(newMessage);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(scope), scope, null);
@@ -135,22 +176,22 @@ namespace SBICT.Modules.Chat
         }
 
 
-        private void BroadcastReceived(ChatMessage newMessage)
+        private void OnBroadcastReceived(ChatMessage newMessage)
         {
             throw new NotImplementedException();
         }
 
-        private void GroupMessageReceived(ChatMessage newMessage)
+        private void OnGroupMessageReceived(ChatMessage newMessage)
         {
             throw new NotImplementedException();
         }
 
-        private void UserMessageReceived(ChatMessage newMessage)
+        private void OnUserMessageReceived(ChatMessage newMessage)
         {
             //Active chat is handled by the window to avoid UI refreshing issues
             if (newMessage.Sender != ActiveChat.Name)
             {
-                UserChannel.Chats.Single(c => c.Name == newMessage.Sender).ChatMessages.Add(newMessage);
+                _userChannel.Chats.Single(c => c.Name == newMessage.Sender).ChatMessages.Add(newMessage);
             }
         }
 

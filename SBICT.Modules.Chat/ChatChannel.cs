@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Windows.Data;
 using Prism.Mvvm;
 
 namespace SBICT.Modules.Chat
@@ -11,8 +12,8 @@ namespace SBICT.Modules.Chat
     {
         #region Fields
 
-        private ObservableCollection<Chat> _chats = new ObservableCollection<Chat>();
-        private ObservableCollection<ChatGroup> _chatGroups = new ObservableCollection<ChatGroup>();
+        private ObservableCollection<Chat> _chats;
+        private ObservableCollection<ChatGroup> _chatGroups;
 
         #endregion
 
@@ -41,7 +42,11 @@ namespace SBICT.Modules.Chat
         /// <summary>
         /// Property used for enumerating items in the treeview
         /// </summary>
-        public IEnumerable Items => ChatGroups?.Cast<object>().Concat(Chats);
+        public IList Items => new CompositeCollection
+        {
+            new CollectionContainer {Collection = Chats},
+            new CollectionContainer {Collection = ChatGroups}
+        };
 
         /// <summary>
         /// Name of this group
@@ -49,5 +54,11 @@ namespace SBICT.Modules.Chat
         public string Name { get; set; }
 
         #endregion
+
+        public ChatChannel()
+        {
+            Chats = new ObservableCollection<Chat>();
+            ChatGroups = new ObservableCollection<ChatGroup>();
+        }
     }
 }

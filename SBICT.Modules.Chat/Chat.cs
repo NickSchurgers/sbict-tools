@@ -10,7 +10,7 @@ namespace SBICT.Modules.Chat
     public class Chat : BindableBase
     {
         private string _name;
-        private ObservableCollection<ChatMessage> _chatMessages = new ObservableCollection<ChatMessage>();
+        private ObservableCollection<ChatMessage> _chatMessages;
 
         #region Properties
 
@@ -32,5 +32,10 @@ namespace SBICT.Modules.Chat
         public bool IsOpen { get; set; }
 
         #endregion
+
+        public Chat()
+        {
+            ChatMessages = new ObservableCollection<ChatMessage>();
+        }
     }
 }

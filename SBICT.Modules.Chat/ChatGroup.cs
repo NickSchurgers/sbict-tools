@@ -7,5 +7,10 @@ namespace SBICT.Modules.Chat
     public class ChatGroup : Chat
     {
         public ObservableCollection<string> Participants { get; set; }
+
+        public ChatGroup()
+        {
+            Participants = new ObservableCollection<string>();
+        }
     }
 }

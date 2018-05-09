@@ -11,8 +11,6 @@ namespace SBICT.Modules.Chat
         ChatGroup ActiveGroup { get; set; }
         ObservableCollection<ChatChannel> Channels { get; set; }
 
-        Task<ObservableCollection<ChatChannel>> InitHub();
-        void DeinitHub();
         Task<ObservableCollection<ChatChannel>> RefreshChannels();
         void AddChatChannel(ChatChannel channel);
         void AddChatGroup(ChatGroup group, ChatChannel channel = null);

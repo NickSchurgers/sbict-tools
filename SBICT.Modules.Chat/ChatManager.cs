@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Data;
 using Microsoft.AspNetCore.SignalR.Client;
 using Prism.Events;
 using Prism.Mvvm;
@@ -18,9 +21,11 @@ namespace SBICT.Modules.Chat
     {
         #region Fields
 
+        private readonly SynchronizationContext _uiContext = SynchronizationContext.Current;
         private readonly IEventAggregator _eventAggregator;
         private readonly IConnectionManager<IConnection> _connectionManager;
         private readonly IRegionManager _regionManager;
+
         private ChatChannel _userChannel = new ChatChannel {Name = "Users"};
         private ChatChannel _groupChannel = new ChatChannel {Name = "Groups"};
 
@@ -35,30 +40,37 @@ namespace SBICT.Modules.Chat
 
         #endregion
 
-        public ChatManager(IEventAggregator eventAggregator, IConnectionManager<IConnection> connectionManager, IRegionManager regionManager)
+        public ChatManager(IEventAggregator eventAggregator, IConnectionManager<IConnection> connectionManager,
+            IRegionManager regionManager)
         {
             _eventAggregator = eventAggregator;
             _connectionManager = connectionManager;
             _regionManager = regionManager;
-            Connection = ConnectionFactory.Create("http://localhost:5000/hubs/chat");
+
+            if (Application.Current.MainWindow != null)
+                Application.Current.MainWindow.Closing += OnMainWindowClosing;
+
+            InitHub();
         }
 
         /// <summary>
         /// Initiate the connection with the chat hub
         /// </summary>
-        public async Task<ObservableCollection<ChatChannel>> InitHub()
+        private async void InitHub()
         {
+            Connection = ConnectionFactory.Create("http://localhost:5000/hubs/chat");
+            Connection.UserStatusChanged += OnUserStatusChanged;
             Connection.Hub.On<string, string, ConnectionScope>("MessageReceived", OnMessageReceived);
+
             _connectionManager.Set("Chat", Connection);
             await Connection.StartAsync();
-            return await RefreshChannels();
         }
 
 
         /// <summary>
         /// Dispose of the chat hub connection
         /// </summary>
-        public async void DeinitHub()
+        private async void DeinitHub()
         {
             _connectionManager.Unset("Chat");
             await Connection.StopAsync();
@@ -69,6 +81,7 @@ namespace SBICT.Modules.Chat
         /// </summary>
         public async Task<ObservableCollection<ChatChannel>> RefreshChannels()
         {
+
             if (_userChannel.Chats.Count == 0)
             {
                 var users = await Connection.Hub.InvokeAsync<IEnumerable<string>>("GetUserList");
@@ -94,10 +107,9 @@ namespace SBICT.Modules.Chat
             throw new NotImplementedException();
         }
 
-        public async void AddChat(Chat chat)
+        public void AddChat(Chat chat)
         {
-            _userChannel.Chats.Add(chat);
-            await RefreshChannels();
+            Channels.Single(c => c.Name == "Users").Chats.Add(chat);
             SystemLogger.LogEvent($"{chat.Name} has joined");
         }
 
@@ -120,10 +132,9 @@ namespace SBICT.Modules.Chat
             throw new NotImplementedException();
         }
 
-        public async void RemoveChat(Chat chat)
+        public void RemoveChat(Chat chat)
         {
             _userChannel.Chats.RemoveAll(c => c.Name == chat.Name);
-            await RefreshChannels();
             SystemLogger.LogEvent($"{chat.Name} has left");
         }
 
@@ -193,6 +204,48 @@ namespace SBICT.Modules.Chat
             {
                 _userChannel.Chats.Single(c => c.Name == newMessage.Sender).ChatMessages.Add(newMessage);
             }
+        }
+
+        /// <summary>
+        /// Triggered when a user (dis)connects from the chat hub
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        private void OnUserStatusChanged(object sender, ConnectionEventArgs e)
+        {
+            switch (e.Status)
+            {
+                case ConnectionStatus.Connected:
+#if DEBUG
+                    _uiContext.Send(x => AddChat(new Chat {Name = "Henk"}), null);
+#else
+                     _uiContext.Send(x => AddChat(new Chat {Name = e.User}), null);
+#endif
+                    break;
+                case ConnectionStatus.Disconnected:
+#if DEBUG
+                    _uiContext.Send(x => RemoveChat(new Chat {Name = "Henk"}), null);
+#else
+                    _uiContext.Send(x => RemoveChat(new Chat {Name = e.User}), null);
+#endif
+                    break;
+                case ConnectionStatus.Connecting:
+                case ConnectionStatus.Reconnecting:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        /// <summary>
+        /// Triggered on closing of the main window
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnMainWindowClosing(object sender, CancelEventArgs e)
+        {
+            DeinitHub();
         }
 
         #endregion

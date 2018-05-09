@@ -7,9 +7,11 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Threading;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -58,64 +60,22 @@ namespace SBICT.Modules.Chat.ViewModels
         public ChatListViewModel(IChatManager chatManager)
         {
             _chatManager = chatManager;
-
+            
             ChatListSelectedItemChanged = new DelegateCommand<object>(OnSelectedItemChanged);
             ChatListAddGroup = new DelegateCommand<object>(OnChatListAddGroup);
-            _chatManager.Connection.UserStatusChanged += OnUserStatusChanged;
-            if (Application.Current.MainWindow != null)
-                Application.Current.MainWindow.Closing += OnMainWindowClosing;
 
+            
             InitChannels();
-        }
-
-        private void OnChatListAddGroup(object obj)
-        {
-            throw new NotImplementedException();
         }
 
         private async void InitChannels()
         {
-            Channels = await _chatManager.InitHub();
+            Channels = await _chatManager.RefreshChannels();
         }
 
         #endregion
 
         #region Event Handlers
-
-        /// <summary>
-        /// Triggered when a user (dis)connects from the chat hub
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        private void OnUserStatusChanged(object sender, ConnectionEventArgs e)
-        {
-            switch (e.Status)
-            {
-                case ConnectionStatus.Connected:
-#if DEBUG
-                    _chatManager.AddChat(new Chat {Name = "Henk"});
-#else
-                     _chatManager.AddChat(new Chat{Name = e.User});
-#endif
-                    Channels = _chatManager.Channels;
-                    break;
-                case ConnectionStatus.Disconnected:
-#if DEBUG
-                    _chatManager.RemoveChat(new Chat {Name = "Henk"});
-#else
-                   _chatManager.RemoveChat(new Chat {Name = e.User});
-#endif
-                    Channels = _chatManager.Channels;
-                    break;
-                case ConnectionStatus.Connecting:
-                case ConnectionStatus.Reconnecting:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
 
         private void OnSelectedItemChanged(object obj)
         {
@@ -125,14 +85,9 @@ namespace SBICT.Modules.Chat.ViewModels
             }
         }
 
-        /// <summary>
-        /// Triggered on closing of the main window
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnMainWindowClosing(object sender, CancelEventArgs e)
+        private void OnChatListAddGroup(object obj)
         {
-            _chatManager.DeinitHub();
+            throw new NotImplementedException();
         }
 
         #endregion

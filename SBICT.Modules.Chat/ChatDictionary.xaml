@@ -9,6 +9,7 @@
         <Setter Property="Width" Value="16" />
         <Setter Property="Height" Value="16" />
     </Style>
+
     <HierarchicalDataTemplate DataType="{x:Type local:ChatChannel}" ItemsSource="{Binding Items}">
         <StackPanel Orientation="Horizontal">
             <Label Content="{Binding Name}" />
@@ -24,6 +25,9 @@
         </HierarchicalDataTemplate.Triggers>
     </HierarchicalDataTemplate>
     <DataTemplate DataType="{x:Type local:Chat}">
+        <Label Content="{Binding Name}" />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type local:ChatGroup}">
         <Label Content="{Binding Name}" />
     </DataTemplate>
 </ResourceDictionary>

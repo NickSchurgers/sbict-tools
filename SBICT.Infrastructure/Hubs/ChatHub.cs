@@ -115,7 +115,8 @@ namespace SBICT.Infrastructure.Hubs
             switch (scope)
             {
                 case ConnectionScope.Group:
-                    target = Clients.Group(recipient);
+                    target = Clients.GroupExcept(recipient,
+                        UserStore.GetConnections(Context.User.Identity.Name).ToList());
                     break;
                 case ConnectionScope.User:
                     target = Clients.Clients(UserStore.GetConnections(recipient).ToList());

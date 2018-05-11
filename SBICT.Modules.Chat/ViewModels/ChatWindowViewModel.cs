@@ -61,7 +61,6 @@ namespace SBICT.Modules.Chat.ViewModels
         public ChatWindowViewModel(IChatManager chatManager)
         {
             _chatManager = chatManager;
-
             SendMessage = new DelegateCommand(OnMessageSent);
         }
 
@@ -77,13 +76,18 @@ namespace SBICT.Modules.Chat.ViewModels
 
         private void OnMessageSent()
         {
-            _chatManager.SendMessage(Name, Message, ConnectionScope.User);
-            ChatMessages.Add(new ChatMessage {Message = Message});
+            //As a chatgroup is cast to a chat, we use participants to determine what the scope is
+            var scope = Participants != null ? ConnectionScope.Group : ConnectionScope.User;
+            _chatManager.SendMessage(Name, Message, scope);
+            ChatMessages.Add(new ChatMessage {Sender = "Me", Message = Message, Received = DateTime.Now});
             Message = string.Empty;
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
+
+
+
             navigationContext.Parameters.TryGetValue("Chat", out Chat chat);
 
             if (chat == null)
@@ -100,6 +104,8 @@ namespace SBICT.Modules.Chat.ViewModels
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
+            //Reset participants in case we switch from a group to a single user chat
+            Participants = null;
         }
 
         #endregion

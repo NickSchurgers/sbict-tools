@@ -6,19 +6,44 @@
     xmlns:viewModels="clr-namespace:SBICT.Modules.Chat.ViewModels"
     xmlns:prism="http://prismlibrary.com/"
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+    xmlns:local="clr-namespace:SBICT.Modules.Chat"
     x:Class="SBICT.Modules.Chat.Views.ChatList"
     mc:Ignorable="d"
     d:DesignHeight="300" d:DesignWidth="300"
     prism:ViewModelLocator.AutoWireViewModel="True"
-    d:DataContext="{d:DesignInstance {x:Type viewModels:ChatListMockViewModel}, IsDesignTimeCreatable=True}">
+    d:DataContext="{d:DesignInstance {x:Type viewModels:ChatListViewModel}, IsDesignTimeCreatable=True}">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/SBICT.Modules.Chat;component/ChatDictionary.xaml"/>
+                <ResourceDictionary Source="/SBICT.Modules.Chat;component/ChatDictionary.xaml" />
+
             </ResourceDictionary.MergedDictionaries>
+            <HierarchicalDataTemplate DataType="{x:Type local:ChatChannel}" ItemsSource="{Binding Items}">
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="{Binding Name}" />
+                    <Button x:Name="AddGroup" Visibility="Hidden" HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            BorderBrush="{x:Null}" Background="{x:Null}"
+                            Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.ChatListAddGroup}">
+                        <Image Source="/SBICT.Modules.Chat;component/Resources/Add_16x.png" />
+                    </Button>
+                </StackPanel>
+                <HierarchicalDataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding Name}" Value="Groups">
+                        <Setter TargetName="AddGroup" Property="Visibility" Value="Visible" />
+                    </DataTrigger>
+                </HierarchicalDataTemplate.Triggers>
+            </HierarchicalDataTemplate>
+            <DataTemplate DataType="{x:Type local:Chat}">
+                <Label Content="{Binding Name}" />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type local:ChatGroup}">
+                <Label Content="{Binding Name}" />
+            </DataTemplate>
         </ResourceDictionary>
+
     </UserControl.Resources>
-    <Grid>
+    <Grid d:DataContext="{d:DesignData /SampleData/ChatListSampleData.xaml}">
         <TreeView x:Name="ChatTree" ItemsSource="{Binding Channels}">
             <i:Interaction.Triggers>
                 <i:EventTrigger EventName="SelectedItemChanged">

@@ -42,23 +42,7 @@ namespace SBICT.Infrastructure.Hubs
         #region Group Methods
 
         /// <summary>
-        /// Create a group
-        /// </summary>
-        /// <param name="groupName"></param>
-        /// <returns></returns>
-        public async Task GroupCreate(string groupName)
-        {
-            var userConnections = UserStore.GetConnections(Context.User.Identity.Name).ToList();
-            foreach (var conId in userConnections)
-            {
-                await Groups.AddAsync(conId, groupName);
-            }
-
-            await Clients.Clients(userConnections).SendAsync("GroupCreated", groupName);
-        }
-
-        /// <summary>
-        /// Join a group
+        /// Join a group or create if not exists
         /// </summary>
         /// <param name="groupName"></param>
         /// <returns></returns>
@@ -69,15 +53,18 @@ namespace SBICT.Infrastructure.Hubs
 
             foreach (var conId in userConnections)
             {
-                await Groups.AddAsync(conId, groupName);
+                await Groups.AddToGroupAsync(conId, groupName);
             }
 
             GroupUserStore.Add(groupName, joiner);
 
             if (GroupUserStore.GetConnections(groupName).Count(c => c.Contains(joiner)) <= 1)
             {
-                await Clients.GroupExcept(groupName, userConnections)
-                    .SendAsync("GroupJoined", joiner);
+                await Clients.Group(groupName).SendAsync("GroupCreated", groupName);
+            }
+            else
+            {
+                await Clients.GroupExcept(groupName, userConnections).SendAsync("GroupJoined", joiner);
             }
         }
 
@@ -104,7 +91,7 @@ namespace SBICT.Infrastructure.Hubs
 
             foreach (var conId in userConnections)
             {
-                await Groups.RemoveAsync(conId, groupName);
+                await Groups.RemoveFromGroupAsync(conId, groupName);
             }
 
             await Clients.Group(groupName).SendAsync("GroupLeft", Context.User.Identity.Name);
@@ -118,12 +105,13 @@ namespace SBICT.Infrastructure.Hubs
         /// <param name="recipient"></param>
         /// <param name="message"></param>
         /// <param name="scope"></param>
+        /// <param name="groupName"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         public async Task SendMessage(string recipient, string message, ConnectionScope scope)
         {
             var sender = Context.User.Identity.Name;
-            var target = Clients.All;
+            IClientProxy target;
             switch (scope)
             {
                 case ConnectionScope.Group:
@@ -132,15 +120,13 @@ namespace SBICT.Infrastructure.Hubs
                 case ConnectionScope.User:
                     target = Clients.Clients(UserStore.GetConnections(recipient).ToList());
                     break;
-                case ConnectionScope.Broadcast:
-                case ConnectionScope.System:
-
-                    break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(scope), scope, null);
+                    target = Clients.All;
+                    break;
             }
 
-            await target.SendAsync("MessageReceived", sender, message, scope);
+
+            await target.SendAsync("MessageReceived", sender, message, scope, recipient);
         }
     }
 }

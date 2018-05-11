@@ -14,6 +14,8 @@ namespace SBICT.Modules.Chat
 
         #region Properties
 
+        public Guid Id { get; }
+
         /// <summary>
         /// Name of this chat
         /// </summary>
@@ -36,6 +38,7 @@ namespace SBICT.Modules.Chat
         public Chat()
         {
             ChatMessages = new ObservableCollection<ChatMessage>();
+            Id = Guid.NewGuid();
         }
     }
 }

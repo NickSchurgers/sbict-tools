@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace SBICT.Infrastructure.Connection
@@ -12,10 +13,11 @@ namespace SBICT.Infrastructure.Connection
         /// <returns></returns>
         public static IConnection Create(string url)
         {
-            return new Connection(new HubConnectionBuilder().WithUrl(url)
-                .WithConsoleLogger()
-                .WithTransport(Microsoft.AspNetCore.Http.Connections.TransportType.WebSockets)
-                .WithCredentials(CredentialCache.DefaultCredentials).Build());
+            return new Connection(new HubConnectionBuilder().WithUrl(url, u =>
+            {
+                u.UseDefaultCredentials = true;
+                u.Transports = HttpTransportType.WebSockets;
+            }).Build());
         }
     }
 }

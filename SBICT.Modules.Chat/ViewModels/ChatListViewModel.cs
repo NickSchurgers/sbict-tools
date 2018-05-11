@@ -78,11 +78,16 @@ namespace SBICT.Modules.Chat.ViewModels
             {
                 _chatManager.ActivateChat((Chat) obj);
             }
+
+            if (obj.GetType() == typeof(ChatGroup))
+            {
+                _chatManager.ActivateChatGroup((ChatGroup) obj);
+            }
         }
 
         private void OnChatListAddGroup(object obj)
         {
-            throw new NotImplementedException();
+            _chatManager.JoinChatGroup(new ChatGroup {Name = "Henkies"});
         }
 
         #endregion

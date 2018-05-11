@@ -78,9 +78,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="ViewModels\ChatListMockViewModel.cs" />
     <Compile Include="ViewModels\ChatListViewModel.cs" />
-    <Compile Include="ViewModels\ChatWindowMockViewModel.cs" />
     <Compile Include="ViewModels\ChatWindowViewModel.cs" />
     <Compile Include="Views\ChatList.xaml.cs">
       <DependentUpon>ChatList.xaml</DependentUpon>
@@ -113,6 +111,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <DesignData Include="SampleData\ChatSampleData.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </DesignData>
+    <DesignData Include="SampleData\ChatListSampleData.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </DesignData>
     <Page Include="Views\ChatList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -125,5 +131,6 @@
   <ItemGroup>
     <Resource Include="Resources\Add_16x.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

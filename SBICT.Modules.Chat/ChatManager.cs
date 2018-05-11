@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -14,6 +15,7 @@ using Prism.Regions;
 using SBICT.Infrastructure;
 using SBICT.Infrastructure.Connection;
 using SBICT.Infrastructure.Extensions;
+using SBICT.Infrastructure.Logger;
 
 namespace SBICT.Modules.Chat
 {
@@ -26,16 +28,12 @@ namespace SBICT.Modules.Chat
         private readonly IConnectionManager<IConnection> _connectionManager;
         private readonly IRegionManager _regionManager;
 
-        private readonly ChatChannel _userChannel = new ChatChannel {Name = "Users"};
-        private readonly ChatChannel _groupChannel = new ChatChannel {Name = "Groups"};
-
         #endregion
 
         #region Properties
 
         public IConnection Connection { get; set; }
         public Chat ActiveChat { get; set; }
-        public ChatGroup ActiveGroup { get; set; }
         public ObservableCollection<ChatChannel> Channels { get; set; } = new ObservableCollection<ChatChannel>();
 
         #endregion
@@ -60,7 +58,8 @@ namespace SBICT.Modules.Chat
         {
             Connection = ConnectionFactory.Create("http://localhost:5000/hubs/chat");
             Connection.UserStatusChanged += OnUserStatusChanged;
-            Connection.Hub.On<string, string, ConnectionScope>("MessageReceived", OnMessageReceived);
+            Connection.Hub.On<string, string, ConnectionScope, string>("MessageReceived", OnMessageReceived);
+            Connection.Hub.On<string>("GroupCreated", OnGroupCreated);
 
             _connectionManager.Set("Chat", Connection);
             await Connection.StartAsync();
@@ -81,35 +80,34 @@ namespace SBICT.Modules.Chat
         /// </summary>
         public async void InitChannels()
         {
-               var users = await Connection.Hub.InvokeAsync<IEnumerable<string>>("GetUserList");
-                _userChannel.Chats = new ObservableCollection<Chat>(users.Select(u => new Chat {Name = u}));
-                _userChannel.IsExpanded = true;
-            
-            Channels.Add(_userChannel);
-            Channels.Add(_groupChannel);
-            
+            AddChatChannel(new ChatChannel {Name = "Users", IsExpanded = true});
+
+            var users = await Connection.Hub.InvokeAsync<IEnumerable<string>>("GetUserList");
+            users.ToList().ForEach(u => AddChat(new Chat {Name = u}));
+
+            AddChatChannel(new ChatChannel {Name = "Groups", IsExpanded = true});
         }
 
         public void AddChatChannel(ChatChannel channel)
         {
-            throw new NotImplementedException();
+            Channels.Add(channel);
+            SystemLogger.LogEvent($"Channel \"{channel.Name}\" was added", LogLevel.Debug);
         }
 
-        public void AddChatGroup(ChatGroup group, ChatChannel channel = null)
+        public void AddChatGroup(ChatGroup group)
         {
-            throw new NotImplementedException();
+            GetGroupChannel().ChatGroups.Add(group);
+            SystemLogger.LogEvent($"{group.Name} was created");
         }
 
         public void AddChat(Chat chat)
         {
-            Channels.Single(c => c.Name == "Users").Chats.Add(chat);
+            GetUserChannel().Chats.Add(chat);
             SystemLogger.LogEvent($"{chat.Name} has joined");
         }
 
-        public void ActivateChat(Chat chat)
+        private void Activate(Chat chat, NavigationParameters parameters)
         {
-            var param = new NavigationParameters {{"Chat", chat}};
-
             if (ActiveChat != null)
             {
                 ActiveChat.IsOpen = false;
@@ -117,17 +115,22 @@ namespace SBICT.Modules.Chat
 
             chat.IsOpen = true;
             ActiveChat = chat;
-            _regionManager.RequestNavigate(RegionNames.MainRegion, new Uri("ChatWindow", UriKind.Relative), param);
+            _regionManager.RequestNavigate(RegionNames.MainRegion, new Uri("ChatWindow", UriKind.Relative), parameters);
+        }
+
+        public void ActivateChat(Chat chat)
+        {
+            Activate(chat, new NavigationParameters {{"Chat", chat}});
         }
 
         public void ActivateChatGroup(ChatGroup chatGroup)
         {
-            throw new NotImplementedException();
+            Activate(chatGroup, new NavigationParameters {{"ChatGroup", chatGroup}});
         }
 
         public void RemoveChat(Chat chat)
         {
-            _userChannel.Chats.RemoveAll(c => c.Name == chat.Name);
+            GetUserChannel().Chats.RemoveAll(c => c.Name == chat.Name);
             SystemLogger.LogEvent($"{chat.Name} has left");
         }
 
@@ -135,6 +138,7 @@ namespace SBICT.Modules.Chat
         {
             throw new NotImplementedException();
         }
+
 
         /// <summary>
         /// Send a message
@@ -147,9 +151,25 @@ namespace SBICT.Modules.Chat
             await Connection.Hub.InvokeAsync("SendMessage", recipient, message, scope);
         }
 
+        public async void JoinChatGroup(ChatGroup group)
+        {
+            await Connection.Hub.InvokeAsync("GroupJoin", group.Name);
+        }
+
+        private ChatChannel GetUserChannel()
+        {
+            return Channels.Single(c => c.Name == "Users");
+        }
+
+        private ChatChannel GetGroupChannel()
+        {
+            return Channels.Single(c => c.Name == "Groups");
+        }
+
+
         #region Event Handlers
 
-        private void OnMessageReceived(string sender, string message, ConnectionScope scope)
+        private void OnMessageReceived(string sender, string message, ConnectionScope scope, string recipient)
         {
             var newMessage = new ChatMessage
             {
@@ -167,13 +187,11 @@ namespace SBICT.Modules.Chat
                     OnUserMessageReceived(newMessage);
                     break;
                 case ConnectionScope.Group:
-                    OnGroupMessageReceived(newMessage);
+                    OnGroupMessageReceived(newMessage, recipient);
                     break;
                 case ConnectionScope.Broadcast:
                     OnBroadcastReceived(newMessage);
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(scope), scope, null);
             }
 
             _eventAggregator.GetEvent<ChatMessageReceivedEvent>().Publish(newMessage);
@@ -185,16 +203,30 @@ namespace SBICT.Modules.Chat
             throw new NotImplementedException();
         }
 
-        private void OnGroupMessageReceived(ChatMessage newMessage)
+        private void OnGroupMessageReceived(ChatMessage newMessage, string groupName)
         {
-            throw new NotImplementedException();
+            _uiContext.Send(
+                x => GetGroupChannel().ChatGroups.Single(c => c.Name == groupName).ChatMessages
+                    .Add(newMessage), null);
         }
 
         private void OnUserMessageReceived(ChatMessage newMessage)
         {
             _uiContext.Send(
-                x => _userChannel.Chats.Single(c => c.Name == newMessage.Sender).ChatMessages.Add(newMessage), null);
+                x => GetUserChannel().Chats.Single(c => c.Name == newMessage.Sender).ChatMessages
+                    .Add(newMessage), null);
         }
+
+        private void OnGroupCreated(string groupName)
+        {
+            _uiContext.Send(
+                x => AddChatGroup(new ChatGroup
+                {
+                    Name = groupName,
+                    Participants = new ObservableCollection<string> {"Me"}
+                }), null);
+        }
+
 
         /// <summary>
         /// Triggered when a user (dis)connects from the chat hub

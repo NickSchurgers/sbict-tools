@@ -1,0 +1,28 @@
+﻿<vm:ChatWindowViewModel xmlns:vm="clr-namespace:SBICT.Modules.Chat.ViewModels" 
+                        xmlns:system="clr-namespace:System;assembly=mscorlib" 
+                        xmlns:commands="clr-namespace:Prism.Commands;assembly=Prism" 
+                        xmlns:inf="clr-namespace:SBICT.Infrastructure;assembly=SBICT.Infrastructure"
+                        Header="Nam aenean aliquam mauris" 
+                        Message="Enim erat habitant eros hendrerit" 
+                        Name="Cras integer">
+	<vm:ChatWindowViewModel.Participants>
+		<system:String>Felis per lectus</system:String>
+		<system:String>Adipiscing nibh inceptos sed interdum</system:String>
+		<system:String>Parturient ipsum nisi</system:String>
+		<system:String>Libero ligula</system:String>
+		<system:String>Lobortis nascetur</system:String>
+		<system:String>Vestibulum nisl</system:String>
+		<system:String>Pharetra laoreet natoque placerat vestibulum</system:String>
+		<system:String>Pulvinar posuere litora sagittis</system:String>
+		<system:String>Adipiscing parturient vestibulum</system:String>
+		<system:String>Vestibulum senectus nunc adipiscing</system:String>
+	</vm:ChatWindowViewModel.Participants>
+    <vm:ChatWindowViewModel.SendMessage>
+        <commands:DelegateCommand IsActive="True"/>
+    </vm:ChatWindowViewModel.SendMessage>
+    <vm:ChatWindowViewModel.ChatMessages>
+        <inf:ChatMessage Sender="Henk" Message="Test0" Received="1/1/2018 23:30:00"></inf:ChatMessage>
+        <inf:ChatMessage Sender="Henk" Message="Test1" Received="1/2/2018 23:30:00"></inf:ChatMessage>
+        <inf:ChatMessage Sender="Henk" Message="Test2" Received="1/3/2018 23:30:00"></inf:ChatMessage>
+    </vm:ChatWindowViewModel.ChatMessages>
+</vm:ChatWindowViewModel>

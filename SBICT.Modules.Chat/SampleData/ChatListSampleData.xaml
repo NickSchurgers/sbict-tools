@@ -1,0 +1,8 @@
+﻿<viewModels:ChatListViewModel 
+    xmlns:viewModels="clr-namespace:SBICT.Modules.Chat.ViewModels"
+    xmlns:chat="clr-namespace:SBICT.Modules.Chat">
+    <viewModels:ChatListViewModel.Channels>
+        <chat:ChatChannel Name="Users"/>
+        <chat:ChatChannel Name="Groups"/>
+    </viewModels:ChatListViewModel.Channels>>
+</viewModels:ChatListViewModel>

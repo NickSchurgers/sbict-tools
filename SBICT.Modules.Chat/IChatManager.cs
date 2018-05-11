@@ -8,15 +8,15 @@ namespace SBICT.Modules.Chat
     {
         IConnection Connection { get; set; }
         Chat ActiveChat { get; set; }
-        ChatGroup ActiveGroup { get; set; }
         ObservableCollection<ChatChannel> Channels { get; set; }
 
         void InitChannels();
         void AddChatChannel(ChatChannel channel);
-        void AddChatGroup(ChatGroup group, ChatChannel channel = null);
+        void AddChatGroup(ChatGroup group);
         void AddChat(Chat chat);
         void ActivateChat(Chat chat);
         void ActivateChatGroup(ChatGroup chatGroup);
+        void JoinChatGroup(ChatGroup group);
         void RemoveChat(Chat chat);
         void RemoveChatGroup(ChatGroup chatGroup);
         void SendMessage(string recipient, string message, ConnectionScope scope);

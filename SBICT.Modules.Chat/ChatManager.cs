@@ -17,6 +17,7 @@ using SBICT.Infrastructure;
 using SBICT.Infrastructure.Connection;
 using SBICT.Infrastructure.Extensions;
 using SBICT.Infrastructure.Logger;
+using Group = SBICT.Data.Group;
 
 namespace SBICT.Modules.Chat
 {
@@ -36,7 +37,7 @@ namespace SBICT.Modules.Chat
         #region Properties
 
         public IConnection Connection { get; set; }
-        public Chat ActiveChat { get; set; }
+        public IChatWindow ActiveChat { get; set; }
         public ObservableCollection<ChatChannel> Channels { get; set; } = new ObservableCollection<ChatChannel>();
 
         #endregion
@@ -66,7 +67,7 @@ namespace SBICT.Modules.Chat
                     $"http://localhost:13338/hubs/chat?displayName={_user.DisplayName}&guid={_user.Id.ToString()}");
             Connection.UserStatusChanged += OnUserStatusChanged;
             Connection.Hub.On<ChatMessage, ConnectionScope>("MessageReceived", OnMessageReceived);
-            Connection.Hub.On<string>("GroupCreated", OnGroupCreated);
+            Connection.Hub.On<ChatGroup>("GroupCreated", OnGroupCreated);
 
             _connectionManager.Set("Chat", Connection);
             await Connection.StartAsync();
@@ -89,8 +90,8 @@ namespace SBICT.Modules.Chat
         {
             AddChatChannel(new ChatChannel {Name = "Users", IsExpanded = true});
 
-            var users = await Connection.Hub.InvokeAsync<IEnumerable<User>>("GetUserList", _user);
-            users.ToList().ForEach(u => AddChat(new Chat {User = u}));
+            var users = await Connection.Hub.InvokeAsync<IEnumerable<User>>("GetUserList", _user.Id);
+            users.ToList().ForEach(u => AddChat(new Chat {User = u, Title = u.DisplayName}));
 
             AddChatChannel(new ChatChannel {Name = "Groups", IsExpanded = true});
         }
@@ -104,7 +105,7 @@ namespace SBICT.Modules.Chat
         public void AddChatGroup(ChatGroup group)
         {
             GetGroupChannel().ChatGroups.Add(group);
-            SystemLogger.LogEvent($"{group.Name} was created");
+            SystemLogger.LogEvent($"{group.Title} was created");
         }
 
         public void AddChat(Chat chat)
@@ -113,14 +114,14 @@ namespace SBICT.Modules.Chat
             SystemLogger.LogEvent($"{chat.User.DisplayName} has joined");
         }
 
-        private void Activate(Chat chat, NavigationParameters parameters)
+        private void Activate(IChatWindow chat, NavigationParameters parameters)
         {
             if (ActiveChat != null)
             {
-                ActiveChat.IsOpen = false;
+                ActiveChat.IsActive = false;
             }
 
-            chat.IsOpen = true;
+            chat.IsActive = true;
             ActiveChat = chat;
             _regionManager.RequestNavigate(RegionNames.MainRegion, new Uri("ChatWindow", UriKind.Relative), parameters);
         }
@@ -132,7 +133,7 @@ namespace SBICT.Modules.Chat
 
         public void ActivateChatGroup(ChatGroup chatGroup)
         {
-//            Activate(chatGroup, new NavigationParameters {{"ChatGroup", chatGroup}});
+            Activate(chatGroup, new NavigationParameters {{"ChatGroup", chatGroup}});
         }
 
         public void RemoveChat(Chat chat)
@@ -167,7 +168,7 @@ namespace SBICT.Modules.Chat
 
         public async void JoinChatGroup(ChatGroup group)
         {
-            await Connection.Hub.InvokeAsync("GroupJoin", group.Name);
+            await Connection.Hub.InvokeAsync("GroupJoin", group, _user.Id);
         }
 
         private ChatChannel GetUserChannel()
@@ -223,14 +224,9 @@ namespace SBICT.Modules.Chat
                     .Add(newMessage), null);
         }
 
-        private void OnGroupCreated(string groupName)
+        private void OnGroupCreated(ChatGroup group)
         {
-            _uiContext.Send(
-                x => AddChatGroup(new ChatGroup
-                {
-                    Name = groupName,
-                    Participants = new ObservableCollection<string> {"Me"}
-                }), null);
+            _uiContext.Send(x => AddChatGroup(group), null);
         }
 
 
@@ -247,14 +243,15 @@ namespace SBICT.Modules.Chat
                 case ConnectionStatus.Connected:
 #if DEBUG
                     var user = new User(Guid.NewGuid(), "Henk");
-                    _uiContext.Send(x => AddChat(new Chat {User = user}), null);
+                    _uiContext.Send(x => AddChat(new Chat {User = user, Title = "Henk"}), null);
 #else
-                     _uiContext.Send(x => AddChat(new Chat {User = e.User}), null);
+                     _uiContext.Send(x => AddChat(new Chat {User = e.User, Title = e.User.DisplayName}), null);
 #endif
                     break;
                 case ConnectionStatus.Disconnected:
 #if DEBUG
                     _uiContext.Send(x => GetUserChannel().Chats.RemoveAll(c => c.User.DisplayName == "Henk"), null);
+                    SystemLogger.LogEvent("Henk has left");
 #else
                     _uiContext.Send(x => RemoveChat(new Chat {User = e.User}), null);
 #endif

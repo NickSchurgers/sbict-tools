@@ -8,7 +8,7 @@ namespace SBICT.Modules.Chat
     public interface IChatManager
     {
         IConnection Connection { get; set; }
-        Chat ActiveChat { get; set; }
+        IChatWindow ActiveChat { get; set; }
         ObservableCollection<ChatChannel> Channels { get; set; }
 
         void InitChannels();

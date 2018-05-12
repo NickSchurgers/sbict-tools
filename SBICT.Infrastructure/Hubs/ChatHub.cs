@@ -18,8 +18,7 @@ namespace SBICT.Infrastructure.Hubs
         /// <summary>
         /// Store for groups
         /// </summary>
-        protected static readonly ConnectionStore<Group> GroupUserStore =
-            new ConnectionStore<Group>();
+        private static readonly ConnectionStore<Guid> GroupStore = new ConnectionStore<Guid>();
 
         #endregion
 
@@ -29,12 +28,12 @@ namespace SBICT.Infrastructure.Hubs
         /// Return list of currently connected users
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<User> GetUserList(User user)
+        public IEnumerable<User> GetUserList(Guid userId)
         {
 #if DEBUG
             return UserList;
 #else
-            return UserList.Where(u => u.Id != user.Id);
+            return UserList.Where(u => u.Id != userId);
 #endif
         }
 
@@ -42,32 +41,33 @@ namespace SBICT.Infrastructure.Hubs
 
         #region Group Methods
 
-//        /// <summary>
-//        /// Join a group or create if not exists
-//        /// </summary>
-//        /// <param name="groupName"></param>
-//        /// <returns></returns>
-//        public async Task GroupJoin(string groupName)
-//        {
-//            var joiner = Context.User.Identity.Name;
-//            var userConnections = UserStore.GetConnections(joiner).ToList();
-//
-//            foreach (var conId in userConnections)
-//            {
-//                await Groups.AddToGroupAsync(conId, groupName);
-//            }
-//
-//            GroupUserStore.Add(groupName, joiner);
-//
-//            if (GroupUserStore.GetConnections(groupName).Count(c => c.Contains(joiner)) <= 1)
-//            {
-//                await Clients.Group(groupName).SendAsync("GroupCreated", groupName);
-//            }
-//            else
-//            {
-//                await Clients.GroupExcept(groupName, userConnections).SendAsync("GroupJoined", joiner);
-//            }
-//        }
+        /// <summary>
+        /// Join a group or create if not exists
+        /// </summary>
+        /// <param name="group"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public async Task GroupJoin(Group group, Guid userId)
+        {
+            var userConnections = UserConnectionStore.GetConnections(userId).ToList();
+
+            foreach (var conId in userConnections)
+            {
+                await Groups.AddToGroupAsync(conId, group.Title);
+            }
+
+            GroupStore.Add(group.Id, userId.ToString());
+
+            if (GroupStore.GetConnections(group.Id).Count(c => c.Contains(userId.ToString())) <= 1)
+            {
+                await Clients.Group(group.Title).SendAsync("GroupCreated", group);
+            }
+            else
+            {
+                await Clients.GroupExcept(group.Title, userConnections)
+                    .SendAsync("GroupJoined", UserList.First(u => u.Id == userId));
+            }
+        }
 //
 //        /// <summary>
 //        /// Invite a client to join a group

@@ -6,16 +6,7 @@
                         Message="Enim erat habitant eros hendrerit" 
                         Title="Cras integer">
 	<vm:ChatWindowViewModel.Participants>
-		<system:String>Felis per lectus</system:String>
-		<system:String>Adipiscing nibh inceptos sed interdum</system:String>
-		<system:String>Parturient ipsum nisi</system:String>
-		<system:String>Libero ligula</system:String>
-		<system:String>Lobortis nascetur</system:String>
-		<system:String>Vestibulum nisl</system:String>
-		<system:String>Pharetra laoreet natoque placerat vestibulum</system:String>
-		<system:String>Pulvinar posuere litora sagittis</system:String>
-		<system:String>Adipiscing parturient vestibulum</system:String>
-		<system:String>Vestibulum senectus nunc adipiscing</system:String>
+
 	</vm:ChatWindowViewModel.Participants>
     <vm:ChatWindowViewModel.SendMessage>
         <commands:DelegateCommand IsActive="True"/>

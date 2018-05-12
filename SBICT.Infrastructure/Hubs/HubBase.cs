@@ -42,9 +42,9 @@ namespace SBICT.Infrastructure.Hubs
 #if DEBUG
             await Clients.Others.SendAsync("Connected", user, ConnectionScope.System);
 #else
-            if (UserStore.GetConnections(user.Id).Count() <= 1)
+            if (UserConnectionStore.GetConnections(user.Id).Count() <= 1)
             {
-                await Clients.AllExcept(UserStore.GetConnections(user.Id).ToList())
+                await Clients.AllExcept(UserConnectionStore.GetConnections(user.Id).ToList())
                     .SendAsync("Connected", user, ConnectionScope.System);
             }
 #endif
@@ -68,7 +68,7 @@ namespace SBICT.Infrastructure.Hubs
 #if DEBUG
             await Clients.Others.SendAsync("Disconnected", user, ConnectionScope.System);
 #else
-            if (!UserStore.GetConnections(user).Any())
+            if (!UserConnectionStore.GetConnections(user.Id).Any())
             {
                 UserList.Remove(user);
                 await Clients.All.SendAsync("Disconnected", user, ConnectionScope.System);

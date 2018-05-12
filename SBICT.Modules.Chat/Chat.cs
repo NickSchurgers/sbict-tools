@@ -8,11 +8,18 @@ using SBICT.Infrastructure;
 
 namespace SBICT.Modules.Chat
 {
-    public class Chat : BindableBase
+    public class Chat : BindableBase, IChatWindow
     {
         private ObservableCollection<ChatMessage> _chatMessages;
+        private string _title;
 
         #region Properties
+
+        public string Title
+        {
+            get => _title;
+            set => SetProperty(ref _title, value);
+        }
 
         public Guid Id { get; }
 
@@ -24,7 +31,7 @@ namespace SBICT.Modules.Chat
             set => SetProperty(ref _chatMessages, value);
         }
 
-        public bool IsOpen { get; set; }
+        public bool IsActive { get; set; }
 
         #endregion
 

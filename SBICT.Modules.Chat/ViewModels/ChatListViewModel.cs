@@ -87,7 +87,7 @@ namespace SBICT.Modules.Chat.ViewModels
 
         private void OnChatListAddGroup(object obj)
         {
-            _chatManager.JoinChatGroup(new ChatGroup {Name = "Henkies"});
+            _chatManager.JoinChatGroup(new ChatGroup {Title = "Henkies"});
         }
 
         #endregion

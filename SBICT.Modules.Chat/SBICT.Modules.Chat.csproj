@@ -64,7 +64,9 @@
     <Compile Include="ChatGroup.cs" />
     <Compile Include="ChatManager.cs" />
     <Compile Include="ChatModule.cs" />
+    <Compile Include="ChatUser.cs" />
     <Compile Include="IChatManager.cs" />
+    <Compile Include="IChatWindow.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -131,6 +133,5 @@
   <ItemGroup>
     <Resource Include="Resources\Add_16x.png" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

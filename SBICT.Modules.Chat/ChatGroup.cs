@@ -2,23 +2,25 @@
 using System.Collections.ObjectModel;
 using Prism.Mvvm;
 using SBICT.Infrastructure;
+using SBICT.Data;
 
 namespace SBICT.Modules.Chat
 {
-    public class ChatGroup : BindableBase
+    public class ChatGroup : BindableBase, IChatWindow, IGroup
     {
-        private string _name;
+        private string _title;
         private ObservableCollection<ChatMessage> _chatMessages;
+
 
         public Guid Id { get; }
 
         /// <summary>
-        /// Name of this chat
+        /// Name of this chat group
         /// </summary>
-        public string Name
+        public string Title
         {
-            get => _name;
-            set => SetProperty(ref _name, value);
+            get => _title;
+            set => SetProperty(ref _title, value);
         }
 
         public ObservableCollection<ChatMessage> ChatMessages
@@ -27,13 +29,13 @@ namespace SBICT.Modules.Chat
             set => SetProperty(ref _chatMessages, value);
         }
 
-        public bool IsOpen { get; set; }
+        public bool IsActive { get; set; }
 
-        public ObservableCollection<string> Participants { get; set; }
+        public ObservableCollection<User> Participants { get; set; }
 
         public ChatGroup()
         {
-            Participants = new ObservableCollection<string>();
+            Participants = new ObservableCollection<User>();
             ChatMessages = new ObservableCollection<ChatMessage>();
             Id = Guid.NewGuid();
         }

@@ -9,6 +9,7 @@ using Prism.Regions;
 using SBICT.Infrastructure.Connection;
 using Microsoft.AspNetCore.SignalR.Client;
 using Prism.Events;
+using SBICT.Data;
 using SBICT.Infrastructure;
 
 namespace SBICT.Modules.Chat.ViewModels
@@ -21,7 +22,7 @@ namespace SBICT.Modules.Chat.ViewModels
         private string _title;
         private string _message;
         private ObservableCollection<ChatMessage> _chatMessages;
-        private ObservableCollection<string> _participants;
+        private ObservableCollection<User> _participants;
 
         #endregion
 
@@ -48,7 +49,7 @@ namespace SBICT.Modules.Chat.ViewModels
             set => SetProperty(ref _message, value);
         }
 
-        public ObservableCollection<string> Participants
+        public ObservableCollection<User> Participants
         {
             get => _participants;
             set => SetProperty(ref _participants, value);
@@ -91,7 +92,7 @@ namespace SBICT.Modules.Chat.ViewModels
             {
                 navigationContext.Parameters.TryGetValue("Chat", out Chat chat);
                 ChatMessages = chat.ChatMessages;
-                Title = chat.User.DisplayName;
+                Title = chat.Title;
                 Recipient = chat.User.Id;
             }
             else if (navigationContext.Parameters.ContainsKey("ChatGroup"))
@@ -99,7 +100,7 @@ namespace SBICT.Modules.Chat.ViewModels
                 navigationContext.Parameters.TryGetValue("ChatGroup", out ChatGroup chatGroup);
                 Participants = chatGroup.Participants;
                 ChatMessages = chatGroup.ChatMessages;
-                Title = chatGroup.Name;
+                Title = chatGroup.Title;
                 Recipient = chatGroup.Id;
             }
         }

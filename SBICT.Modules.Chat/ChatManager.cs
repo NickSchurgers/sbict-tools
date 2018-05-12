@@ -65,7 +65,7 @@ namespace SBICT.Modules.Chat
                 ConnectionFactory.Create(
                     $"http://localhost:13338/hubs/chat?displayName={_user.DisplayName}&guid={_user.Id.ToString()}");
             Connection.UserStatusChanged += OnUserStatusChanged;
-            Connection.Hub.On<string, string, ConnectionScope, string>("MessageReceived", OnMessageReceived);
+            Connection.Hub.On<ChatMessage, ConnectionScope>("MessageReceived", OnMessageReceived);
             Connection.Hub.On<string>("GroupCreated", OnGroupCreated);
 
             _connectionManager.Set("Chat", Connection);
@@ -90,7 +90,7 @@ namespace SBICT.Modules.Chat
             AddChatChannel(new ChatChannel {Name = "Users", IsExpanded = true});
 
             var users = await Connection.Hub.InvokeAsync<IEnumerable<User>>("GetUserList", _user);
-            users.ToList().ForEach(u => AddChat(new Chat {User = u, Name = u.DisplayName}));
+            users.ToList().ForEach(u => AddChat(new Chat {User = u}));
 
             AddChatChannel(new ChatChannel {Name = "Groups", IsExpanded = true});
         }
@@ -110,7 +110,7 @@ namespace SBICT.Modules.Chat
         public void AddChat(Chat chat)
         {
             GetUserChannel().Chats.Add(chat);
-            SystemLogger.LogEvent($"{chat.Name} has joined");
+            SystemLogger.LogEvent($"{chat.User.DisplayName} has joined");
         }
 
         private void Activate(Chat chat, NavigationParameters parameters)
@@ -132,13 +132,13 @@ namespace SBICT.Modules.Chat
 
         public void ActivateChatGroup(ChatGroup chatGroup)
         {
-            Activate(chatGroup, new NavigationParameters {{"ChatGroup", chatGroup}});
+//            Activate(chatGroup, new NavigationParameters {{"ChatGroup", chatGroup}});
         }
 
         public void RemoveChat(Chat chat)
         {
-            GetUserChannel().Chats.RemoveAll(c => c.Name == chat.Name);
-            SystemLogger.LogEvent($"{chat.Name} has left");
+            GetUserChannel().Chats.RemoveAll(c => c.User.Id == chat.User.Id);
+            SystemLogger.LogEvent($"{chat.User.DisplayName} has left");
         }
 
         public void RemoveChatGroup(ChatGroup chatGroup)
@@ -153,9 +153,16 @@ namespace SBICT.Modules.Chat
         /// <param name="recipient"></param>
         /// <param name="message"></param>
         /// <param name="scope"></param>
-        public async void SendMessage(string recipient, string message, ConnectionScope scope)
+        public async void SendMessage(Guid recipient, string message, ConnectionScope scope)
         {
-            await Connection.Hub.InvokeAsync("SendMessage", recipient, message, scope);
+            var chatMessage = new ChatMessage
+            {
+                Message = message,
+                Received = DateTime.Now,
+                Recipient = recipient,
+                Sender = _user
+            };
+            await Connection.Hub.InvokeAsync("SendMessage", chatMessage, scope);
         }
 
         public async void JoinChatGroup(ChatGroup group)
@@ -176,32 +183,24 @@ namespace SBICT.Modules.Chat
 
         #region Event Handlers
 
-        private void OnMessageReceived(string sender, string message, ConnectionScope scope, string recipient)
+        private void OnMessageReceived(ChatMessage message, ConnectionScope scope)
         {
-            var newMessage = new ChatMessage
-            {
-                Sender = sender,
-                Scope = scope,
-                Message = message,
-                Received = DateTime.Now
-            };
-
             switch (scope)
             {
                 case ConnectionScope.System:
                     break;
                 case ConnectionScope.User:
-                    OnUserMessageReceived(newMessage);
+                    OnUserMessageReceived(message);
                     break;
                 case ConnectionScope.Group:
-                    OnGroupMessageReceived(newMessage, recipient);
+                    OnGroupMessageReceived(message);
                     break;
                 case ConnectionScope.Broadcast:
-                    OnBroadcastReceived(newMessage);
+                    OnBroadcastReceived(message);
                     break;
             }
 
-            _eventAggregator.GetEvent<ChatMessageReceivedEvent>().Publish(newMessage);
+            _eventAggregator.GetEvent<ChatMessageReceivedEvent>().Publish(message);
         }
 
 
@@ -210,17 +209,17 @@ namespace SBICT.Modules.Chat
             throw new NotImplementedException();
         }
 
-        private void OnGroupMessageReceived(ChatMessage newMessage, string groupName)
+        private void OnGroupMessageReceived(ChatMessage newMessage)
         {
             _uiContext.Send(
-                x => GetGroupChannel().ChatGroups.Single(c => c.Name == groupName).ChatMessages
+                x => GetGroupChannel().ChatGroups.Single(c => c.Id == newMessage.Recipient).ChatMessages
                     .Add(newMessage), null);
         }
 
         private void OnUserMessageReceived(ChatMessage newMessage)
         {
             _uiContext.Send(
-                x => GetUserChannel().Chats.Single(c => c.Name == newMessage.Sender).ChatMessages
+                x => GetUserChannel().Chats.Single(c => c.User.Id == newMessage.Sender.Id).ChatMessages
                     .Add(newMessage), null);
         }
 
@@ -247,16 +246,17 @@ namespace SBICT.Modules.Chat
             {
                 case ConnectionStatus.Connected:
 #if DEBUG
-                    _uiContext.Send(x => AddChat(new Chat {Name = "Henk", User = e.User}), null);
+                    var user = new User(Guid.NewGuid(), "Henk");
+                    _uiContext.Send(x => AddChat(new Chat {User = user}), null);
 #else
-                     _uiContext.Send(x => AddChat(new Chat {Name = e.User.DisplayName, User = e.User}), null);
+                     _uiContext.Send(x => AddChat(new Chat {User = e.User}), null);
 #endif
                     break;
                 case ConnectionStatus.Disconnected:
 #if DEBUG
-                    _uiContext.Send(x => RemoveChat(new Chat {Name = "Henk", User = e.User}), null);
+                    _uiContext.Send(x => GetUserChannel().Chats.RemoveAll(c => c.User.DisplayName == "Henk"), null);
 #else
-                    _uiContext.Send(x => RemoveChat(new Chat {Name = e.User.DisplayName, User = e.User}), null);
+                    _uiContext.Send(x => RemoveChat(new Chat {User = e.User}), null);
 #endif
                     break;
                 case ConnectionStatus.Connecting:

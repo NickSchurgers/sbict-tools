@@ -18,8 +18,8 @@ namespace SBICT.Infrastructure.Hubs
         /// <summary>
         /// Store for groups
         /// </summary>
-        protected static readonly ConnectionStore<string> GroupUserStore =
-            new ConnectionStore<string>();
+        protected static readonly ConnectionStore<Group> GroupUserStore =
+            new ConnectionStore<Group>();
 
         #endregion
 
@@ -34,7 +34,7 @@ namespace SBICT.Infrastructure.Hubs
 #if DEBUG
             return UserList;
 #else
-            return UserStore.GetConnections().Where(u => u.Id != user.Id); 
+            return UserList.Where(u => u.Id != user.Id);
 #endif
         }
 
@@ -103,31 +103,29 @@ namespace SBICT.Infrastructure.Hubs
         /// <summary>
         /// Send message to a user/group
         /// </summary>
-        /// <param name="recipient"></param>
         /// <param name="message"></param>
         /// <param name="scope"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-//        public async Task SendMessage(string recipient, string message, ConnectionScope scope)
-//        {
-//            var sender = Context.User.Identity.Name;
-//            IClientProxy target;
-//            switch (scope)
-//            {
-//                case ConnectionScope.Group:
-//                    target = Clients.GroupExcept(recipient,
-//                        UserStore.GetConnections(Context.User.Identity.Name).ToList());
-//                    break;
-//                case ConnectionScope.User:
-//                    target = Clients.Clients(UserStore.GetConnections(recipient).ToList());
-//                    break;
-//                default:
-//                    target = Clients.All;
-//                    break;
-//            }
-//
-//
-//            await target.SendAsync("MessageReceived", sender, message, scope, recipient);
-//        }
+        public async Task SendMessage(ChatMessage message, ConnectionScope scope)
+        {
+            IClientProxy target;
+            switch (scope)
+            {
+                case ConnectionScope.Group:
+                    target = Clients.GroupExcept(message.Recipient.ToString(),
+                        UserConnectionStore.GetConnections(message.Sender.Id).ToList());
+                    break;
+                case ConnectionScope.User:
+                    target = Clients.Clients(UserConnectionStore.GetConnections(message.Recipient).ToList());
+                    break;
+                default:
+                    target = Clients.All;
+                    break;
+            }
+
+
+            await target.SendAsync("MessageReceived", message, scope);
+        }
     }
 }

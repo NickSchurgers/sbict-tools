@@ -63,13 +63,10 @@ namespace SBICT.Infrastructure.Hubs
             var query = Context.Features.Get<IHttpContextFeature>()?.HttpContext.Request.Query;
             query?.TryGetValue("guid", out var id);
             var user = UserList.First(u => u.Id == Guid.Parse(id));
-
-
             UserConnectionStore.Remove(user.Id, Context.ConnectionId);
 
 #if DEBUG
             await Clients.Others.SendAsync("Disconnected", user, ConnectionScope.System);
-
 #else
             if (!UserStore.GetConnections(user).Any())
             {
@@ -77,8 +74,6 @@ namespace SBICT.Infrastructure.Hubs
                 await Clients.All.SendAsync("Disconnected", user, ConnectionScope.System);
             }
 #endif
-
-
             await base.OnDisconnectedAsync(ex);
         }
 

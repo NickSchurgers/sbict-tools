@@ -35,7 +35,7 @@
                 </HierarchicalDataTemplate.Triggers>
             </HierarchicalDataTemplate>
             <DataTemplate DataType="{x:Type local:Chat}">
-                <Label Content="{Binding Name}" />
+                <Label Content="{Binding User.DisplayName}" />
             </DataTemplate>
             <DataTemplate DataType="{x:Type local:ChatGroup}">
                 <Label Content="{Binding Name}" />

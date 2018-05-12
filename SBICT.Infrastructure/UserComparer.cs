@@ -10,7 +10,7 @@ namespace SBICT.Infrastructure
 
         public override bool Equals(User x, User y)
         {
-            return y != null && x != null && _c.Equals(x.Id, y.Id);
+            return  _c.Equals(x.Id, y.Id);
         }
 
         public override int GetHashCode(User obj)
@@ -18,7 +18,6 @@ namespace SBICT.Infrastructure
             unchecked
             {
                 var hash = 17;
-                if (obj == null) return hash * 23 + int.MinValue;
                 hash = hash * 23 + obj.UserName.GetHashCode();
                 hash = hash * 23 + obj.Id.GetHashCode();
 

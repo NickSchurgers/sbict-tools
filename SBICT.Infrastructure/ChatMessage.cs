@@ -1,4 +1,5 @@
 ﻿using System;
+using SBICT.Data;
 using SBICT.Infrastructure.Connection;
 
 namespace SBICT.Infrastructure
@@ -6,8 +7,8 @@ namespace SBICT.Infrastructure
     public struct ChatMessage
     {
         public string Message { get; set; }
-        public string Sender { get; set; }
+        public User Sender { get; set; }
+        public Guid Recipient { get; set; }
         public DateTime Received { get; set; }
-        public ConnectionScope Scope { get; set; }
     }
 }

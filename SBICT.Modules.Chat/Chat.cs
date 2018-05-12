@@ -10,21 +10,11 @@ namespace SBICT.Modules.Chat
 {
     public class Chat : BindableBase
     {
-        private string _name;
         private ObservableCollection<ChatMessage> _chatMessages;
 
         #region Properties
 
         public Guid Id { get; }
-
-        /// <summary>
-        /// Name of this chat
-        /// </summary>
-        public string Name
-        {
-            get => _name;
-            set => SetProperty(ref _name, value);
-        }
 
         public User User { get; set; }
 

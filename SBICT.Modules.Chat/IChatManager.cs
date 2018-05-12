@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using SBICT.Infrastructure.Connection;
 
@@ -19,6 +20,6 @@ namespace SBICT.Modules.Chat
         void JoinChatGroup(ChatGroup group);
         void RemoveChat(Chat chat);
         void RemoveChatGroup(ChatGroup chatGroup);
-        void SendMessage(string recipient, string message, ConnectionScope scope);
+        void SendMessage(Guid recipient, string message, ConnectionScope scope);
     }
 }

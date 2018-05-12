@@ -4,7 +4,7 @@
                         xmlns:inf="clr-namespace:SBICT.Infrastructure;assembly=SBICT.Infrastructure"
                         Header="Nam aenean aliquam mauris" 
                         Message="Enim erat habitant eros hendrerit" 
-                        Name="Cras integer">
+                        Title="Cras integer">
 	<vm:ChatWindowViewModel.Participants>
 		<system:String>Felis per lectus</system:String>
 		<system:String>Adipiscing nibh inceptos sed interdum</system:String>

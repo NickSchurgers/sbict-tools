@@ -2,8 +2,7 @@
 
 namespace SBICT.Data
 {
-    [Serializable]
-    public class User
+    public struct User
     {
         public Guid Id { get; }
         public string UserName { get; }
@@ -13,6 +12,7 @@ namespace SBICT.Data
         {
             Id = id;
             UserName = userName;
+            DisplayName = userName;
         }
     }
 }

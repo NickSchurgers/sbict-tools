@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
+using SBICT.Data;
 using SBICT.Infrastructure;
 using SBICT.Infrastructure.Connection;
 using SBICT.Infrastructure.Extensions;
@@ -27,6 +28,8 @@ namespace SBICT.Modules.Chat
         private readonly IEventAggregator _eventAggregator;
         private readonly IConnectionManager<IConnection> _connectionManager;
         private readonly IRegionManager _regionManager;
+        private readonly ISettingsManager _settingsManager;
+        private readonly User _user;
 
         #endregion
 
@@ -39,11 +42,13 @@ namespace SBICT.Modules.Chat
         #endregion
 
         public ChatManager(IEventAggregator eventAggregator, IConnectionManager<IConnection> connectionManager,
-            IRegionManager regionManager)
+            IRegionManager regionManager, ISettingsManager settingsManager)
         {
             _eventAggregator = eventAggregator;
             _connectionManager = connectionManager;
             _regionManager = regionManager;
+            _settingsManager = settingsManager;
+            _user = _settingsManager.User;
 
             if (Application.Current.MainWindow != null)
                 Application.Current.MainWindow.Closing += OnMainWindowClosing;
@@ -56,7 +61,9 @@ namespace SBICT.Modules.Chat
         /// </summary>
         private async void InitHub()
         {
-            Connection = ConnectionFactory.Create("http://localhost:5000/hubs/chat");
+            Connection =
+                ConnectionFactory.Create(
+                    $"http://localhost:13338/hubs/chat?displayName={_user.DisplayName}&guid={_user.Id.ToString()}");
             Connection.UserStatusChanged += OnUserStatusChanged;
             Connection.Hub.On<string, string, ConnectionScope, string>("MessageReceived", OnMessageReceived);
             Connection.Hub.On<string>("GroupCreated", OnGroupCreated);
@@ -76,14 +83,14 @@ namespace SBICT.Modules.Chat
         }
 
         /// <summary>
-        /// Create list of root nodes and populate the users node with a list off active users
+        /// Create list of root nodes and populate the users node with a list of active users
         /// </summary>
         public async void InitChannels()
         {
             AddChatChannel(new ChatChannel {Name = "Users", IsExpanded = true});
 
-            var users = await Connection.Hub.InvokeAsync<IEnumerable<string>>("GetUserList");
-            users.ToList().ForEach(u => AddChat(new Chat {Name = u}));
+            var users = await Connection.Hub.InvokeAsync<IEnumerable<User>>("GetUserList", _user);
+            users.ToList().ForEach(u => AddChat(new Chat {User = u, Name = u.DisplayName}));
 
             AddChatChannel(new ChatChannel {Name = "Groups", IsExpanded = true});
         }
@@ -240,16 +247,16 @@ namespace SBICT.Modules.Chat
             {
                 case ConnectionStatus.Connected:
 #if DEBUG
-                    _uiContext.Send(x => AddChat(new Chat {Name = "Henk"}), null);
+                    _uiContext.Send(x => AddChat(new Chat {Name = "Henk", User = e.User}), null);
 #else
-                     _uiContext.Send(x => AddChat(new Chat {Name = e.User}), null);
+                     _uiContext.Send(x => AddChat(new Chat {Name = e.User.DisplayName, User = e.User}), null);
 #endif
                     break;
                 case ConnectionStatus.Disconnected:
 #if DEBUG
-                    _uiContext.Send(x => RemoveChat(new Chat {Name = "Henk"}), null);
+                    _uiContext.Send(x => RemoveChat(new Chat {Name = "Henk", User = e.User}), null);
 #else
-                    _uiContext.Send(x => RemoveChat(new Chat {Name = e.User}), null);
+                    _uiContext.Send(x => RemoveChat(new Chat {Name = e.User.DisplayName, User = e.User}), null);
 #endif
                     break;
                 case ConnectionStatus.Connecting:

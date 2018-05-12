@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Prism.Events;
 using Prism.Mvvm;
+using SBICT.Data;
 using SBICT.Infrastructure;
 
 namespace SBICT.Modules.Chat
@@ -24,6 +25,8 @@ namespace SBICT.Modules.Chat
             get => _name;
             set => SetProperty(ref _name, value);
         }
+
+        public User User { get; set; }
 
         public ObservableCollection<ChatMessage> ChatMessages
         {

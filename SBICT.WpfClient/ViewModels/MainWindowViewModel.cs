@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Windows;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Modularity;
 using Prism.Mvvm;
+using SBICT.Data;
 using SBICT.Infrastructure;
 using SBICT.Infrastructure.Connection;
 
@@ -22,6 +24,7 @@ namespace SBICT.WpfClient.ViewModels
         private string _title = "SBICT Application";
         private readonly IEventAggregator _eventAggregator;
         private readonly IConnectionManager<IConnection> _connectionManager;
+        private readonly ISettingsManager _settingsManager;
         private IConnection _systemConnection;
         private string _statusText;
 
@@ -57,18 +60,20 @@ namespace SBICT.WpfClient.ViewModels
         /// <param name="moduleManager"></param>
         /// <param name="eventAggregator"></param>
         /// <param name="connectionManager"></param>
+        /// <param name="settingsManager"></param>
         public MainWindowViewModel(IModuleManager moduleManager, IEventAggregator eventAggregator,
-            IConnectionManager<IConnection> connectionManager)
+            IConnectionManager<IConnection> connectionManager, ISettingsManager settingsManager)
         {
             //Set event aggreggator te event logger
             SystemLogger.EventAggregator = eventAggregator;
-            
+
             //Set up commands
             WindowClosing = new DelegateCommand(DeInitializeSystemHub);
             WindowLoaded = new DelegateCommand(OnWindowLoaded);
 
             _eventAggregator = eventAggregator;
             _connectionManager = connectionManager;
+            _settingsManager = settingsManager;
             moduleManager.LoadModuleCompleted += ModuleManagerOnLoadModuleCompleted;
         }
 
@@ -78,7 +83,10 @@ namespace SBICT.WpfClient.ViewModels
         private async void InitializeSystemHub()
         {
             //TODO: Refactor url to config
-            _systemConnection = ConnectionFactory.Create("http://localhost:5000/hubs/system");
+            var user = _settingsManager.User;
+            _systemConnection =
+                ConnectionFactory.Create(
+                    $"http://localhost:13338/hubs/system?displayName={user.DisplayName}&guid={user.Id.ToString()}");
             _systemConnection.ConnectionStatusChanged += SystemConnectionOnConnectionStatusChanged;
             _connectionManager.Set("System", _systemConnection);
             await _systemConnection.StartAsync();

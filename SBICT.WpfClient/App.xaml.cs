@@ -23,6 +23,7 @@ namespace SBICT.WpfClient
     {
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
+            containerRegistry.RegisterSingleton<ISettingsManager, SettingsManager>();
             containerRegistry.Register<IConnection, Connection>();
             containerRegistry.Register<IConnectionManager<IConnection>, ConnectionManager>();
         }

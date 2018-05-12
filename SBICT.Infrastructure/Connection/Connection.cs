@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
+using SBICT.Data;
 
 namespace SBICT.Infrastructure.Connection
 {
@@ -55,13 +56,13 @@ namespace SBICT.Infrastructure.Connection
                 {
                     Status = ConnectionStatus.Connecting;
 
-                    Hub.On<string, ConnectionScope>("Connected",
+                    Hub.On<User, ConnectionScope>("Connected",
                         (user, scope) => OnUserStatusChanged(new ConnectionEventArgs
                         {
                             Status = ConnectionStatus.Connected,
                             User = user
                         }));
-                    Hub.On<string, ConnectionScope>("Disconnected",
+                    Hub.On<User, ConnectionScope>("Disconnected",
                         (user, scope) => OnUserStatusChanged(new ConnectionEventArgs
                         {
                             Status = ConnectionStatus.Disconnected,

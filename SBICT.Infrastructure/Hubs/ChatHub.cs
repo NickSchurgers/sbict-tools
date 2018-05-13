@@ -54,18 +54,18 @@ namespace SBICT.Infrastructure.Hubs
 
             foreach (var conId in userConnections)
             {
-                await Groups.AddToGroupAsync(conId, group.Title);
+                await Groups.AddToGroupAsync(conId, group.Name);
             }
 
             GroupStore.Add(group.Id, userId.ToString());
 
             if (GroupStore.GetConnections(group.Id).Count(c => c.Contains(userId.ToString())) <= 1)
             {
-                await Clients.Group(group.Title).SendAsync("GroupCreated", group);
+                await Clients.Group(group.Name).SendAsync("GroupCreated", group);
             }
             else
             {
-                await Clients.Group(group.Title).SendAsync("GroupJoined", UserList.First(u => u.Id == userId));
+                await Clients.Group(group.Name).SendAsync("GroupJoined", UserList.First(u => u.Id == userId));
             }
         }
 //
@@ -103,21 +103,23 @@ namespace SBICT.Infrastructure.Hubs
         /// <summary>
         /// Send message to a user/group
         /// </summary>
+        /// <param name="sender"></param>
         /// <param name="message"></param>
         /// <param name="scope"></param>
+        /// <param name="recipient"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public async Task SendMessage(ChatMessage message, ConnectionScope scope)
+        public async Task SendMessage(Guid recipient, Guid sender, Message message, ConnectionScope scope)
         {
             IClientProxy target;
             switch (scope)
             {
                 case ConnectionScope.Group:
-                    target = Clients.GroupExcept(message.Recipient.ToString(),
-                        UserConnectionStore.GetConnections(message.Sender.Id).ToList());
+                    target = Clients.GroupExcept(recipient.ToString(),
+                        UserConnectionStore.GetConnections(sender).ToList());
                     break;
                 case ConnectionScope.User:
-                    target = Clients.Clients(UserConnectionStore.GetConnections(message.Recipient).ToList());
+                    target = Clients.Clients(UserConnectionStore.GetConnections(recipient).ToList());
                     break;
                 default:
                     target = Clients.All;
@@ -125,7 +127,7 @@ namespace SBICT.Infrastructure.Hubs
             }
 
 
-            await target.SendAsync("MessageReceived", message, scope);
+            await target.SendAsync("MessageReceived", recipient, UserList.First(u => u.Id == sender), message, scope);
         }
     }
 }

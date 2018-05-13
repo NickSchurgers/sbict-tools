@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Prism.Events;
 using Prism.Regions;
 using SBICT.Infrastructure;
+using SBICT.Infrastructure.Chat;
 using SBICT.Infrastructure.Connection;
 using SBICT.Infrastructure.Extensions;
 
@@ -35,7 +36,7 @@ namespace SBICT.Modules.Chat.ViewModels
         #region Fields
 
         private readonly IChatManager _chatManager;
-        private ObservableCollection<ChatChannel> _channels = new ObservableCollection<ChatChannel>();
+        private ObservableCollection<IChatChannel> _channels = new ObservableCollection<IChatChannel>();
 
         #endregion
 
@@ -44,7 +45,7 @@ namespace SBICT.Modules.Chat.ViewModels
         /// <summary>
         /// Collection of chatgroups used as root node in the treeview
         /// </summary>
-        public ObservableCollection<ChatChannel> Channels
+        public ObservableCollection<IChatChannel> Channels
         {
             get => _channels;
             set => SetProperty(ref _channels, value);
@@ -74,20 +75,20 @@ namespace SBICT.Modules.Chat.ViewModels
 
         private void OnSelectedItemChanged(object obj)
         {
-            if (obj.GetType() == typeof(Chat))
+            switch (obj)
             {
-                _chatManager.ActivateChat((Chat) obj);
-            }
-
-            if (obj.GetType() == typeof(ChatGroup))
-            {
-                _chatManager.ActivateChatGroup((ChatGroup) obj);
+                case Chat chat:
+                    _chatManager.ActivateWindow(chat);
+                    break;
+                case ChatGroup group:
+                    _chatManager.ActivateWindow(group);
+                    break;
             }
         }
 
         private void OnChatListAddGroup(object obj)
         {
-            _chatManager.JoinChatGroup(new ChatGroup {Title = "Henkies"});
+            _chatManager.JoinChatGroup(new ChatGroup("Henkies"));
         }
 
         #endregion

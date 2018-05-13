@@ -20,10 +20,9 @@ namespace SBICT.Modules.Chat.ViewModels
         #region Fields
 
         private readonly IChatManager _chatManager;
-        private string _title;
         private string _message;
-        private ObservableCollection<ChatMessage> _chatMessages;
-        private ObservableCollection<User> _participants;
+        private IChatWindow _chatWindow;
+        private ObservableCollection<IUser> _participants;
 
         #endregion
 
@@ -32,31 +31,23 @@ namespace SBICT.Modules.Chat.ViewModels
         public string Header { get; } = "Chat";
         public DelegateCommand SendMessage { get; set; }
 
-        public string Title
-        {
-            get => _title;
-            set => SetProperty(ref _title, value);
-        }
-
-        public ObservableCollection<ChatMessage> ChatMessages
-        {
-            get => _chatMessages;
-            set => SetProperty(ref _chatMessages, value);
-        }
-
         public string Message
         {
             get => _message;
             set => SetProperty(ref _message, value);
         }
 
-        public ObservableCollection<User> Participants
+        public ObservableCollection<IUser> Participants
         {
             get => _participants;
             set => SetProperty(ref _participants, value);
         }
 
-        public Guid Recipient { get; set; }
+        public IChatWindow ChatWindow
+        {
+            get => _chatWindow;
+            set => SetProperty(ref _chatWindow, value);
+        }
 
         #endregion
 
@@ -81,28 +72,18 @@ namespace SBICT.Modules.Chat.ViewModels
         private void OnMessageSent()
         {
             //As a chatgroup is cast to a chat, we use participants to determine what the scope is
-            var scope = Participants != null ? ConnectionScope.Group : ConnectionScope.User;
-            _chatManager.SendMessage(Recipient, Message, scope);
-            ChatMessages.Add(new ChatMessage {Message = Message, Received = DateTime.Now});
+            _chatManager.SendMessage(ChatWindow.GetRecipient(), Message, ChatWindow.Scope);
+            ChatWindow.Messages.Add(new ChatMessage(Message, DateTime.Now));
             Message = string.Empty;
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
-            if (navigationContext.Parameters.ContainsKey("Chat"))
+            navigationContext.Parameters.TryGetValue("Chat", out IChatWindow chat);
+            ChatWindow = chat;
+            if (chat is IChatGroup group)
             {
-                navigationContext.Parameters.TryGetValue("Chat", out Chat chat);
-                ChatMessages = chat.ChatMessages;
-                Title = chat.Title;
-                Recipient = chat.User.Id;
-            }
-            else if (navigationContext.Parameters.ContainsKey("ChatGroup"))
-            {
-                navigationContext.Parameters.TryGetValue("ChatGroup", out ChatGroup chatGroup);
-                Participants = chatGroup.Participants;
-                ChatMessages = chatGroup.ChatMessages;
-                Title = chatGroup.Title;
-                Recipient = chatGroup.Id;
+                Participants = group.Participants;
             }
         }
 

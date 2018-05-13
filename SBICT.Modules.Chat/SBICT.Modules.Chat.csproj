@@ -63,10 +63,11 @@
     <Compile Include="ChatChannel.cs" />
     <Compile Include="ChatGroup.cs" />
     <Compile Include="ChatManager.cs" />
+    <Compile Include="ChatMessage.cs" />
     <Compile Include="ChatModule.cs" />
     <Compile Include="ChatUser.cs" />
-    <Compile Include="IChatManager.cs" />
-    <Compile Include="IChatWindow.cs" />
+    <Compile Include="ChatBase.cs" />
+    <Compile Include="Extensions\ObservableCollectionExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

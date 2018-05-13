@@ -1,44 +1,34 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using Prism.Mvvm;
-using SBICT.Infrastructure;
 using SBICT.Data;
 using SBICT.Infrastructure.Chat;
+using SBICT.Infrastructure.Connection;
 
 namespace SBICT.Modules.Chat
 {
-    public class ChatGroup : BindableBase, IChatWindow, IGroup
+    public class ChatGroup : ChatBase, IChatGroup
     {
-        private string _title;
-        private ObservableCollection<ChatMessage> _chatMessages;
+        public Guid Id { get; private set; }
+        public string Name { get; set; }
 
+        public ObservableCollection<IUser> Participants { get; }
 
-        public Guid Id { get; }
-
-        /// <summary>
-        /// Name of this chat group
-        /// </summary>
-        public string Title
+        public ChatGroup(string groupName) : base(ConnectionScope.Group)
         {
-            get => _title;
-            set => SetProperty(ref _title, value);
-        }
-
-        public ObservableCollection<ChatMessage> ChatMessages
-        {
-            get => _chatMessages;
-            set => SetProperty(ref _chatMessages, value);
-        }
-
-        public bool IsActive { get; set; }
-
-        public ObservableCollection<User> Participants { get; set; }
-
-        public ChatGroup()
-        {
-            Participants = new ObservableCollection<User>();
-            ChatMessages = new ObservableCollection<ChatMessage>();
+            Participants = new ObservableCollection<IUser>();
             Id = Guid.NewGuid();
+            Name = groupName;
+            Title = groupName;
+        }
+
+        public override Guid GetRecipient()
+        {
+            return Id;
+        }
+
+        public static ChatGroup FromIGroup(IGroup group)
+        {
+            return new ChatGroup(group.Name) {Id = group.Id};
         }
     }
 }

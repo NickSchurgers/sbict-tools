@@ -1,7 +1,11 @@
-﻿namespace SBICT.Infrastructure.Chat
+﻿using System;
+using System.Collections.ObjectModel;
+using SBICT.Data;
+
+namespace SBICT.Infrastructure.Chat
 {
-    public interface IChatGroup
+    public interface IChatGroup: IGroup
     {
-        
+        ObservableCollection<IUser> Participants { get; }
     }
 }

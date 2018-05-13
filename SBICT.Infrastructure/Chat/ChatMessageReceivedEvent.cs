@@ -2,7 +2,7 @@
 
 namespace SBICT.Infrastructure.Chat
 {
-    public class ChatMessageReceivedEvent: PubSubEvent<ChatMessage>
+    public class ChatMessageReceivedEvent: PubSubEvent<IChatMessage>
     {
         
     }

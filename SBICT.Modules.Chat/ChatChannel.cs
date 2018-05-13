@@ -5,15 +5,16 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Windows.Data;
 using Prism.Mvvm;
+using SBICT.Infrastructure.Chat;
 
 namespace SBICT.Modules.Chat
 {
-    public class ChatChannel : BindableBase
+    public class ChatChannel : BindableBase, IChatChannel
     {
         #region Fields
 
-        private ObservableCollection<Chat> _chats;
-        private ObservableCollection<ChatGroup> _chatGroups;
+        private ObservableCollection<IChat> _chats;
+        private ObservableCollection<IChatGroup> _chatGroups;
 
         #endregion
 
@@ -22,7 +23,7 @@ namespace SBICT.Modules.Chat
         /// <summary>
         /// Collection of chats 
         /// </summary>
-        public ObservableCollection<Chat> Chats
+        public ObservableCollection<IChat> Chats
         {
             get => _chats;
             set => SetProperty(ref _chats, value);
@@ -31,7 +32,7 @@ namespace SBICT.Modules.Chat
         /// <summary>
         /// Collection of the chatgroups
         /// </summary>
-        public ObservableCollection<ChatGroup> ChatGroups
+        public ObservableCollection<IChatGroup> ChatGroups
         {
             get => _chatGroups;
             set => SetProperty(ref _chatGroups, value);
@@ -57,8 +58,8 @@ namespace SBICT.Modules.Chat
 
         public ChatChannel()
         {
-            Chats = new ObservableCollection<Chat>();
-            ChatGroups = new ObservableCollection<ChatGroup>();
+            Chats = new ObservableCollection<IChat>();
+            ChatGroups = new ObservableCollection<IChatGroup>();
         }
     }
 }

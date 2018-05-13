@@ -1,45 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Prism.Events;
-using Prism.Mvvm;
 using SBICT.Data;
-using SBICT.Infrastructure;
 using SBICT.Infrastructure.Chat;
+using SBICT.Infrastructure.Connection;
 
 namespace SBICT.Modules.Chat
 {
-    public class Chat : BindableBase, IChatWindow
+    public class Chat : ChatBase, IChat
     {
-        private ObservableCollection<ChatMessage> _chatMessages;
-        private string _title;
+        public IUser Recipient { get; }
 
-        #region Properties
-
-        public string Title
+        public Chat(IUser recipient) : base(ConnectionScope.User)
         {
-            get => _title;
-            set => SetProperty(ref _title, value);
+            Recipient = recipient;
+            Title = recipient.DisplayName;
         }
 
-        public Guid Id { get; }
-
-        public User User { get; set; }
-
-        public ObservableCollection<ChatMessage> ChatMessages
+        public override Guid GetRecipient()
         {
-            get => _chatMessages;
-            set => SetProperty(ref _chatMessages, value);
-        }
-
-        public bool IsActive { get; set; }
-
-        #endregion
-
-        public Chat()
-        {
-            ChatMessages = new ObservableCollection<ChatMessage>();
-            Id = Guid.NewGuid();
+            return Recipient.Id;
         }
     }
 }

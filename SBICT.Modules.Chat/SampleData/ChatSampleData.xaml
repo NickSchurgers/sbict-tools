@@ -4,17 +4,16 @@
                         xmlns:inf="clr-namespace:SBICT.Infrastructure;assembly=SBICT.Infrastructure"
                         xmlns:chat="clr-namespace:SBICT.Infrastructure.Chat;assembly=SBICT.Infrastructure"
                         Header="Nam aenean aliquam mauris" 
-                        Message="Enim erat habitant eros hendrerit" 
-                        Title="Cras integer">
+                        Message="Enim erat habitant eros hendrerit" >
 	<vm:ChatWindowViewModel.Participants>
 
 	</vm:ChatWindowViewModel.Participants>
     <vm:ChatWindowViewModel.SendMessage>
         <commands:DelegateCommand IsActive="True"/>
     </vm:ChatWindowViewModel.SendMessage>
-    <vm:ChatWindowViewModel.ChatMessages>
-        <chat:ChatMessage Sender="Henk" Message="Test0" Received="1/1/2018 23:30:00"></chat:ChatMessage>
-        <chat:ChatMessage Sender="Henk" Message="Test1" Received="1/2/2018 23:30:00"></chat:ChatMessage>
-        <chat:ChatMessage Sender="Henk" Message="Test2" Received="1/3/2018 23:30:00"></chat:ChatMessage>
-    </vm:ChatWindowViewModel.ChatMessages>
+    <!-- <vm:ChatWindowViewModel.ChatMessages> -->
+    <!--     <chat:ChatMessage Sender="Henk" Message="Test0" Received="1/1/2018 23:30:00"></chat:ChatMessage> -->
+    <!--     <chat:ChatMessage Sender="Henk" Message="Test1" Received="1/2/2018 23:30:00"></chat:ChatMessage> -->
+    <!--     <chat:ChatMessage Sender="Henk" Message="Test2" Received="1/3/2018 23:30:00"></chat:ChatMessage> -->
+    <!-- </vm:ChatWindowViewModel.ChatMessages> -->
 </vm:ChatWindowViewModel>

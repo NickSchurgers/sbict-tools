@@ -2,6 +2,7 @@
 using Prism.Ioc;
 using Prism.Regions;
 using SBICT.Infrastructure;
+using SBICT.Infrastructure.Chat;
 using SBICT.Modules.Chat.Views;
 
 
@@ -13,6 +14,7 @@ namespace SBICT.Modules.Chat
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             containerRegistry.RegisterSingleton<IChatManager, ChatManager>();
+            containerRegistry.Register<IChatWindow, ChatBase>();
             containerRegistry.Register<ChatList>();
             containerRegistry.Register<ChatWindow>();
         }

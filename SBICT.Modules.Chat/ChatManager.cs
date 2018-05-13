@@ -14,6 +14,7 @@ using Prism.Mvvm;
 using Prism.Regions;
 using SBICT.Data;
 using SBICT.Infrastructure;
+using SBICT.Infrastructure.Chat;
 using SBICT.Infrastructure.Connection;
 using SBICT.Infrastructure.Extensions;
 using SBICT.Infrastructure.Logger;

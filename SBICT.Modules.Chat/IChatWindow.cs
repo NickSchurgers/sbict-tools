@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using SBICT.Infrastructure;
+using SBICT.Infrastructure.Chat;
 
 namespace SBICT.Modules.Chat
 {

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using SBICT.Data;
+using SBICT.Infrastructure.Chat;
 using SBICT.Infrastructure.Connection;
 
 namespace SBICT.Infrastructure.Hubs
@@ -64,8 +65,7 @@ namespace SBICT.Infrastructure.Hubs
             }
             else
             {
-                await Clients.GroupExcept(group.Title, userConnections)
-                    .SendAsync("GroupJoined", UserList.First(u => u.Id == userId));
+                await Clients.Group(group.Title).SendAsync("GroupJoined", UserList.First(u => u.Id == userId));
             }
         }
 //

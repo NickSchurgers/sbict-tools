@@ -1,8 +1,7 @@
 ﻿using System;
 using SBICT.Data;
-using SBICT.Infrastructure.Connection;
 
-namespace SBICT.Infrastructure
+namespace SBICT.Infrastructure.Chat
 {
     public struct ChatMessage
     {

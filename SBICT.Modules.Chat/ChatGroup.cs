@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using Prism.Mvvm;
 using SBICT.Infrastructure;
 using SBICT.Data;
+using SBICT.Infrastructure.Chat;
 
 namespace SBICT.Modules.Chat
 {

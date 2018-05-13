@@ -5,6 +5,7 @@ using Prism.Events;
 using Prism.Mvvm;
 using SBICT.Data;
 using SBICT.Infrastructure;
+using SBICT.Infrastructure.Chat;
 
 namespace SBICT.Modules.Chat
 {

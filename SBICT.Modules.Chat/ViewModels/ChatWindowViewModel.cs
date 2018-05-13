@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Prism.Events;
 using SBICT.Data;
 using SBICT.Infrastructure;
+using SBICT.Infrastructure.Chat;
 
 namespace SBICT.Modules.Chat.ViewModels
 {

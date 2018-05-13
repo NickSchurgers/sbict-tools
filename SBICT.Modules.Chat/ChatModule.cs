@@ -17,6 +17,7 @@ namespace SBICT.Modules.Chat
             containerRegistry.Register<IChatWindow, ChatBase>();
             containerRegistry.Register<ChatList>();
             containerRegistry.Register<ChatWindow>();
+            containerRegistry.Register<GroupCreate>();
         }
 
         public void OnInitialized(IContainerProvider containerProvider)

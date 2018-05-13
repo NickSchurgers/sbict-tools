@@ -16,6 +16,7 @@ using System.Windows.Threading;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.SignalR.Client;
 using Prism.Events;
+using Prism.Interactivity.InteractionRequest;
 using Prism.Regions;
 using SBICT.Infrastructure;
 using SBICT.Infrastructure.Chat;
@@ -29,7 +30,7 @@ namespace SBICT.Modules.Chat.ViewModels
         #region Commands
 
         public DelegateCommand<object> ChatListSelectedItemChanged { get; set; }
-        public DelegateCommand<object> ChatListAddGroup { get; set; }
+        public DelegateCommand ChatListAddGroup { get; set; }
 
         #endregion
 
@@ -51,6 +52,8 @@ namespace SBICT.Modules.Chat.ViewModels
             set => SetProperty(ref _channels, value);
         }
 
+        public InteractionRequest<IConfirmation> GroupCreateRequest { get; set; }
+
         #endregion
 
         #region Methods
@@ -64,9 +67,10 @@ namespace SBICT.Modules.Chat.ViewModels
             _chatManager.InitChannels();
 
             ChatListSelectedItemChanged = new DelegateCommand<object>(OnSelectedItemChanged);
-            ChatListAddGroup = new DelegateCommand<object>(OnChatListAddGroup);
+            ChatListAddGroup = new DelegateCommand(OnChatListAddGroup);
 
             Channels = _chatManager.Channels;
+            GroupCreateRequest = new InteractionRequest<IConfirmation>();
         }
 
         #endregion
@@ -86,9 +90,10 @@ namespace SBICT.Modules.Chat.ViewModels
             }
         }
 
-        private void OnChatListAddGroup(object obj)
+        private void OnChatListAddGroup()
         {
-            _chatManager.JoinChatGroup(new ChatGroup("Henkies"));
+            GroupCreateRequest.Raise(new Confirmation {Content = "Confirmation Message", Title = "Confirmation"});
+            //_chatManager.JoinChatGroup(new ChatGroup("Henkies"));
         }
 
         #endregion

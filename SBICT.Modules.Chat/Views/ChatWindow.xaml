@@ -10,13 +10,6 @@
     d:DesignHeight="300" d:DesignWidth="300"
     prism:ViewModelLocator.AutoWireViewModel="True"
     d:DataContext="{d:DesignInstance {x:Type viewModels:ChatWindowViewModel}, IsDesignTimeCreatable=True}">
-    <UserControl.Resources>
-        <!-- <DataTemplate x:Key="ItemTemplate"> -->
-        <!--     <StackPanel> -->
-        <!--         <TextBlock Text="{Binding Name}"/> -->
-        <!--     </StackPanel> -->
-        <!-- </DataTemplate> -->
-    </UserControl.Resources>
     <Grid d:DataContext="{d:DesignData /SampleData/ChatSampleData.xaml}">
         <Grid.RowDefinitions>
             <RowDefinition Height="25" />

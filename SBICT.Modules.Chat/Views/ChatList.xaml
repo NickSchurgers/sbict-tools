@@ -7,12 +7,15 @@
     xmlns:prism="http://prismlibrary.com/"
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
     xmlns:local="clr-namespace:SBICT.Modules.Chat"
+    xmlns:views="clr-namespace:SBICT.Modules.Chat.Views"
     x:Class="SBICT.Modules.Chat.Views.ChatList"
     mc:Ignorable="d"
     d:DesignHeight="300" d:DesignWidth="300"
     prism:ViewModelLocator.AutoWireViewModel="True"
     d:DataContext="{d:DesignInstance {x:Type viewModels:ChatListViewModel}, IsDesignTimeCreatable=True}">
+
     <UserControl.Resources>
+
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/SBICT.Modules.Chat;component/ChatDictionary.xaml" />
@@ -43,6 +46,17 @@
         </ResourceDictionary>
 
     </UserControl.Resources>
+    
+    <i:Interaction.Triggers>
+        <prism:InteractionRequestTrigger SourceObject="{Binding GroupCreateRequest}">
+            <prism:PopupWindowAction>
+                <prism:PopupWindowAction.WindowContent>
+                    <views:GroupCreate />
+                </prism:PopupWindowAction.WindowContent>
+            </prism:PopupWindowAction>
+        </prism:InteractionRequestTrigger>
+    </i:Interaction.Triggers>
+    
     <Grid d:DataContext="{d:DesignData /SampleData/ChatListSampleData.xaml}">
         <TreeView x:Name="ChatTree" ItemsSource="{Binding Channels}">
             <i:Interaction.Triggers>
@@ -53,4 +67,6 @@
             </i:Interaction.Triggers>
         </TreeView>
     </Grid>
+
+
 </UserControl>

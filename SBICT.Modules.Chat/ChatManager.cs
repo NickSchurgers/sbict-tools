@@ -140,7 +140,6 @@ namespace SBICT.Modules.Chat
             throw new NotImplementedException();
         }
 
-
         /// <summary>
         /// Send a message
         /// </summary>
@@ -194,13 +193,13 @@ namespace SBICT.Modules.Chat
 
         private void OnGroupMessageReceived(ChatMessage newMessage)
         {
-            var group = (ChatGroup) Channels.ByName("Groups").ChatGroups.Single(c => c.Id == newMessage.Recipient);
+            var group = (ChatGroup) Channels.ByName("Groups").ChatGroups.ById(newMessage.Recipient);
             _uiContext.Send(x => group.Messages.Add(newMessage), null);
         }
 
         private void OnUserMessageReceived(ChatMessage newMessage)
         {
-            var chat = (Chat) Channels.ByName("Users").Chats.Single(c => c.Recipient.Id == newMessage.Sender.Id);
+            var chat = (Chat) Channels.ByName("Users").Chats.ById(newMessage.Sender.Id);
             _uiContext.Send(x => chat.Messages.Add(newMessage), null);
         }
 
@@ -231,7 +230,8 @@ namespace SBICT.Modules.Chat
                     break;
                 case ConnectionStatus.Disconnected:
 #if DEBUG
-                    _uiContext.Send(x => Channels.ByName("Users").Chats.RemoveAll(c => c.Recipient.DisplayName == "Henk"),
+                    _uiContext.Send(
+                        x => Channels.ByName("Users").Chats.RemoveAll(c => c.Recipient.DisplayName == "Henk"),
                         null);
                     SystemLogger.LogEvent("Henk has left");
 #else

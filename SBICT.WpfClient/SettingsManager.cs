@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Remoting.Channels;
 using System.Security.Principal;
 using System.Windows;
 using Microsoft.AspNetCore.Hosting;
@@ -14,6 +15,7 @@ namespace SBICT.WpfClient
 
         public User User { get; }
 
+        public (string, int) Server => (Settings.Default.ServerAddress, Settings.Default.ServerPort);
 
         public SettingsManager()
         {

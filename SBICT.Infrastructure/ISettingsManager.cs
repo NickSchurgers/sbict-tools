@@ -7,5 +7,6 @@ namespace SBICT.Infrastructure
     {
         bool IsFirstRun { get; }
         User User { get; }
+        (string, int) Server { get; }
     }
 }

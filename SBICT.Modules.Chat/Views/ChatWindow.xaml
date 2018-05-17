@@ -9,7 +9,7 @@
     mc:Ignorable="d"
     d:DesignHeight="300" d:DesignWidth="300"
     prism:ViewModelLocator.AutoWireViewModel="True"
-    d:DataContext="{d:DesignInstance {x:Type viewModels:ChatWindowViewModel}, IsDesignTimeCreatable=True}">
+    d:DataContext="{d:DesignInstance {x:Type viewModels:ChatWindowViewModel}, IsDesignTimeCreatable=False}">
     <Grid d:DataContext="{d:DesignData /SampleData/ChatSampleData.xaml}">
         <Grid.RowDefinitions>
             <RowDefinition Height="25" />

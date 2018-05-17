@@ -84,9 +84,10 @@ namespace SBICT.WpfClient.ViewModels
         {
             //TODO: Refactor url to config
             var user = _settingsManager.User;
+            var (address, port) = _settingsManager.Server;
             _systemConnection =
                 ConnectionFactory.Create(
-                    $"http://localhost:13338/hubs/system?displayName={user.DisplayName}&guid={user.Id.ToString()}");
+                    $"{address}:{port}/hubs/system?displayName={user.DisplayName}&guid={user.Id.ToString()}");
             _systemConnection.ConnectionStatusChanged += SystemConnectionOnConnectionStatusChanged;
             _connectionManager.Set("System", _systemConnection);
             await _systemConnection.StartAsync();

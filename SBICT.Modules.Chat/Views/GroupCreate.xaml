@@ -7,7 +7,9 @@
              mc:Ignorable="d"
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True"
-             d:DesignHeight="300" d:DesignWidth="300">
+             xmlns:vm="clr-namespace:SBICT.Modules.Chat.ViewModels"
+             d:DesignHeight="300" d:DesignWidth="300"
+             d:DataContext="{d:DesignInstance {x:Type vm:GroupCreateViewModel}}">
     <Grid>
         
     </Grid>

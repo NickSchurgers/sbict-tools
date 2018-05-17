@@ -4,5 +4,5 @@
     <viewModels:ChatListViewModel.Channels>
         <chat:ChatChannel Name="Users"/>
         <chat:ChatChannel Name="Groups"/>
-    </viewModels:ChatListViewModel.Channels>>
+    </viewModels:ChatListViewModel.Channels>
 </viewModels:ChatListViewModel>

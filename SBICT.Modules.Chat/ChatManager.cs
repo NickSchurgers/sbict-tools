@@ -49,6 +49,7 @@ namespace SBICT.Modules.Chat
         {
             _eventAggregator = eventAggregator;
             _connectionManager = connectionManager;
+            
             _regionManager = regionManager;
             _settingsManager = settingsManager;
             _user = _settingsManager.User;
@@ -64,9 +65,10 @@ namespace SBICT.Modules.Chat
         /// </summary>
         private async void InitHub()
         {
+            var (address, port) = _settingsManager.Server;
             Connection =
                 ConnectionFactory.Create(
-                    $"http://localhost:13338/hubs/chat?displayName={_user.DisplayName}&guid={_user.Id.ToString()}");
+                    $"{address}:{port}/hubs/chat?displayName={_user.DisplayName}&guid={_user.Id.ToString()}");
             Connection.UserStatusChanged += OnUserStatusChanged;
             Connection.Hub.On<Guid, User, Message, ConnectionScope>("MessageReceived", OnMessageReceived);
             Connection.Hub.On<Group>("GroupCreated", OnGroupCreated);

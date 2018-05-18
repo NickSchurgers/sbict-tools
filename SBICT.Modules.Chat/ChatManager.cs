@@ -41,6 +41,7 @@ namespace SBICT.Modules.Chat
         public IConnection Connection { get; set; }
         public IChatWindow ActiveChat { get; set; }
         public ObservableCollection<IChatChannel> Channels { get; set; } = new ObservableCollection<IChatChannel>();
+        public ObservableCollection<IUser> ConnectedUsers { get; set; } = new ObservableCollection<IUser>();
 
         #endregion
 
@@ -49,7 +50,7 @@ namespace SBICT.Modules.Chat
         {
             _eventAggregator = eventAggregator;
             _connectionManager = connectionManager;
-            
+
             _regionManager = regionManager;
             _settingsManager = settingsManager;
             _user = _settingsManager.User;
@@ -95,7 +96,11 @@ namespace SBICT.Modules.Chat
             AddChatChannel(new ChatChannel {Name = "Users", IsExpanded = true});
 
             var users = await Connection.Hub.InvokeAsync<IEnumerable<User>>("GetUserList", _user.Id);
-            users.ToList().ForEach(u => AddChat(new Chat(u)));
+            ConnectedUsers = new ObservableCollection<IUser>(users.Cast<IUser>());
+            foreach (var user in ConnectedUsers)
+            {
+                AddChat(new Chat(user));
+            }
 
             AddChatChannel(new ChatChannel {Name = "Groups", IsExpanded = true});
         }
@@ -220,25 +225,27 @@ namespace SBICT.Modules.Chat
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         private void OnUserStatusChanged(object sender, ConnectionEventArgs e)
         {
+            IUser user;
             switch (e.Status)
             {
                 case ConnectionStatus.Connected:
 #if DEBUG
-                    var user = new User(Guid.NewGuid(), "Henk");
-                    _uiContext.Send(x => AddChat(new Chat(user)), null);
+                    user = new User(Guid.NewGuid(), "Henk");
 #else
-                     _uiContext.Send(x => AddChat(new Chat(e.User)), null);
+                    user = e.User;
 #endif
+                    ConnectedUsers.Add(user);
+                    _uiContext.Send(x => AddChat(new Chat(user)), null);
                     break;
                 case ConnectionStatus.Disconnected:
 #if DEBUG
-                    _uiContext.Send(
-                        x => Channels.ByName("Users").Chats.RemoveAll(c => c.Recipient.DisplayName == "Henk"),
-                        null);
-                    SystemLogger.LogEvent("Henk has left");
+                    user = ConnectedUsers.Single(u => u.DisplayName == "Henk");
 #else
-                    _uiContext.Send(x => RemoveChat(new Chat(e.User)), null);
+                    user = ConnectedUsers.Single(u => u.Id == e.User.Id);
 #endif
+                    var chat = Channels.ByName("Users").Chats.ById(user.Id);
+                    ConnectedUsers.Remove(user);
+                    _uiContext.Send(x => RemoveChat(chat), null);
                     break;
                 case ConnectionStatus.Connecting:
                 case ConnectionStatus.Reconnecting:

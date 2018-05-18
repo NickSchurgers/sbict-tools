@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using Prism.Events;
 using Prism.Modularity;
+using SBICT.Data;
 using SBICT.Infrastructure;
 using SBICT.Infrastructure.Connection;
 

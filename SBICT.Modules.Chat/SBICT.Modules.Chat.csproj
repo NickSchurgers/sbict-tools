@@ -83,15 +83,15 @@
     </Compile>
     <Compile Include="ViewModels\ChatListViewModel.cs" />
     <Compile Include="ViewModels\ChatWindowViewModel.cs" />
-    <Compile Include="ViewModels\GroupCreateViewModel.cs" />
+    <Compile Include="ViewModels\GroupJoinCreateViewModel.cs" />
     <Compile Include="Views\ChatList.xaml.cs">
       <DependentUpon>ChatList.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ChatWindow.xaml.cs">
       <DependentUpon>ChatWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\GroupCreate.xaml.cs">
-      <DependentUpon>GroupCreate.xaml</DependentUpon>
+    <Compile Include="Views\GroupJoinCreate.xaml.cs">
+      <DependentUpon>GroupJoinCreate.xaml</DependentUpon>
     </Compile>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -126,6 +126,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </DesignData>
+    <DesignData Include="SampleData\GroupJoinCreateViewModelSampleData.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </DesignData>
     <Page Include="Views\ChatList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -134,7 +138,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\GroupCreate.xaml" />
+    <Page Include="Views\GroupJoinCreate.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Add_16x.png" />

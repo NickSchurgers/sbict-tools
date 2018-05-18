@@ -51,7 +51,7 @@
         <prism:InteractionRequestTrigger SourceObject="{Binding GroupCreateRequest}">
             <prism:PopupWindowAction>
                 <prism:PopupWindowAction.WindowContent>
-                    <views:GroupCreate />
+                    <views:GroupJoinCreate />
                 </prism:PopupWindowAction.WindowContent>
             </prism:PopupWindowAction>
         </prism:InteractionRequestTrigger>

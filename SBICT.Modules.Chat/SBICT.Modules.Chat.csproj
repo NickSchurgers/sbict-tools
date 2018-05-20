@@ -67,7 +67,7 @@
     <Compile Include="ChatModule.cs" />
     <Compile Include="ChatBase.cs" />
     <Compile Include="Extensions\ObservableCollectionExtensions.cs" />
-    <Compile Include="GroupJoinCreateNotification.cs" />
+    <Compile Include="GroupInviteCreateNotification.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -83,15 +83,15 @@
     </Compile>
     <Compile Include="ViewModels\ChatListViewModel.cs" />
     <Compile Include="ViewModels\ChatWindowViewModel.cs" />
-    <Compile Include="ViewModels\GroupJoinCreateViewModel.cs" />
+    <Compile Include="ViewModels\GroupInviteCreateViewModel.cs" />
     <Compile Include="Views\ChatList.xaml.cs">
       <DependentUpon>ChatList.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ChatWindow.xaml.cs">
       <DependentUpon>ChatWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\GroupJoinCreate.xaml.cs">
-      <DependentUpon>GroupJoinCreate.xaml</DependentUpon>
+    <Compile Include="Views\GroupInviteCreate.xaml.cs">
+      <DependentUpon>GroupInviteCreate.xaml</DependentUpon>
     </Compile>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -134,7 +134,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\GroupJoinCreate.xaml" />
+    <Page Include="Views\GroupInviteCreate.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Add_16x.png" />

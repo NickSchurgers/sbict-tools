@@ -11,22 +11,20 @@ using SBICT.Data;
 
 namespace SBICT.Modules.Chat.ViewModels
 {
-    public class GroupJoinCreateViewModel : BindableBase, IInteractionRequestAware
+    public class GroupInviteCreateViewModel : BindableBase, IInteractionRequestAware
     {
-        private GroupJoinCreateNotification _notification;
+        private GroupInviteCreateNotification _notification;
         public DelegateCommand<object> OkCommand { get; private set; }
         public DelegateCommand CancelCommand { get; private set; }
 
-        public bool IsCreate { get; set; }
         public Action FinishInteraction { get; set; }
-        public string GroupName { get; set; }
 
         public INotification Notification
         {
             get => _notification;
             set
             {
-                if (value is GroupJoinCreateNotification notification)
+                if (value is GroupInviteCreateNotification notification)
                 {
                     _notification = notification;
                     RaisePropertyChanged();
@@ -34,13 +32,11 @@ namespace SBICT.Modules.Chat.ViewModels
             }
         }
 
-        public GroupJoinCreateViewModel()
+        public GroupInviteCreateViewModel()
         {
             OkCommand = new DelegateCommand<object>(OnOkClick);
             CancelCommand = new DelegateCommand(OnCancelClick);
-            GroupName = "New Group";
         }
-
 
         private void OnCancelClick()
         {

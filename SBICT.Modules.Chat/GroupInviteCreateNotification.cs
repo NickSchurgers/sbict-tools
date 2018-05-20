@@ -6,15 +6,20 @@ using SBICT.Data;
 
 namespace SBICT.Modules.Chat
 {
-    public class GroupJoinCreateNotification : Confirmation
+    public class GroupInviteCreateNotification : Confirmation
     {
-        public GroupJoinCreateNotification()
+        public bool IsNew { get; private set; }
+        public string GroupName { get; set; }
+
+        public GroupInviteCreateNotification(string groupName = null)
         {
             Items = new List<IUser>();
             SelectedItems = new List<IUser>();
+            GroupName = groupName ?? "New Group";
+            IsNew = groupName == null;
         }
 
-        public GroupJoinCreateNotification(IEnumerable<IUser> items) : this()
+        public GroupInviteCreateNotification(IEnumerable<IUser> items, string groupName = null) : this(groupName)
         {
             foreach (var item in items)
             {

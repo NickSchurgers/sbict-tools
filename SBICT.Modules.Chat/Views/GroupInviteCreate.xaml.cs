@@ -2,9 +2,9 @@
 
 namespace SBICT.Modules.Chat.Views
 {
-    public partial class GroupJoinCreate : UserControl
+    public partial class GroupInviteCreate : UserControl
     {
-        public GroupJoinCreate()
+        public GroupInviteCreate()
         {
             InitializeComponent();
         }

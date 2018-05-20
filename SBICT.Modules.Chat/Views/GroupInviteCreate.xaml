@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="SBICT.Modules.Chat.Views.GroupJoinCreate"
+﻿<UserControl x:Class="SBICT.Modules.Chat.Views.GroupInviteCreate"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -11,7 +11,10 @@
              xmlns:data="clr-namespace:SBICT.Data;assembly=SBICT.Data"
              xmlns:chat="clr-namespace:SBICT.Modules.Chat"
              d:DesignHeight="300" d:DesignWidth="300"
-             d:DataContext="{d:DesignInstance {x:Type vm:GroupJoinCreateViewModel}}">
+             d:DataContext="{d:DesignInstance {x:Type vm:GroupInviteCreateViewModel}}">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </UserControl.Resources>
     <Grid d:DataContext="{d:DesignData /SampleData/GroupJoinCreateSampleData.xaml }">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="50*" />
@@ -22,8 +25,11 @@
             <RowDefinition Height="100*" />
             <RowDefinition Height="50" />
         </Grid.RowDefinitions>
-        <TextBox Margin="10,13" TextWrapping="Wrap" Text="{Binding GroupName}" VerticalAlignment="Center"
-                 VerticalContentAlignment="Center" Height="24" Grid.ColumnSpan="2" />
+        <TextBox Margin="10,13" TextWrapping="Wrap"
+                 Text="{Binding Notification.(chat:GroupInviteCreateNotification.GroupName)}"
+                 VerticalAlignment="Center"
+                 VerticalContentAlignment="Center" Height="24" Grid.ColumnSpan="2"
+                 Visibility="{Binding Notification.(chat:GroupInviteCreateNotification.IsNew), Converter={StaticResource BoolToVis }}" />
         <Button Command="{Binding OkCommand}" CommandParameter="{Binding ElementName=Users, Path=SelectedItems}"
                 Content="Ok" HorizontalAlignment="Center" Margin="0" Grid.Row="2"
                 Grid.Column="0"
@@ -31,7 +37,8 @@
         <Button Command="{Binding CancelCommand}" Content="Cancel" HorizontalAlignment="Center" Margin="0" Grid.Row="2"
                 Grid.Column="1" VerticalAlignment="Center" Width="75" Height="25" IsCancel="True" />
         <ListBox Name="Users" Grid.ColumnSpan="2" Grid.Column="0" Margin="10,0" Grid.Row="1"
-                 ItemsSource="{Binding Notification.(chat:GroupJoinCreateNotification.Items)}" SelectionMode="Multiple">
+                 ItemsSource="{Binding Notification.(chat:GroupInviteCreateNotification.Items)}"
+                 SelectionMode="Multiple">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding DisplayName}" />

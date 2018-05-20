@@ -82,7 +82,6 @@ namespace SBICT.WpfClient.ViewModels
         /// </summary>
         private async void InitializeSystemHub()
         {
-            //TODO: Refactor url to config
             var user = _settingsManager.User;
             var (address, port) = _settingsManager.Server;
             _systemConnection =

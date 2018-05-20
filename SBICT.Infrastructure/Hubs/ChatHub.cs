@@ -31,11 +31,7 @@ namespace SBICT.Infrastructure.Hubs
         /// <returns></returns>
         public IEnumerable<User> GetUserList(Guid userId)
         {
-#if DEBUG
-            return UserList;
-#else
             return UserList.Where(u => u.Id != userId);
-#endif
         }
 
         #endregion

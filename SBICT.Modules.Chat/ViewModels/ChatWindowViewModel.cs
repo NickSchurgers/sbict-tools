@@ -1,4 +1,4 @@
-﻿﻿using Prism.Commands;
+﻿using Prism.Commands;
 using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
@@ -20,6 +20,7 @@ namespace SBICT.Modules.Chat.ViewModels
         #region Fields
 
         private readonly IChatManager _chatManager;
+        private readonly ISettingsManager _settingsManager;
         private string _message;
         private IChatWindow _chatWindow;
         private ObservableCollection<IUser> _participants;
@@ -53,9 +54,10 @@ namespace SBICT.Modules.Chat.ViewModels
 
         #region Methods
 
-        public ChatWindowViewModel(IChatManager chatManager)
+        public ChatWindowViewModel(IChatManager chatManager, ISettingsManager settingsManager)
         {
             _chatManager = chatManager;
+            _settingsManager = settingsManager;
             SendMessage = new DelegateCommand(OnMessageSent);
         }
 
@@ -73,7 +75,7 @@ namespace SBICT.Modules.Chat.ViewModels
         {
             //As a chatgroup is cast to a chat, we use participants to determine what the scope is
             _chatManager.SendMessage(ChatWindow.GetRecipient(), Message, ChatWindow.Scope);
-            ChatWindow.Messages.Add(new ChatMessage(Message, DateTime.Now));
+            ChatWindow.Messages.Add(new ChatMessage(Message, DateTime.Now) {Sender = _settingsManager.User});
             Message = string.Empty;
         }
 

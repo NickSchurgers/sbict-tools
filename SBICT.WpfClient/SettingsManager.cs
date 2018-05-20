@@ -27,10 +27,20 @@ namespace SBICT.WpfClient
                 Settings.Default.Save();
             }
 
-            User = new User(Settings.Default.Guid, Settings.Default.DisplayName)
+
+            User = new User(Settings.Default.Guid, WindowsIdentity.GetCurrent().Name)
             {
                 DisplayName = Settings.Default.DisplayName
             };
+
+#if DEBUG
+            var rand = new Random().Next();
+            var name = $"TestUser{rand}";
+            User = new User(Guid.NewGuid(), name)
+            {
+                DisplayName = name
+            };
+#endif
         }
     }
 }

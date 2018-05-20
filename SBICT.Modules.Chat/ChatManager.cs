@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -229,20 +229,12 @@ namespace SBICT.Modules.Chat
             switch (e.Status)
             {
                 case ConnectionStatus.Connected:
-#if DEBUG
-                    user = new User(Guid.NewGuid(), "Henk");
-#else
                     user = e.User;
-#endif
                     ConnectedUsers.Add(user);
                     _uiContext.Send(x => AddChat(new Chat(user)), null);
                     break;
                 case ConnectionStatus.Disconnected:
-#if DEBUG
-                    user = ConnectedUsers.Single(u => u.DisplayName == "Henk");
-#else
                     user = ConnectedUsers.Single(u => u.Id == e.User.Id);
-#endif
                     var chat = Channels.ByName("Users").Chats.ById(user.Id);
                     ConnectedUsers.Remove(user);
                     _uiContext.Send(x => RemoveChat(chat), null);

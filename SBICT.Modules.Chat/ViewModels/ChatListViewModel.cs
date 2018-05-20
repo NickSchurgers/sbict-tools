@@ -52,7 +52,7 @@ namespace SBICT.Modules.Chat.ViewModels
             set => SetProperty(ref _channels, value);
         }
 
-        public InteractionRequest<IConfirmation> GroupCreateRequest { get; set; }
+        public InteractionRequest<GroupJoinCreateNotification> GroupCreateRequest { get; set; }
 
         #endregion
 
@@ -70,7 +70,7 @@ namespace SBICT.Modules.Chat.ViewModels
             ChatListAddGroup = new DelegateCommand(OnChatListAddGroup);
 
             Channels = _chatManager.Channels;
-            GroupCreateRequest = new InteractionRequest<IConfirmation>();
+            GroupCreateRequest = new InteractionRequest<GroupJoinCreateNotification>();
         }
 
         #endregion
@@ -92,7 +92,15 @@ namespace SBICT.Modules.Chat.ViewModels
 
         private void OnChatListAddGroup()
         {
-            GroupCreateRequest.Raise(new Confirmation {Content = "Confirmation Message", Title = "Confirmation"});
+
+            var notification = new GroupJoinCreateNotification(_chatManager.ConnectedUsers) {Title = "Items"};
+            GroupCreateRequest.Raise(notification, result =>
+            {
+                if (result != null && result.Confirmed && result.SelectedItems != null)
+                {
+                    MessageBox.Show(result.SelectedItems[0].DisplayName);
+                }
+            });
             //_chatManager.JoinChatGroup(new ChatGroup("Henkies"));
         }
 

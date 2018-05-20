@@ -1,5 +1,6 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.ObjectModel;
+using SBICT.Data;
 using SBICT.Infrastructure.Connection;
 
 namespace SBICT.Infrastructure.Chat
@@ -9,6 +10,7 @@ namespace SBICT.Infrastructure.Chat
         IConnection Connection { get; set; }
         IChatWindow ActiveChat { get; set; }
         ObservableCollection<IChatChannel> Channels { get; set; }
+        ObservableCollection<IUser> ConnectedUsers { get; set; }
 
         void InitChannels();
         void AddChatChannel(IChatChannel channel);

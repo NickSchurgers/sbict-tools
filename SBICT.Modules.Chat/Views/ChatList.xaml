@@ -48,7 +48,7 @@
     </UserControl.Resources>
     
     <i:Interaction.Triggers>
-        <prism:InteractionRequestTrigger SourceObject="{Binding GroupCreateRequest}">
+        <prism:InteractionRequestTrigger SourceObject="{Binding GroupCreateRequest, Mode=OneWay}">
             <prism:PopupWindowAction>
                 <prism:PopupWindowAction.WindowContent>
                     <views:GroupJoinCreate />

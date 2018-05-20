@@ -65,9 +65,9 @@
     <Compile Include="ChatManager.cs" />
     <Compile Include="ChatMessage.cs" />
     <Compile Include="ChatModule.cs" />
-    <Compile Include="ChatUser.cs" />
     <Compile Include="ChatBase.cs" />
     <Compile Include="Extensions\ObservableCollectionExtensions.cs" />
+    <Compile Include="GroupJoinCreateNotification.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -123,10 +123,6 @@
       <SubType>Designer</SubType>
     </DesignData>
     <DesignData Include="SampleData\ChatListSampleData.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </DesignData>
-    <DesignData Include="SampleData\GroupJoinCreateViewModelSampleData.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </DesignData>

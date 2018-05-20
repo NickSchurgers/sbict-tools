@@ -1,4 +1,4 @@
-﻿using SBICT.Data;
+﻿﻿using SBICT.Data;
 
 namespace SBICT.Infrastructure.Chat
 {

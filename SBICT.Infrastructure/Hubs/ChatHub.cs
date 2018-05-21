@@ -21,6 +21,8 @@ namespace SBICT.Infrastructure.Hubs
         /// </summary>
         private static readonly ConnectionStore<Guid> GroupStore = new ConnectionStore<Guid>();
 
+        private static readonly HashSet<Group> GroupList = new HashSet<Group>();
+
         #endregion
 
         #region Properties
@@ -37,6 +39,12 @@ namespace SBICT.Infrastructure.Hubs
         #endregion
 
         #region Group Methods
+
+        public IEnumerable<Group> GetGroupsForUser(Guid userId)
+        {
+            var connectedGroups = GroupStore.GetByConnection(userId.ToString());
+            return GroupList.Where(g => connectedGroups.Contains(g.Id));
+        }
 
         /// <summary>
         /// Join a group or create if not exists
@@ -57,6 +65,7 @@ namespace SBICT.Infrastructure.Hubs
 
             if (GroupStore.GetConnections(group.Id).Count(c => c.Contains(userId.ToString())) <= 1)
             {
+                GroupList.Add(group);
                 await Clients.Group(group.Name).SendAsync("GroupCreated", group);
             }
             else
@@ -64,35 +73,43 @@ namespace SBICT.Infrastructure.Hubs
                 await Clients.Group(group.Name).SendAsync("GroupJoined", UserList.First(u => u.Id == userId));
             }
         }
-//
-//        /// <summary>
-//        /// Invite a client to join a group
-//        /// </summary>
-//        /// <param name="groupName"></param>
-//        /// <param name="userName"></param>
-//        /// <returns></returns>
-//        public async Task GroupInvite(string groupName, string userName)
-//        {
-//            await Clients.Clients(UserStore.GetConnections(userName).ToList())
-//                .SendAsync("GroupInvited", groupName);
-//        }
-//
-//        /// <summary>
-//        /// Leave a group
-//        /// </summary>
-//        /// <param name="groupName"></param>
-//        /// <returns></returns>
-//        public async Task GroupLeave(string groupName)
-//        {
-//            var userConnections = UserStore.GetConnections(Context.User.Identity.Name);
-//
-//            foreach (var conId in userConnections)
-//            {
-//                await Groups.RemoveFromGroupAsync(conId, groupName);
-//            }
-//
-//            await Clients.Group(groupName).SendAsync("GroupLeft", Context.User.Identity.Name);
-//        }
+
+        /// <summary>
+        /// Invite a client to join a group
+        /// </summary>
+        /// <returns></returns>
+        public async Task GroupInvite(Group group, Guid userId)
+        {
+            var userConnections = UserConnectionStore.GetConnections(userId).ToList();
+            var storedGroup = GroupList.Single(g => g.Id == group.Id);
+            await Clients.Clients(userConnections)
+                .SendAsync("GroupInvited", storedGroup);
+        }
+
+        /// <summary>
+        /// Leave a group
+        /// </summary>
+        /// <param name="group"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public async Task GroupLeave(Group group, Guid userId)
+        {
+            var userConnections = UserConnectionStore.GetConnections(userId).ToList();
+            var user = UserList.Single(u => u.Id == userId);
+            foreach (var conId in userConnections)
+            {
+                await Groups.RemoveFromGroupAsync(conId, group.Name);
+            }
+
+            GroupStore.Remove(group.Id, user.Id.ToString());
+
+            await Clients.Group(group.Name).SendAsync("GroupLeft", user);
+
+            if (!GroupStore.GetConnections(group.Id).Any())
+            {
+                GroupList.RemoveWhere(g => g.Id == group.Id);
+            }
+        }
 
         #endregion
 

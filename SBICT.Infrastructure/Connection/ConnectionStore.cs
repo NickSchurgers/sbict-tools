@@ -53,6 +53,19 @@ namespace SBICT.Infrastructure.Connection
             }
         }
 
+        public IEnumerable<T> GetByConnection(string connectionId)
+        {
+            lock (_connections)
+            {
+                if (_connections.Any(x => x.Value.Contains(connectionId)))
+                {
+                    return _connections.Where(x => x.Value.Contains(connectionId)).Select(x => x.Key);
+                }
+            }
+
+            return Enumerable.Empty<T>();
+        }
+
         /// <summary>
         /// Return all collections belonging to a single client
         /// </summary>

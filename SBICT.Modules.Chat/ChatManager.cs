@@ -162,6 +162,7 @@ namespace SBICT.Modules.Chat
         public async void JoinChatGroup(IChatGroup group)
         {
             await Connection.Hub.InvokeAsync("GroupJoin", group, _user.Id);
+            
         }
 
         #region Event Handlers

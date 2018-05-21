@@ -15,9 +15,8 @@
             <RowDefinition Height="25" />
             <RowDefinition Height="50*" />
             <RowDefinition Height="25" />
-
         </Grid.RowDefinitions>
-        <ListView x:Name="chatMessages" ItemsSource="{Binding ChatWindow.Messages}" Grid.Row="1" Grid.RowSpan="1">
+        <ListView  x:Name="chatMessages" ItemsSource="{Binding ChatWindow.Messages}" Grid.Row="1" Grid.RowSpan="1">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">

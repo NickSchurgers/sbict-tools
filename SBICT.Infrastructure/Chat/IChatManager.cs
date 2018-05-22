@@ -12,8 +12,8 @@ namespace SBICT.Infrastructure.Chat
         ObservableCollection<IChatChannel> Channels { get; set; }
         ObservableCollection<IUser> ConnectedUsers { get; set; }
 
-        event EventHandler ChatMessageReceived;
-        event EventHandler BroadcastReceived;
+        event EventHandler<ChatMessageEventArgs> ChatMessageReceived;
+        event EventHandler<BroadcastEventArgs> BroadcastReceived;
         event EventHandler<ChatGroupEventArgs> GroupInviteReceived;
 
         void InitChannels();

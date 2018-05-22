@@ -47,18 +47,19 @@ namespace SBICT.Modules.Chat
 
         #region Events
 
-        public event EventHandler ChatMessageReceived;
-        public event EventHandler BroadcastReceived;
+        public event EventHandler<ChatMessageEventArgs> ChatMessageReceived;
+        public event EventHandler<BroadcastEventArgs> BroadcastReceived;
         public event EventHandler<ChatGroupEventArgs> GroupInviteReceived;
 
-        protected virtual void OnChatMessageReceived()
+        protected virtual void OnChatMessageReceived(IChatMessage chatMessage)
         {
-            ChatMessageReceived?.Invoke(this, EventArgs.Empty);
+            ChatMessageReceived?.Invoke(this, new ChatMessageEventArgs(chatMessage));
+            _eventAggregator.GetEvent<ChatMessageReceivedEvent>().Publish(chatMessage);
         }
 
-        protected virtual void OnBroadcastReceived()
+        protected virtual void OnBroadcastReceived(IChatMessage chatMessage)
         {
-            BroadcastReceived?.Invoke(this, EventArgs.Empty);
+            BroadcastReceived?.Invoke(this, new BroadcastEventArgs(chatMessage));
         }
 
         protected virtual void OnGroupInviteReceived(IChatGroup group)
@@ -262,17 +263,20 @@ namespace SBICT.Modules.Chat
                 case ConnectionScope.User:
                     var chat = (Chat) Channels.ByName("Users").Chats.ById(chatMessage.Sender.Id);
                     _uiContext.Send(x => chat.Messages.Add(chatMessage), null);
+                    OnChatMessageReceived(chatMessage);
                     break;
                 case ConnectionScope.Group:
                     var group = (ChatGroup) Channels.ByName("Groups").ChatGroups.ById(chatMessage.Recipient);
                     _uiContext.Send(x => group.Messages.Add(chatMessage), null);
+                    OnChatMessageReceived(chatMessage);
                     break;
                 case ConnectionScope.Broadcast:
+                    OnBroadcastReceived(chatMessage);
+                    break;
                 case ConnectionScope.System:
+                    SystemLogger.LogEvent(chatMessage.Content, LogLevel.Broadcast);
                     break;
             }
-
-            _eventAggregator.GetEvent<ChatMessageReceivedEvent>().Publish(chatMessage);
         }
 
         private void OnGroupLeft(User obj)

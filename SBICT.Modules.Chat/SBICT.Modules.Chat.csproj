@@ -68,7 +68,6 @@
     <Compile Include="ChatModule.cs" />
     <Compile Include="ChatBase.cs" />
     <Compile Include="Extensions\ObservableCollectionExtensions.cs" />
-    <Compile Include="ChatGroupEventArgs.cs" />
     <Compile Include="GroupInviteCreateNotification.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>

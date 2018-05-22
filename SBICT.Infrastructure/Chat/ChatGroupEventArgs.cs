@@ -1,8 +1,6 @@
 ﻿using System;
-using SBICT.Data;
-using SBICT.Infrastructure.Chat;
 
-namespace SBICT.Modules.Chat
+namespace SBICT.Infrastructure.Chat
 {
     public class ChatGroupEventArgs : EventArgs
     {

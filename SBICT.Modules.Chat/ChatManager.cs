@@ -49,7 +49,7 @@ namespace SBICT.Modules.Chat
 
         public event EventHandler ChatMessageReceived;
         public event EventHandler BroadcastReceived;
-        public event EventHandler GroupInviteReceived;
+        public event EventHandler<ChatGroupEventArgs> GroupInviteReceived;
 
         protected virtual void OnChatMessageReceived()
         {

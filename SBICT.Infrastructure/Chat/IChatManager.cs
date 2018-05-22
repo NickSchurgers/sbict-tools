@@ -14,7 +14,7 @@ namespace SBICT.Infrastructure.Chat
 
         event EventHandler ChatMessageReceived;
         event EventHandler BroadcastReceived;
-        event EventHandler GroupInviteReceived;
+        event EventHandler<ChatGroupEventArgs> GroupInviteReceived;
 
         void InitChannels();
         void AddChatChannel(IChatChannel channel);

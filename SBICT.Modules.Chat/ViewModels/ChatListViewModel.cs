@@ -52,7 +52,8 @@ namespace SBICT.Modules.Chat.ViewModels
             set => SetProperty(ref _channels, value);
         }
 
-        public InteractionRequest<GroupInviteCreateNotification> GroupCreateRequest { get; set; }
+        public InteractionRequest<GroupInviteCreateNotification> GroupCreateRequest { get; private set; }
+        public InteractionRequest<IConfirmation> ConfirmInviteRequest { get; private set; }
 
         #endregion
 
@@ -65,18 +66,14 @@ namespace SBICT.Modules.Chat.ViewModels
         {
             _chatManager = chatManager;
             _chatManager.InitChannels();
-            _chatManager.GroupInviteReceived += ChatManagerOnGroupInviteReceived;
+            _chatManager.GroupInviteReceived += OnGroupInviteReceived;
 
             ChatListSelectedItemChanged = new DelegateCommand<object>(OnSelectedItemChanged);
             ChatListAddGroup = new DelegateCommand(OnChatListAddGroup);
 
             Channels = _chatManager.Channels;
             GroupCreateRequest = new InteractionRequest<GroupInviteCreateNotification>();
-        }
-
-        private void ChatManagerOnGroupInviteReceived(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
+            ConfirmInviteRequest = new InteractionRequest<IConfirmation>();
         }
 
         #endregion
@@ -105,6 +102,19 @@ namespace SBICT.Modules.Chat.ViewModels
                 {
                     _chatManager.JoinChatGroup(new ChatGroup(result.GroupName));
                 }
+            });
+        }
+
+        private void OnGroupInviteReceived(object sender, ChatGroupEventArgs e)
+        {
+            var confirm = new Confirmation
+            {
+                Title = "Group Invitation",
+                Content = $"You have been invited to {e.ChatGroup.Name}"
+            };
+            ConfirmInviteRequest.Raise(confirm, result =>
+            {
+                
             });
         }
 

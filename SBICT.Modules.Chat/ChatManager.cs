@@ -198,7 +198,7 @@ namespace SBICT.Modules.Chat
             _regionManager.RequestNavigate(RegionNames.MainRegion, new Uri("ChatWindow", UriKind.Relative),
                 new NavigationParameters {{"Chat", window}});
         }
-        
+
         /// <summary>
         /// Remove chat from user channel
         /// </summary>
@@ -242,6 +242,13 @@ namespace SBICT.Modules.Chat
 
         #region Handlers
 
+        /// <summary>
+        /// Handle received messages
+        /// </summary>
+        /// <param name="recipient"></param>
+        /// <param name="sender"></param>
+        /// <param name="message"></param>
+        /// <param name="scope"></param>
         private void OnMessageReceived(Guid recipient, User sender, Message message, ConnectionScope scope)
         {
             var chatMessage = new ChatMessage(message.Content, message.Received)

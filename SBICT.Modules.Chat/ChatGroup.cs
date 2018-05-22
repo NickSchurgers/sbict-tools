@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using SBICT.Data;
 using SBICT.Infrastructure.Chat;
@@ -26,7 +26,7 @@ namespace SBICT.Modules.Chat
             return Id;
         }
 
-        public static ChatGroup FromIGroup(IGroup group)
+        public static explicit operator ChatGroup(Group group)
         {
             return new ChatGroup(group.Name) {Id = group.Id};
         }

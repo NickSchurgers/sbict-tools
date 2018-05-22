@@ -70,7 +70,7 @@ namespace SBICT.Infrastructure.Hubs
             }
             else
             {
-                await Clients.Group(group.Name).SendAsync("GroupJoined", UserList.First(u => u.Id == userId));
+                await Clients.Group(group.Name).SendAsync("GroupJoined", UserList.Single(u => u.Id == userId));
             }
         }
 

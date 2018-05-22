@@ -65,12 +65,18 @@ namespace SBICT.Modules.Chat.ViewModels
         {
             _chatManager = chatManager;
             _chatManager.InitChannels();
+            _chatManager.GroupInviteReceived += ChatManagerOnGroupInviteReceived;
 
             ChatListSelectedItemChanged = new DelegateCommand<object>(OnSelectedItemChanged);
             ChatListAddGroup = new DelegateCommand(OnChatListAddGroup);
 
             Channels = _chatManager.Channels;
             GroupCreateRequest = new InteractionRequest<GroupInviteCreateNotification>();
+        }
+
+        private void ChatManagerOnGroupInviteReceived(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion

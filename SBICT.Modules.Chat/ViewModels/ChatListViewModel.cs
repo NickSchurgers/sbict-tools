@@ -112,9 +112,13 @@ namespace SBICT.Modules.Chat.ViewModels
                 Title = "Group Invitation",
                 Content = $"You have been invited to {e.ChatGroup.Name}"
             };
+            
             ConfirmInviteRequest.Raise(confirm, result =>
             {
-                
+                if (result != null && result.Confirmed)
+                {
+                    _chatManager.JoinChatGroup(e.ChatGroup);
+                }
             });
         }
 

@@ -46,7 +46,7 @@
         </ResourceDictionary>
 
     </UserControl.Resources>
-    
+
     <i:Interaction.Triggers>
         <prism:InteractionRequestTrigger SourceObject="{Binding GroupCreateRequest, Mode=OneWay}">
             <prism:PopupWindowAction>
@@ -55,8 +55,11 @@
                 </prism:PopupWindowAction.WindowContent>
             </prism:PopupWindowAction>
         </prism:InteractionRequestTrigger>
+        <prism:InteractionRequestTrigger SourceObject="{Binding ConfirmInviteRequest, Mode=OneWay}">
+            <prism:PopupWindowAction IsModal="True" CenterOverAssociatedObject="True" />
+        </prism:InteractionRequestTrigger>
     </i:Interaction.Triggers>
-    
+
     <Grid d:DataContext="{d:DesignData /SampleData/ChatListSampleData.xaml}">
         <TreeView x:Name="ChatTree" ItemsSource="{Binding Channels}">
             <i:Interaction.Triggers>

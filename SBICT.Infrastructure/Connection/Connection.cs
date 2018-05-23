@@ -75,7 +75,7 @@ namespace SBICT.Infrastructure.Connection
                 }
                 catch (Exception e)
                 {
-                    Status = ConnectionStatus.Disconnected;
+                    await StopAsync();
                     throw new HubException(e.Message);
                 }
             }

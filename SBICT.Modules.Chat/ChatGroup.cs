@@ -30,5 +30,10 @@ namespace SBICT.Modules.Chat
         {
             return new ChatGroup(group.Name) {Id = group.Id};
         }
+
+        public static explicit operator Group(ChatGroup chatGroup)
+        {
+            return new Group(chatGroup.Id, chatGroup.Name);
+        }
     }
 }

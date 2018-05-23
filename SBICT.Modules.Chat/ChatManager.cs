@@ -65,6 +65,7 @@ namespace SBICT.Modules.Chat
         protected virtual void OnGroupInviteReceived(IChatGroup group)
         {
             GroupInviteReceived?.Invoke(this, new ChatGroupEventArgs(group));
+            _eventAggregator?.GetEvent<GroupInviteReceivedEvent>().Publish(group);
         }
 
         #endregion
@@ -106,20 +107,19 @@ namespace SBICT.Modules.Chat
             Connection.Hub.On<Guid, User, Message, ConnectionScope>("MessageReceived", OnMessageReceived);
 
             //Set up handling of group created notification
-            Connection.Hub.On<Group>("GroupCreated", grp => _uiContext.Send(x =>
+            Connection.Hub.On<Group>("GroupCreated", grp =>
             {
-                AddChatGroup((ChatGroup) grp);
                 SystemLogger.LogEvent($"{grp.Name} was created");
-            }, null));
+                _uiContext.Send(x => { AddChatGroup((ChatGroup) grp); }, null);
+            });
 
             //Set up handling of a group invite
-            Connection.Hub.On<Group>("GroupInvited", grp => _uiContext.Send(x =>
+            Connection.Hub.On<Group>("GroupInvited", grp =>
             {
                 var group = (ChatGroup) grp;
-                OnGroupInviteReceived(group);
-                _eventAggregator?.GetEvent<GroupInviteReceivedEvent>().Publish(group);
                 SystemLogger.LogEvent($"Invite received for group {group.Name}");
-            }, null));
+                _uiContext.Send(x => OnGroupInviteReceived(group), null);
+            });
 
             Connection.Hub.On<User>("GroupJoined", OnGroupJoined);
             Connection.Hub.On<User>("GroupLeft", OnGroupLeft);
@@ -152,6 +152,8 @@ namespace SBICT.Modules.Chat
             }
 
             AddChatChannel(new ChatChannel {Name = "Groups", IsExpanded = true});
+            var groups = await Connection.Hub.InvokeAsync<IEnumerable<Group>>("GetGroupsForUser", _user.Id);
+            //TODO: Add Groups when user connects with a new client
         }
 
         /// <summary>
@@ -171,6 +173,7 @@ namespace SBICT.Modules.Chat
         public void AddChatGroup(IChatGroup group)
         {
             Channels.ByName("Groups").ChatGroups.Add(group);
+            SystemLogger.LogEvent($"Group \"{group.Name}\" was added", LogLevel.Debug);
         }
 
         /// <summary>
@@ -239,6 +242,11 @@ namespace SBICT.Modules.Chat
         public async void JoinChatGroup(IChatGroup group)
         {
             await Connection.Hub.InvokeAsync("GroupJoin", group, _user.Id);
+        }
+
+        public async void InviteChatGroup(IChatGroup group, Guid userId)
+        {
+            await Connection.Hub.InvokeAsync("GroupInvite", group, userId);
         }
 
         #region Handlers

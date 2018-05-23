@@ -98,9 +98,12 @@ namespace SBICT.Modules.Chat.ViewModels
             var notification = new GroupInviteCreateNotification(_chatManager.ConnectedUsers) {Title = "Items"};
             GroupCreateRequest.Raise(notification, result =>
             {
-                if (result != null && result.Confirmed && result.GroupName != null)
+                if (result == null || !result.Confirmed || result.GroupName == null) return;
+                var group = new ChatGroup(result.GroupName);
+                _chatManager.JoinChatGroup(group);
+                foreach (var user in result.SelectedItems)
                 {
-                    _chatManager.JoinChatGroup(new ChatGroup(result.GroupName));
+                    _chatManager.InviteChatGroup(group, user.Id);
                 }
             });
         }
@@ -112,7 +115,7 @@ namespace SBICT.Modules.Chat.ViewModels
                 Title = "Group Invitation",
                 Content = $"You have been invited to {e.ChatGroup.Name}"
             };
-            
+
             ConfirmInviteRequest.Raise(confirm, result =>
             {
                 if (result != null && result.Confirmed)

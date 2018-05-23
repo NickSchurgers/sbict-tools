@@ -5,6 +5,7 @@ using System.Windows;
 using Microsoft.AspNetCore.Hosting;
 using SBICT.Data;
 using SBICT.Infrastructure;
+using SBICT.Infrastructure.Logger;
 using SBICT.WpfClient.Properties;
 
 namespace SBICT.WpfClient

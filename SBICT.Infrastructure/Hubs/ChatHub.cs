@@ -63,11 +63,11 @@ namespace SBICT.Infrastructure.Hubs
 
             GroupStore.Add(group.Id, userId.ToString());
 
-            if (GroupStore.GetConnections(group.Id).Count(c => c.Contains(userId.ToString())) <= 1)
+            if (GroupStore.GetConnections(group.Id).Count() <= 1)
             {
                 GroupList.Add(group);
                 await Clients.Group(group.Name).SendAsync("GroupCreated", group);
-            }
+            }                
             else
             {
                 await Clients.Group(group.Name).SendAsync("GroupJoined", UserList.Single(u => u.Id == userId));
@@ -82,8 +82,7 @@ namespace SBICT.Infrastructure.Hubs
         {
             var userConnections = UserConnectionStore.GetConnections(userId).ToList();
             var storedGroup = GroupList.Single(g => g.Id == group.Id);
-            await Clients.Clients(userConnections)
-                .SendAsync("GroupInvited", storedGroup);
+            await Clients.Clients(userConnections).SendAsync("GroupInvited", storedGroup);
         }
 
         /// <summary>
@@ -140,7 +139,7 @@ namespace SBICT.Infrastructure.Hubs
             }
 
 
-            await target.SendAsync("MessageReceived", recipient, UserList.First(u => u.Id == sender), message, scope);
+            await target.SendAsync("MessageReceived", recipient, UserList.Single(u => u.Id == sender), message, scope);
         }
     }
 }

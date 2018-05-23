@@ -7,6 +7,7 @@ using Prism.Mvvm;
 using SBICT.Data;
 using SBICT.Infrastructure;
 using SBICT.Infrastructure.Connection;
+using SBICT.Infrastructure.Logger;
 
 namespace SBICT.WpfClient.ViewModels
 {
@@ -90,6 +91,7 @@ namespace SBICT.WpfClient.ViewModels
             _systemConnection.ConnectionStatusChanged += SystemConnectionOnConnectionStatusChanged;
             _connectionManager.Set("System", _systemConnection);
             await _systemConnection.StartAsync();
+            SystemLogger.LogEvent($"Logged in as {user.DisplayName} with id {user.Id.ToString()}", LogLevel.Debug);
         }
 
         /// <summary>

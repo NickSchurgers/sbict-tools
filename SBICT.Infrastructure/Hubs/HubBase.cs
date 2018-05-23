@@ -60,7 +60,7 @@ namespace SBICT.Infrastructure.Hubs
             var query = Context.Features.Get<IHttpContextFeature>()?.HttpContext.Request.Query;
             query?.TryGetValue("guid", out var id);
             
-            var user = UserList.First(u => u.Id == Guid.Parse(id));
+            var user = UserList.Single(u => u.Id == Guid.Parse(id));
             UserConnectionStore.Remove(user.Id, Context.ConnectionId);
 
             if (!UserConnectionStore.GetConnections(user.Id).Any())

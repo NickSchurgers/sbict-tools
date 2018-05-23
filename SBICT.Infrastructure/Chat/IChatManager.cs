@@ -25,5 +25,6 @@ namespace SBICT.Infrastructure.Chat
         void RemoveChat(IChat chat);
         void RemoveChatGroup(IChatGroup chatGroup);
         void SendMessage(Guid recipient, string message, ConnectionScope scope);
+        void InviteChatGroup(IChatGroup group, Guid userId);
     }
 }

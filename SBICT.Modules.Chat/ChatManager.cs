@@ -1,285 +1,280 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Data;
-using Microsoft.AspNetCore.SignalR.Client;
-using Prism.Events;
-using Prism.Mvvm;
-using Prism.Regions;
-using SBICT.Data;
-using SBICT.Infrastructure;
-using SBICT.Infrastructure.Chat;
-using SBICT.Infrastructure.Connection;
-using SBICT.Infrastructure.Extensions;
-using SBICT.Infrastructure.Logger;
-using Group = SBICT.Data.Group;
-using SBICT.Modules.Chat.Extensions;
-
-namespace SBICT.Modules.Chat
+﻿namespace SBICT.Modules.Chat
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+    using System.ComponentModel;
+    using System.Linq;
+    using System.Threading;
+    using System.Windows;
+    using Microsoft.AspNetCore.SignalR.Client;
+    using Prism.Events;
+    using Prism.Mvvm;
+    using Prism.Regions;
+    using SBICT.Data;
+    using SBICT.Infrastructure;
+    using SBICT.Infrastructure.Chat;
+    using SBICT.Infrastructure.Connection;
+    using SBICT.Infrastructure.Extensions;
+    using SBICT.Infrastructure.Logger;
+    using SBICT.Modules.Chat.Extensions;
+
+    /// <inheritdoc cref="BindableBase" />
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class ChatManager : BindableBase, IChatManager
     {
-        #region Fields
-
-        private readonly SynchronizationContext _uiContext = SynchronizationContext.Current;
-        private readonly IEventAggregator _eventAggregator;
-        private readonly IConnectionManager<IConnection> _connectionManager;
-        private readonly IRegionManager _regionManager;
-        private readonly ISettingsManager _settingsManager;
-        private readonly User _user;
-
-        #endregion
-
-        #region Properties
-
-        public IConnection Connection { get; set; }
-        public IChatWindow ActiveChat { get; set; }
-        public ObservableCollection<IChatChannel> Channels { get; set; } = new ObservableCollection<IChatChannel>();
-        public ObservableCollection<IUser> ConnectedUsers { get; set; } = new ObservableCollection<IUser>();
-
-        #endregion
-
-        #region Events
-
-        public event EventHandler<ChatMessageEventArgs> ChatMessageReceived;
-        public event EventHandler<BroadcastEventArgs> BroadcastReceived;
-        public event EventHandler<ChatGroupEventArgs> GroupInviteReceived;
-
-        protected virtual void OnChatMessageReceived(IChatMessage chatMessage)
-        {
-            ChatMessageReceived?.Invoke(this, new ChatMessageEventArgs(chatMessage));
-            _eventAggregator.GetEvent<ChatMessageReceivedEvent>().Publish(chatMessage);
-        }
-
-        protected virtual void OnBroadcastReceived(IChatMessage chatMessage)
-        {
-            BroadcastReceived?.Invoke(this, new BroadcastEventArgs(chatMessage));
-        }
-
-        protected virtual void OnGroupInviteReceived(IChatGroup group)
-        {
-            GroupInviteReceived?.Invoke(this, new ChatGroupEventArgs(group));
-            _eventAggregator?.GetEvent<GroupInviteReceivedEvent>().Publish(group);
-        }
-
-        #endregion
+        private readonly SynchronizationContext uiContext = SynchronizationContext.Current;
+        private readonly IEventAggregator eventAggregator;
+        private readonly IConnectionManager<IConnection> connectionManager;
+        private readonly IRegionManager regionManager;
+        private readonly ISettingsManager settingsManager;
+        private readonly User user;
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the <see cref="ChatManager"/> class.
         /// </summary>
-        /// <param name="eventAggregator"></param>
-        /// <param name="connectionManager"></param>
-        /// <param name="regionManager"></param>
-        /// <param name="settingsManager"></param>
-        public ChatManager(IEventAggregator eventAggregator, IConnectionManager<IConnection> connectionManager,
-            IRegionManager regionManager, ISettingsManager settingsManager)
+        /// <param name="eventAggregator">Instance of Prism EventAggregator.</param>
+        /// <param name="connectionManager">Instance of ConnectionManager.</param>
+        /// <param name="regionManager">Instance of the Prism RegionManager.</param>
+        /// <param name="settingsManager">Instance of SettingsManager.</param>
+        public ChatManager(
+            IEventAggregator eventAggregator,
+            IConnectionManager<IConnection> connectionManager,
+            IRegionManager regionManager,
+            ISettingsManager settingsManager)
         {
-            _eventAggregator = eventAggregator;
-            _connectionManager = connectionManager;
+            this.eventAggregator = eventAggregator;
+            this.connectionManager = connectionManager;
 
-            _regionManager = regionManager;
-            _settingsManager = settingsManager;
-            _user = _settingsManager.User;
+            this.regionManager = regionManager;
+            this.settingsManager = settingsManager;
+            this.user = this.settingsManager.User;
 
             if (Application.Current.MainWindow != null)
-                Application.Current.MainWindow.Closing += OnMainWindowClosing;
-
-            InitHub();
-        }
-
-        /// <summary>
-        /// Initiate the connection with the chat hub
-        /// </summary>
-        private async void InitHub()
-        {
-            var (address, port) = _settingsManager.Server;
-            Connection =
-                ConnectionFactory.Create(
-                    $"{address}:{port}/hubs/chat?displayName={_user.DisplayName}&guid={_user.Id.ToString()}");
-            Connection.UserStatusChanged += OnUserStatusChanged;
-
-            Connection.Hub.On<Guid, User, Message, ConnectionScope>("MessageReceived", OnMessageReceived);
-
-            //Set up handling of group created notification
-            Connection.Hub.On<Group>("GroupCreated", grp =>
             {
-                SystemLogger.LogEvent($"{grp.Name} was created");
-                _uiContext.Send(x => { AddChatGroup((ChatGroup) grp); }, null);
-            });
-
-            //Set up handling of a group invite
-            Connection.Hub.On<Group>("GroupInvited", grp =>
-            {
-                var group = (ChatGroup) grp;
-                SystemLogger.LogEvent($"Invite received for group {group.Name}");
-                _uiContext.Send(x => OnGroupInviteReceived(group), null);
-            });
-
-            Connection.Hub.On<User>("GroupJoined", OnGroupJoined);
-            Connection.Hub.On<User>("GroupLeft", OnGroupLeft);
-
-            _connectionManager.Set("Chat", Connection);
-            await Connection.StartAsync();
-        }
-
-        /// <summary>
-        /// Dispose of the chat hub connection
-        /// </summary>
-        private async void DeinitHub()
-        {
-            _connectionManager.Unset("Chat");
-            await Connection.StopAsync();
-        }
-
-        /// <summary>
-        /// Create list of root nodes and populate the users node with a list of active users
-        /// </summary>
-        public async void InitChannels()
-        {
-            AddChatChannel(new ChatChannel {Name = "Users", IsExpanded = true});
-
-            var users = await Connection.Hub.InvokeAsync<IEnumerable<User>>("GetUserList", _user.Id);
-            ConnectedUsers = new ObservableCollection<IUser>(users.Cast<IUser>());
-            foreach (var user in ConnectedUsers)
-            {
-                AddChat(new Chat(user));
+                Application.Current.MainWindow.Closing += this.OnMainWindowClosing;
             }
 
-            AddChatChannel(new ChatChannel {Name = "Groups", IsExpanded = true});
-            var groups = await Connection.Hub.InvokeAsync<IEnumerable<Group>>("GetGroupsForUser", _user.Id);
-            //TODO: Add Groups when user connects with a new client
+            this.InitHub();
         }
 
-        /// <summary>
-        /// Add channel to list of channels
-        /// </summary>
-        /// <param name="channel"></param>
-        public void AddChatChannel(IChatChannel channel)
-        {
-            Channels.Add(channel);
-            SystemLogger.LogEvent($"Channel \"{channel.Name}\" was added", LogLevel.Debug);
-        }
+        /// <inheritdoc/>
+        public event EventHandler<ChatMessageEventArgs> ChatMessageReceived;
+
+        /// <inheritdoc/>
+        public event EventHandler<BroadcastEventArgs> BroadcastReceived;
+
+        /// <inheritdoc/>
+        public event EventHandler<ChatGroupEventArgs> GroupInviteReceived;
+
+        /// <inheritdoc/>
+        public IConnection Connection { get; set; }
+
+        /// <inheritdoc/>
+        public IChatWindow ActiveChat { get; set; }
+
+        /// <inheritdoc/>
+        public ObservableCollection<IChatChannel> Channels { get; set; } = new ObservableCollection<IChatChannel>();
+
+        /// <inheritdoc/>
+        public ObservableCollection<IUser> ConnectedUsers { get; set; } = new ObservableCollection<IUser>();
 
         /// <summary>
-        /// Add chatgroup to the groups channel
+        /// Activate a chat(group) by navigating to the chat window.
         /// </summary>
-        /// <param name="group"></param>
-        public void AddChatGroup(IChatGroup group)
-        {
-            Channels.ByName("Groups").ChatGroups.Add(group);
-            SystemLogger.LogEvent($"Group \"{group.Name}\" was added", LogLevel.Debug);
-        }
-
-        /// <summary>
-        /// Add chat to the users channel
-        /// </summary>
-        /// <param name="chat"></param>
-        public void AddChat(IChat chat)
-        {
-            Channels.ByName("Users").Chats.Add(chat);
-            SystemLogger.LogEvent($"{chat.Recipient.DisplayName} has joined");
-        }
-
-        /// <summary>
-        /// Activate a chat(group) by navigating to the chat window
-        /// </summary>
-        /// <param name="window"></param>
+        /// <param name="window">Window to activate.</param>
         public void ActivateWindow(IChatWindow window)
         {
-            if (ActiveChat != null)
+            if (this.ActiveChat != null)
             {
-                ActiveChat.IsActive = false;
+                this.ActiveChat.IsActive = false;
             }
 
             window.IsActive = true;
-            ActiveChat = window;
-            _regionManager.RequestNavigate(RegionNames.MainRegion, new Uri("ChatWindow", UriKind.Relative),
+            this.ActiveChat = window;
+            this.regionManager.RequestNavigate(
+                RegionNames.MainRegion,
+                new Uri("ChatWindow", UriKind.Relative),
                 new NavigationParameters {{"Chat", window}});
         }
 
         /// <summary>
-        /// Remove chat from user channel
+        /// Send a message.
         /// </summary>
-        /// <param name="chat"></param>
+        /// <param name="recipient">Target ot the message.</param>
+        /// <param name="message">Content of the message.</param>
+        /// <param name="scope">Scope of the message.</param>
+        public async void SendMessage(Guid recipient, string message, ConnectionScope scope)
+        {
+            var chatMessage = new ChatMessage(message, DateTime.Now);
+            await this.Connection.Hub.InvokeAsync("SendMessage", recipient, this.user.Id, chatMessage, scope);
+        }
+
+        /// <summary>
+        /// Create list of root nodes and populate the users node with a list of active users.
+        /// </summary>
+        public async void InitChannels()
+        {
+            this.AddChatChannel(new ChatChannel {Name = "Users", IsExpanded = true});
+
+            var users = await this.Connection.Hub.InvokeAsync<IEnumerable<User>>("GetUserList", this.user.Id);
+            this.ConnectedUsers = new ObservableCollection<IUser>(users.Cast<IUser>());
+            foreach (var connectedUser in this.ConnectedUsers)
+            {
+                this.AddChat(new Chat(connectedUser));
+            }
+
+            this.AddChatChannel(new ChatChannel {Name = "Groups", IsExpanded = true});
+            var groups = await this.Connection.Hub.InvokeAsync<IEnumerable<Group>>("GetGroupsForUser", this.user.Id);
+            //TODO: Add Groups when user connects with a new client
+        }
+
+        /// <summary>
+        /// Add channel to list of channels.
+        /// </summary>
+        /// <param name="channel">Channel to add.</param>
+        public void AddChatChannel(IChatChannel channel)
+        {
+            this.Channels.Add(channel);
+            SystemLogger.LogEvent($"Channel \"{channel.Name}\" was added", LogLevel.Debug);
+        }
+
+        /// <summary>
+        /// Add chat to the users channel.
+        /// </summary>
+        /// <param name="chat">Chat to add.</param>
+        public void AddChat(IChat chat)
+        {
+            this.Channels.ByName("Users").Chats.Add(chat);
+            SystemLogger.LogEvent($"{chat.Recipient.DisplayName} has joined");
+        }
+
+        /// <summary>
+        /// Remove chat from user channel.
+        /// </summary>
+        /// <param name="chat">Chat to remove.</param>
         public void RemoveChat(IChat chat)
         {
-            Channels.ByName("Users").Chats.RemoveAll(c => c.Recipient.Id == chat.Recipient.Id);
+            this.Channels.ByName("Users").Chats.RemoveAll(c => c.Recipient.Id == chat.Recipient.Id);
             SystemLogger.LogEvent($"{chat.Recipient.DisplayName} has left");
         }
 
         /// <summary>
-        /// Remove chat group from groups channel
+        /// Add chatgroup to the groups channel.
         /// </summary>
-        /// <param name="chatGroup"></param>
-        /// <exception cref="NotImplementedException"></exception>
+        /// <param name="chatGroup">Group to add.</param>
+        public void AddChatGroup(IChatGroup chatGroup)
+        {
+            this.Channels.ByName("Groups").ChatGroups.Add(chatGroup);
+            SystemLogger.LogEvent($"Group \"{chatGroup.Name}\" was added", LogLevel.Debug);
+        }
+
+        /// <summary>
+        /// Remove chat group from groups channel.
+        /// </summary>
+        /// <param name="chatGroup">Group to remove.</param>
         public void RemoveChatGroup(IChatGroup chatGroup)
         {
-            throw new NotImplementedException();
+            this.Channels.ByName("Groups").ChatGroups.Add(chatGroup);
+            SystemLogger.LogEvent($"Group \"{chatGroup.Name}\" was added", LogLevel.Debug);
         }
 
         /// <summary>
-        /// Send a message
+        /// Join group on server.
         /// </summary>
-        /// <param name="recipient"></param>
-        /// <param name="message"></param>
-        /// <param name="scope"></param>
-        public async void SendMessage(Guid recipient, string message, ConnectionScope scope)
-        {
-            var chatMessage = new ChatMessage(message, DateTime.Now);
-            await Connection.Hub.InvokeAsync("SendMessage", recipient, _user.Id, chatMessage, scope);
-        }
-
-        /// <summary>
-        /// Join group on server
-        /// </summary>
-        /// <param name="group"></param>
+        /// <param name="group">Group to join.</param>
         public async void JoinChatGroup(IChatGroup group)
         {
-            await Connection.Hub.InvokeAsync("GroupJoin", group, _user.Id);
+            await this.Connection.Hub.InvokeAsync("GroupJoin", group, this.user.Id);
         }
-
-        public async void InviteChatGroup(IChatGroup group, Guid userId)
-        {
-            await Connection.Hub.InvokeAsync("GroupInvite", group, userId);
-        }
-
-        #region Handlers
 
         /// <summary>
-        /// Handle received messages
+        /// Send invite request for the specified group to the specified user.
         /// </summary>
-        /// <param name="recipient"></param>
-        /// <param name="sender"></param>
-        /// <param name="message"></param>
-        /// <param name="scope"></param>
+        /// <param name="group">Group to invite to.</param>
+        /// <param name="userId">User to invite.</param>
+        public async void InviteChatGroup(IChatGroup group, Guid userId)
+        {
+            await this.Connection.Hub.InvokeAsync("GroupInvite", group, userId);
+        }
+
+        protected virtual void OnChatMessageReceived(IChatMessage chatMessage)
+        {
+            this.ChatMessageReceived?.Invoke(this, new ChatMessageEventArgs(chatMessage));
+            this.eventAggregator.GetEvent<ChatMessageReceivedEvent>().Publish(chatMessage);
+        }
+
+        protected virtual void OnBroadcastReceived(IChatMessage chatMessage)
+        {
+            this.BroadcastReceived?.Invoke(this, new BroadcastEventArgs(chatMessage));
+            this.eventAggregator.GetEvent<BroadcastReceivedEvent>().Publish(chatMessage);
+        }
+
+        protected virtual void OnGroupInviteReceived(IChatGroup group)
+        {
+            this.GroupInviteReceived?.Invoke(this, new ChatGroupEventArgs(group));
+            this.eventAggregator?.GetEvent<GroupInviteReceivedEvent>().Publish(group);
+        }
+
+        /// <summary>
+        /// Initiate the connection with the chat hub.
+        /// </summary>
+        private async void InitHub()
+        {
+            var (address, port) = this.settingsManager.Server;
+            this.Connection =
+                ConnectionFactory.Create(
+                    $"{address}:{port}/hubs/chat?displayName={this.user.DisplayName}&guid={this.user.Id.ToString()}");
+            this.Connection.UserStatusChanged += this.OnUserStatusChanged;
+
+            this.Connection.Hub.On<Guid, User, Message, ConnectionScope>("MessageReceived", this.OnMessageReceived);
+
+            //Set up handling of group creation
+            this.Connection.Hub.On<Group>("GroupCreated", this.OnGroupCreated);
+
+            //Set up handling of a group invite.
+            this.Connection.Hub.On<Group>("GroupInvited", this.OnGroupInvited);
+
+            //Set up handling of group join.
+            this.Connection.Hub.On<Group, User>("GroupJoined", this.OnGroupJoined);
+
+            //Set up handling of group leave.
+            this.Connection.Hub.On<Group, User>("GroupLeft", this.OnGroupLeft);
+
+            this.connectionManager.Set("Chat", this.Connection);
+            await this.Connection.StartAsync();
+        }
+
+
+        /// <summary>
+        /// Handle received messages.
+        /// </summary>
+        /// <param name="recipient">Target of message.</param>
+        /// <param name="sender">Sender of message.</param>
+        /// <param name="message">Content of message.</param>
+        /// <param name="scope">Scope of message.</param>
         private void OnMessageReceived(Guid recipient, User sender, Message message, ConnectionScope scope)
         {
             var chatMessage = new ChatMessage(message.Content, message.Received)
             {
                 Recipient = recipient,
-                Sender = sender
+                Sender = sender,
             };
 
             switch (scope)
             {
                 case ConnectionScope.User:
-                    var chat = (Chat) Channels.ByName("Users").Chats.ById(chatMessage.Sender.Id);
-                    _uiContext.Send(x => chat.Messages.Add(chatMessage), null);
-                    OnChatMessageReceived(chatMessage);
+                    var chat = (Chat) this.Channels.ByName("Users").Chats.ById(chatMessage.Sender.Id);
+                    this.uiContext.Send(x => chat.Messages.Add(chatMessage), null);
+                    this.OnChatMessageReceived(chatMessage);
                     break;
                 case ConnectionScope.Group:
-                    var group = (ChatGroup) Channels.ByName("Groups").ChatGroups.ById(chatMessage.Recipient);
-                    _uiContext.Send(x => group.Messages.Add(chatMessage), null);
-                    OnChatMessageReceived(chatMessage);
+                    var group = (ChatGroup) this.Channels.ByName("Groups").ChatGroups.ById(chatMessage.Recipient);
+                    this.uiContext.Send(x => group.Messages.Add(chatMessage), null);
+                    this.OnChatMessageReceived(chatMessage);
                     break;
                 case ConnectionScope.Broadcast:
-                    OnBroadcastReceived(chatMessage);
+                    this.OnBroadcastReceived(chatMessage);
                     break;
                 case ConnectionScope.System:
                     SystemLogger.LogEvent(chatMessage.Content, LogLevel.Broadcast);
@@ -287,37 +282,86 @@ namespace SBICT.Modules.Chat
             }
         }
 
-        private void OnGroupLeft(User obj)
+        /// <summary>
+        /// Triggered when a new group is created on teh server.
+        /// </summary>
+        /// <param name="group">Created group.</param>
+        private void OnGroupCreated(Group group)
         {
-            throw new NotImplementedException();
-        }
-
-        private void OnGroupJoined(User obj)
-        {
-            throw new NotImplementedException();
+            SystemLogger.LogEvent($"{group.Name} was created.");
+            this.uiContext.Send(x => { this.AddChatGroup((ChatGroup) group); }, null);
         }
 
         /// <summary>
-        /// Triggered when a user (dis)connects from the chat hub
+        /// Triggered when receiving a group invitation.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <param name="group">Group invited to.</param>
+        private void OnGroupInvited(Group group)
+        {
+            var chatGroup = (ChatGroup) group;
+            SystemLogger.LogEvent($"Invite received for group {chatGroup.Name}.");
+            this.uiContext.Send(x => this.OnGroupInviteReceived(chatGroup), null);
+        }
+
+        /// <summary>
+        /// Triggered when a user leaves a group.
+        /// </summary>
+        /// <param name="group">Group being left.</param>
+        /// <param name="leaver">User leaving the group.</param>
+        private void OnGroupLeft(Group group, User leaver)
+        {
+            var chatGroup = (ChatGroup) group;
+            if (leaver.Id == this.user.Id)
+            {
+                SystemLogger.LogEvent($"Group {chatGroup.Name} joined.");
+                this.uiContext.Send(x => this.RemoveChatGroup(chatGroup), null);
+            }
+            else
+            {
+                SystemLogger.LogEvent($"{leaver.DisplayName} has left {chatGroup.Name}.");
+            }
+        }
+
+        /// <summary>
+        /// Triggerd when a user joins a group.
+        /// </summary>
+        /// <param name="group">Group being joined.</param>
+        /// <param name="joiner">User joining the group.</param>
+        private void OnGroupJoined(Group group, User joiner)
+        {
+            var chatGroup = (ChatGroup) group;
+            if (joiner.Id == this.user.Id)
+            {
+                SystemLogger.LogEvent($"Group {chatGroup.Name} joined.");
+                this.uiContext.Send(x => this.AddChatGroup(chatGroup), null);
+            }
+            else
+            {
+                SystemLogger.LogEvent($"{joiner.DisplayName} has joined {chatGroup.Name}.");
+            }
+        }
+
+        /// <summary>
+        /// Triggered when a user (dis)connects from the chat hub.
+        /// </summary>
+        /// <param name="sender">Event Sender.</param>
+        /// <param name="e">Event arguments.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when event Status is non existing.</exception>
         private void OnUserStatusChanged(object sender, ConnectionEventArgs e)
         {
-            IUser user;
+            IUser subject;
             switch (e.Status)
             {
                 case ConnectionStatus.Connected:
-                    user = e.User;
-                    ConnectedUsers.Add(user);
-                    _uiContext.Send(x => AddChat(new Chat(user)), null);
+                    subject = e.User;
+                    this.ConnectedUsers.Add(subject);
+                    this.uiContext.Send(x => this.AddChat(new Chat(subject)), null);
                     break;
                 case ConnectionStatus.Disconnected:
-                    user = ConnectedUsers.Single(u => u.Id == e.User.Id);
-                    var chat = Channels.ByName("Users").Chats.ById(user.Id);
-                    ConnectedUsers.Remove(user);
-                    _uiContext.Send(x => RemoveChat(chat), null);
+                    subject = this.ConnectedUsers.Single(u => u.Id == e.User.Id);
+                    var chat = this.Channels.ByName("Users").Chats.ById(subject.Id);
+                    this.ConnectedUsers.Remove(subject);
+                    this.uiContext.Send(x => this.RemoveChat(chat), null);
                     break;
                 case ConnectionStatus.Connecting:
                 case ConnectionStatus.Reconnecting:
@@ -328,15 +372,14 @@ namespace SBICT.Modules.Chat
         }
 
         /// <summary>
-        /// Triggered on closing of the main window
+        /// Triggered on closing of the main window.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnMainWindowClosing(object sender, CancelEventArgs e)
+        /// <param name="sender">Event Sender.</param>
+        /// <param name="e">Event arguments.</param>
+        private async void OnMainWindowClosing(object sender, CancelEventArgs e)
         {
-            DeinitHub();
+            this.connectionManager.Unset("Chat");
+            await this.Connection.StopAsync();
         }
-
-        #endregion
     }
 }

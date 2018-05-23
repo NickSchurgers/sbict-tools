@@ -58,6 +58,9 @@
         <prism:InteractionRequestTrigger SourceObject="{Binding ConfirmInviteRequest, Mode=OneWay}">
             <prism:PopupWindowAction IsModal="True" CenterOverAssociatedObject="True" />
         </prism:InteractionRequestTrigger>
+        <prism:InteractionRequestTrigger SourceObject="{Binding BroadcastRequest, Mode=OneWay}">
+            <prism:PopupWindowAction IsModal="True" CenterOverAssociatedObject="True" />
+        </prism:InteractionRequestTrigger>
     </i:Interaction.Triggers>
 
     <Grid d:DataContext="{d:DesignData /SampleData/ChatListSampleData.xaml}">

@@ -1,109 +1,100 @@
-﻿using Prism.Commands;
-using Prism.Mvvm;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Threading;
-using System.Xml.Linq;
-using Microsoft.AspNetCore.SignalR.Client;
-using Prism.Events;
-using Prism.Interactivity.InteractionRequest;
-using Prism.Regions;
-using SBICT.Infrastructure;
-using SBICT.Infrastructure.Chat;
-using SBICT.Infrastructure.Connection;
-using SBICT.Infrastructure.Extensions;
-
-namespace SBICT.Modules.Chat.ViewModels
+﻿namespace SBICT.Modules.Chat.ViewModels
 {
+    using System.Collections.ObjectModel;
+    using Prism.Commands;
+    using Prism.Interactivity.InteractionRequest;
+    using Prism.Mvvm;
+    using SBICT.Infrastructure.Chat;
+
+    /// <inheritdoc />
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class ChatListViewModel : BindableBase
     {
-        #region Commands
+        private readonly IChatManager chatManager;
+        private ObservableCollection<IChatChannel> channels = new ObservableCollection<IChatChannel>();
 
-        public DelegateCommand<object> ChatListSelectedItemChanged { get; set; }
-        public DelegateCommand ChatListAddGroup { get; set; }
-
-        #endregion
-
-        #region Fields
-
-        private readonly IChatManager _chatManager;
-        private ObservableCollection<IChatChannel> _channels = new ObservableCollection<IChatChannel>();
-
-        #endregion
-
-        #region Properties
 
         /// <summary>
-        /// Collection of chatgroups used as root node in the treeview
+        /// Initializes a new instance of the <see cref="ChatListViewModel"/> class.
+        /// </summary>
+        /// <param name="chatManager">Instance of chat manager.</param>
+        public ChatListViewModel(IChatManager chatManager)
+        {
+            this.chatManager = chatManager;
+            this.chatManager.InitChannels();
+            this.chatManager.GroupInviteReceived += this.OnGroupInviteReceived;
+
+            this.ChatListSelectedItemChanged = new DelegateCommand<object>(this.OnSelectedItemChanged);
+            this.ChatListAddGroup = new DelegateCommand(this.OnChatListAddGroup);
+
+            this.Channels = this.chatManager.Channels;
+            this.GroupCreateRequest = new InteractionRequest<GroupInviteCreateNotification>();
+            this.ConfirmInviteRequest = new InteractionRequest<IConfirmation>();
+            this.BroadcastRequest = new InteractionRequest<INotification>();
+        }
+        
+        /// <summary>
+        /// Gets or Sets Command triggered when selection changes.
+        /// </summary>
+        public DelegateCommand<object> ChatListSelectedItemChanged { get; set; }
+
+        /// <summary>
+        /// Gets or Sets Command triggered when the add group button is pressed.
+        /// </summary>
+        public DelegateCommand ChatListAddGroup { get; set; }
+
+        /// <summary>
+        /// Gets or Sets collection of channels.
         /// </summary>
         public ObservableCollection<IChatChannel> Channels
         {
-            get => _channels;
-            set => SetProperty(ref _channels, value);
+            get => this.channels;
+            set => this.SetProperty(ref this.channels, value);
         }
-
-        public InteractionRequest<GroupInviteCreateNotification> GroupCreateRequest { get; private set; }
-        public InteractionRequest<IConfirmation> ConfirmInviteRequest { get; private set; }
-
-        #endregion
-
-        #region Methods
 
         /// <summary>
-        /// Constructor
+        /// Gets the group create group popup request.
         /// </summary>
-        public ChatListViewModel(IChatManager chatManager)
-        {
-            _chatManager = chatManager;
-            _chatManager.InitChannels();
-            _chatManager.GroupInviteReceived += OnGroupInviteReceived;
+        public InteractionRequest<GroupInviteCreateNotification> GroupCreateRequest { get; private set; }
 
-            ChatListSelectedItemChanged = new DelegateCommand<object>(OnSelectedItemChanged);
-            ChatListAddGroup = new DelegateCommand(OnChatListAddGroup);
+        /// <summary>
+        /// Gets the group invitation popup request.
+        /// </summary>
+        public InteractionRequest<IConfirmation> ConfirmInviteRequest { get; private set; }
 
-            Channels = _chatManager.Channels;
-            GroupCreateRequest = new InteractionRequest<GroupInviteCreateNotification>();
-            ConfirmInviteRequest = new InteractionRequest<IConfirmation>();
-        }
-
-        #endregion
-
-        #region Event Handlers
+        /// <summary>
+        /// Gets the broadcast popup request.
+        /// </summary>
+        public InteractionRequest<INotification> BroadcastRequest { get; private set; }
 
         private void OnSelectedItemChanged(object obj)
         {
             switch (obj)
             {
                 case Chat chat:
-                    _chatManager.ActivateWindow(chat);
+                    this.chatManager.ActivateWindow(chat);
                     break;
                 case ChatGroup group:
-                    _chatManager.ActivateWindow(group);
+                    this.chatManager.ActivateWindow(group);
                     break;
             }
         }
 
         private void OnChatListAddGroup()
         {
-            var notification = new GroupInviteCreateNotification(_chatManager.ConnectedUsers) {Title = "Items"};
-            GroupCreateRequest.Raise(notification, result =>
+            var notification = new GroupInviteCreateNotification(this.chatManager.ConnectedUsers) {Title = "Items"};
+            this.GroupCreateRequest.Raise(notification, result =>
             {
-                if (result == null || !result.Confirmed || result.GroupName == null) return;
+                if (result == null || !result.Confirmed || result.GroupName == null)
+                {
+                    return;
+                }
+
                 var group = new ChatGroup(result.GroupName);
-                _chatManager.JoinChatGroup(group);
+                this.chatManager.JoinChatGroup(group);
                 foreach (var user in result.SelectedItems)
                 {
-                    _chatManager.InviteChatGroup(group, user.Id);
+                    this.chatManager.InviteChatGroup(group, user.Id);
                 }
             });
         }
@@ -113,18 +104,16 @@ namespace SBICT.Modules.Chat.ViewModels
             var confirm = new Confirmation
             {
                 Title = "Group Invitation",
-                Content = $"You have been invited to {e.ChatGroup.Name}"
+                Content = $"You have been invited to {e.ChatGroup.Name}",
             };
 
-            ConfirmInviteRequest.Raise(confirm, result =>
+            this.ConfirmInviteRequest.Raise(confirm, result =>
             {
                 if (result != null && result.Confirmed)
                 {
-                    _chatManager.JoinChatGroup(e.ChatGroup);
+                    this.chatManager.JoinChatGroup(e.ChatGroup);
                 }
             });
         }
-
-        #endregion
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SBICT.Infrastructure.Chat
+﻿namespace SBICT.Infrastructure.Chat
 {
     public class BroadcastEventArgs : ChatMessageEventArgs
     {

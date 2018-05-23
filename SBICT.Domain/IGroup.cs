@@ -5,6 +5,6 @@ namespace SBICT.Data
     public interface IGroup
     {
         Guid Id { get; }
-        string Name { get; set; }
+        string Name { get;  }
     }
 }

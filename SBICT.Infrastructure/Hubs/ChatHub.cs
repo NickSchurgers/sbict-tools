@@ -40,6 +40,12 @@ namespace SBICT.Infrastructure.Hubs
 
         #region Group Methods
 
+        /// <summary>
+        /// Return a list of groups the user is currently connected to on other clients.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        // ReSharper disable once UnusedMember.Global
         public IEnumerable<Group> GetGroupsForUser(Guid userId)
         {
             var connectedGroups = GroupStore.GetByConnection(userId.ToString());
@@ -47,15 +53,16 @@ namespace SBICT.Infrastructure.Hubs
         }
 
         /// <summary>
-        /// Join a group or create if not exists
+        /// Join a group or create if not exists.
         /// </summary>
         /// <param name="group"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
+        // ReSharper disable once UnusedMember.Global
         public async Task GroupJoin(Group group, Guid userId)
         {
             var userConnections = UserConnectionStore.GetConnections(userId).ToList();
-
+            var user = UserList.Single(u => u.Id == userId);
             foreach (var conId in userConnections)
             {
                 await Groups.AddToGroupAsync(conId, group.Name);
@@ -67,17 +74,18 @@ namespace SBICT.Infrastructure.Hubs
             {
                 GroupList.Add(group);
                 await Clients.Group(group.Name).SendAsync("GroupCreated", group);
-            }                
+            }
             else
             {
-                await Clients.Group(group.Name).SendAsync("GroupJoined", UserList.Single(u => u.Id == userId));
+                await Clients.Group(group.Name).SendAsync("GroupJoined", group, user);
             }
         }
 
         /// <summary>
-        /// Invite a client to join a group
+        /// Invite a client to join a group.
         /// </summary>
         /// <returns></returns>
+        // ReSharper disable once UnusedMember.Global
         public async Task GroupInvite(Group group, Guid userId)
         {
             var userConnections = UserConnectionStore.GetConnections(userId).ToList();
@@ -86,11 +94,12 @@ namespace SBICT.Infrastructure.Hubs
         }
 
         /// <summary>
-        /// Leave a group
+        /// Leave a group.
         /// </summary>
         /// <param name="group"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
+        // ReSharper disable once UnusedMember.Global
         public async Task GroupLeave(Group group, Guid userId)
         {
             var userConnections = UserConnectionStore.GetConnections(userId).ToList();
@@ -102,7 +111,7 @@ namespace SBICT.Infrastructure.Hubs
 
             GroupStore.Remove(group.Id, user.Id.ToString());
 
-            await Clients.Group(group.Name).SendAsync("GroupLeft", user);
+            await Clients.Group(group.Name).SendAsync("GroupLeft", group, user);
 
             if (!GroupStore.GetConnections(group.Id).Any())
             {
@@ -113,7 +122,7 @@ namespace SBICT.Infrastructure.Hubs
         #endregion
 
         /// <summary>
-        /// Send message to a user/group
+        /// Send message to a user/group.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="message"></param>
@@ -121,6 +130,7 @@ namespace SBICT.Infrastructure.Hubs
         /// <param name="recipient"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
+        // ReSharper disable once UnusedMember.Global
         public async Task SendMessage(Guid recipient, Guid sender, Message message, ConnectionScope scope)
         {
             IClientProxy target;

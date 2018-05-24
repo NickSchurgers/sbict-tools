@@ -1,40 +1,38 @@
-﻿using Prism.Mvvm;
-using System.Collections.ObjectModel;
-using Prism.Events;
-using SBICT.Infrastructure;
-using SBICT.Infrastructure.Logger;
-
-namespace SBICT.Modules.SystemLog.ViewModels
+﻿namespace SBICT.Modules.SystemLog.ViewModels
 {
+    using System.Collections.ObjectModel;
+    using Prism.Events;
+    using Prism.Mvvm;
+    using SBICT.Infrastructure;
+    using SBICT.Infrastructure.Logger;
+
+    /// <inheritdoc />
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class SystemLogWindowViewModel : BindableBase
     {
-        #region Fields
-
-        public ObservableCollection<Log> LogEntries { get; } =
-            new ObservableCollection<Log> {new Log {Message = "Application Starting", LogLevel = LogLevel.Info}};
-
-        #endregion
-
-        #region Methods
-
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the <see cref="SystemLogWindowViewModel"/> class.
         /// </summary>
-        /// <param name="eventAggregator"></param>
+        /// <param name="eventAggregator">Prism EventAggreggator.</param>
         public SystemLogWindowViewModel(IEventAggregator eventAggregator)
         {
-            eventAggregator.GetEvent<SystemLogEvent>().Subscribe(WriteLine, ThreadOption.UIThread);
+            eventAggregator.GetEvent<SystemLogEvent>().Subscribe(this.WriteLine, ThreadOption.UIThread);
+            this.LogEntries =
+                new ObservableCollection<Log> {new Log {Message = "Application Starting", LogLevel = LogLevel.Info}};
         }
 
         /// <summary>
-        /// Append a log to the logentries collection
+        /// Gets a collection of all logged items.
         /// </summary>
-        /// <param name="log"></param>
+        public ObservableCollection<Log> LogEntries { get; }
+
+        /// <summary>
+        /// Append a log to the logentries collection.
+        /// </summary>
+        /// <param name="log">Log instance.</param>
         private void WriteLine(Log log)
         {
-            LogEntries.Add(log);
+            this.LogEntries.Add(log);
         }
-
-        #endregion
     }
 }

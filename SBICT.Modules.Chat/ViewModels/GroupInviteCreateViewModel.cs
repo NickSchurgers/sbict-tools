@@ -1,63 +1,86 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Windows;
-using Prism.Commands;
-using Prism.Interactivity.InteractionRequest;
-using Prism.Mvvm;
-using SBICT.Data;
-
-namespace SBICT.Modules.Chat.ViewModels
+﻿namespace SBICT.Modules.Chat.ViewModels
 {
+    using System;
+    using System.Collections;
+    using System.Linq;
+    using Prism.Commands;
+    using Prism.Interactivity.InteractionRequest;
+    using Prism.Mvvm;
+    using SBICT.Data;
+
+    /// <inheritdoc cref="BindableBase" />
+    /// <inheritdoc cref="IInteractionRequest" />
+    /// <summary>
+    /// ViewModel for GroupInviteCreate.xaml.
+    /// </summary>
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class GroupInviteCreateViewModel : BindableBase, IInteractionRequestAware
     {
-        private GroupInviteCreateNotification _notification;
+        private GroupInviteCreateNotification notification;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupInviteCreateViewModel"/> class.
+        /// </summary>
+        public GroupInviteCreateViewModel()
+        {
+            this.OkCommand = new DelegateCommand<object>(this.OnOkClick);
+            this.CancelCommand = new DelegateCommand(this.OnCancelClick);
+        }
+
+        /// <summary>
+        /// Gets the command raised when pressing the Ok button.
+        /// </summary>
         public DelegateCommand<object> OkCommand { get; private set; }
+
+        /// <summary>
+        /// Gets the command raised when pressing the Cancel button.
+        /// </summary>
         public DelegateCommand CancelCommand { get; private set; }
 
+        /// <inheritdoc/>
         public Action FinishInteraction { get; set; }
 
+        /// <inheritdoc/>
         public INotification Notification
         {
-            get => _notification;
+            get => this.notification;
             set
             {
-                if (value is GroupInviteCreateNotification notification)
+                if (value is GroupInviteCreateNotification inviteCreateNotification)
                 {
-                    _notification = notification;
-                    RaisePropertyChanged();
+                    this.notification = inviteCreateNotification;
+                    this.RaisePropertyChanged();
                 }
             }
         }
 
-        public GroupInviteCreateViewModel()
-        {
-            OkCommand = new DelegateCommand<object>(OnOkClick);
-            CancelCommand = new DelegateCommand(OnCancelClick);
-        }
-
+        /// <summary>
+        /// Raised when cancel is clicked.
+        /// </summary>
         private void OnCancelClick()
         {
-            if (_notification != null)
+            if (this.notification != null)
             {
-                _notification.SelectedItems = null;
-                _notification.Confirmed = false;
+                this.notification.SelectedItems = null;
+                this.notification.Confirmed = false;
             }
 
-            FinishInteraction();
+            this.FinishInteraction();
         }
 
+        /// <summary>
+        /// Raised when Ok is clicked.
+        /// </summary>
+        /// <param name="obj">Selected Items.</param>
         private void OnOkClick(object obj)
         {
-            if (_notification != null)
+            if (this.notification != null)
             {
-                _notification.SelectedItems = ((IList) obj).Cast<IUser>().ToList();
-                _notification.Confirmed = true;
+                this.notification.SelectedItems = ((IList)obj).Cast<IUser>().ToList();
+                this.notification.Confirmed = true;
             }
 
-            FinishInteraction();
+            this.FinishInteraction();
         }
     }
 }

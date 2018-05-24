@@ -1,25 +1,37 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using Prism.Mvvm;
-using SBICT.Infrastructure.Chat;
-using SBICT.Infrastructure.Connection;
-
-namespace SBICT.Modules.Chat
+﻿namespace SBICT.Modules.Chat
 {
+    using System;
+    using System.Collections.ObjectModel;
+    using Prism.Mvvm;
+    using SBICT.Infrastructure.Chat;
+    using SBICT.Infrastructure.Connection;
+
+    /// <inheritdoc cref="IChatWindow" />
     public abstract class ChatBase : BindableBase, IChatWindow
     {
-        public string Title { get; set; }
-        public bool IsActive { get; set; }
-        public ConnectionScope Scope { get; }
-        public ObservableCollection<IChatMessage> Messages { get; }
-
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChatBase"/> class.
+        /// </summary>
+        /// <param name="scope">Scope of recipient of the window.</param>
         protected ChatBase(ConnectionScope scope)
         {
-            Scope = scope;
-            Messages = new ObservableCollection<IChatMessage>();
+            this.Scope = scope;
+            this.Messages = new ObservableCollection<IChatMessage>();
         }
 
+        /// <inheritdoc/>
+        public string Title { get; set; }
+
+        /// <inheritdoc/>
+        public bool IsActive { get; set; }
+
+        /// <inheritdoc/>
+        public ConnectionScope Scope { get; }
+
+        /// <inheritdoc/>
+        public ObservableCollection<IChatMessage> Messages { get; }
+
+        /// <inheritdoc/>
         public abstract Guid GetRecipient();
     }
 }

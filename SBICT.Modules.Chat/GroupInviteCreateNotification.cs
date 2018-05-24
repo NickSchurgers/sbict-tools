@@ -1,34 +1,49 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Prism.Interactivity.InteractionRequest;
-using SBICT.Data;
-
-namespace SBICT.Modules.Chat
+﻿namespace SBICT.Modules.Chat
 {
+    using System.Collections.Generic;
+    using Prism.Interactivity.InteractionRequest;
+    using SBICT.Data;
+
+    /// <inheritdoc />
     public class GroupInviteCreateNotification : Confirmation
     {
-        public bool IsNew { get; private set; }
-        public string GroupName { get; set; }
-
-        public GroupInviteCreateNotification(string groupName = null)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupInviteCreateNotification"/> class.
+        /// </summary>
+        /// <param name="items">List of Users to invite.</param>
+        /// <param name="groupName">Name of the group to create or invite to.</param>
+        public GroupInviteCreateNotification(IEnumerable<IUser> items, string groupName = null)
         {
-            Items = new List<IUser>();
-            SelectedItems = new List<IUser>();
-            GroupName = groupName ?? "New Group";
-            IsNew = groupName == null;
-        }
+            this.Items = new List<IUser>();
+            this.SelectedItems = new List<IUser>();
+            this.GroupName = groupName ?? "New Group";
+            this.IsNew = groupName == null;
 
-        public GroupInviteCreateNotification(IEnumerable<IUser> items, string groupName = null) : this(groupName)
-        {
             foreach (var item in items)
             {
-                Items.Add(item);
+                this.Items.Add(item);
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether the group is new or existing. 
+        /// </summary>
+        public bool IsNew { get; }
+
+        /// <summary>
+        /// Gets the name of the group.
+        /// </summary>
+        public string GroupName { get; }
+
+        /// <summary>
+        /// Gets or sets the items selected.
+        /// </summary>
         public IList<IUser> SelectedItems { get; set; }
 
-        public IList<IUser> Items { get; private set; }
+        /// <summary>
+        /// Gets the Items to pick from.
+        /// </summary>
+        // ReSharper disable once CollectionNeverQueried.Global
+        public IList<IUser> Items { get; }
     }
 }

@@ -7,6 +7,9 @@
     using SBICT.Infrastructure.Chat;
 
     /// <inheritdoc />
+    /// <summary>
+    /// Viewmodel for ChatList.xaml.
+    /// </summary>
     // ReSharper disable once ClassNeverInstantiated.Global
     public class ChatListViewModel : BindableBase
     {
@@ -32,7 +35,7 @@
             this.ConfirmInviteRequest = new InteractionRequest<IConfirmation>();
             this.BroadcastRequest = new InteractionRequest<INotification>();
         }
-        
+
         /// <summary>
         /// Gets or Sets Command triggered when selection changes.
         /// </summary>
@@ -67,6 +70,10 @@
         /// </summary>
         public InteractionRequest<INotification> BroadcastRequest { get; private set; }
 
+        /// <summary>
+        /// Raised when a Chat or ChatGroup gets selected.
+        /// </summary>
+        /// <param name="obj">Chat or ChatGroup.</param>
         private void OnSelectedItemChanged(object obj)
         {
             switch (obj)
@@ -80,6 +87,9 @@
             }
         }
 
+        /// <summary>
+        /// Raised when the Add Group button gets clicked.
+        /// </summary>
         private void OnChatListAddGroup()
         {
             var notification = new GroupInviteCreateNotification(this.chatManager.ConnectedUsers) {Title = "Items"};
@@ -99,6 +109,11 @@
             });
         }
 
+        /// <summary>
+        /// Raised when a group invite is received.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">ChatGroupEventArgs.</param>
         private void OnGroupInviteReceived(object sender, ChatGroupEventArgs e)
         {
             var confirm = new Confirmation

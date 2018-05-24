@@ -19,7 +19,7 @@
     using SBICT.Infrastructure.Logger;
     using SBICT.Modules.Chat.Extensions;
 
-    /// <inheritdoc cref="BindableBase" />
+    /// <inheritdoc cref="IChatManager" />
     // ReSharper disable once ClassNeverInstantiated.Global
     public class ChatManager : BindableBase, IChatManager
     {
@@ -58,14 +58,15 @@
             this.InitHub();
         }
 
+
+        /// <inheritdoc/>
+        public event EventHandler<ChatGroupEventArgs> GroupInviteReceived;
+
         /// <inheritdoc/>
         public event EventHandler<ChatMessageEventArgs> ChatMessageReceived;
 
         /// <inheritdoc/>
         public event EventHandler<BroadcastEventArgs> BroadcastReceived;
-
-        /// <inheritdoc/>
-        public event EventHandler<ChatGroupEventArgs> GroupInviteReceived;
 
         /// <inheritdoc/>
         public IConnection Connection { get; set; }
@@ -79,10 +80,7 @@
         /// <inheritdoc/>
         public ObservableCollection<IUser> ConnectedUsers { get; set; } = new ObservableCollection<IUser>();
 
-        /// <summary>
-        /// Activate a chat(group) by navigating to the chat window.
-        /// </summary>
-        /// <param name="window">Window to activate.</param>
+        /// <inheritdoc/>
         public void ActivateWindow(IChatWindow window)
         {
             if (this.ActiveChat != null)
@@ -98,21 +96,14 @@
                 new NavigationParameters {{"Chat", window}});
         }
 
-        /// <summary>
-        /// Send a message.
-        /// </summary>
-        /// <param name="recipient">Target ot the message.</param>
-        /// <param name="message">Content of the message.</param>
-        /// <param name="scope">Scope of the message.</param>
+        /// <inheritdoc />
         public async void SendMessage(Guid recipient, string message, ConnectionScope scope)
         {
             var chatMessage = new ChatMessage(message, DateTime.Now);
             await this.Connection.Hub.InvokeAsync("SendMessage", recipient, this.user.Id, chatMessage, scope);
         }
 
-        /// <summary>
-        /// Create list of root nodes and populate the users node with a list of active users.
-        /// </summary>
+        /// <inheritdoc />
         public async void InitChannels()
         {
             this.AddChatChannel(new ChatChannel {Name = "Users", IsExpanded = true});
@@ -125,95 +116,85 @@
             }
 
             this.AddChatChannel(new ChatChannel {Name = "Groups", IsExpanded = true});
-            var groups = await this.Connection.Hub.InvokeAsync<IEnumerable<Group>>("GetGroupsForUser", this.user.Id);
+            //var groups = await this.Connection.Hub.InvokeAsync<IEnumerable<Group>>("GetGroupsForUser", this.user.Id);
             //TODO: Add Groups when user connects with a new client
         }
 
-        /// <summary>
-        /// Add channel to list of channels.
-        /// </summary>
-        /// <param name="channel">Channel to add.</param>
+        /// <inheritdoc />
         public void AddChatChannel(IChatChannel channel)
         {
             this.Channels.Add(channel);
             SystemLogger.LogEvent($"Channel \"{channel.Name}\" was added", LogLevel.Debug);
         }
 
-        /// <summary>
-        /// Add chat to the users channel.
-        /// </summary>
-        /// <param name="chat">Chat to add.</param>
-        public void AddChat(IChat chat)
-        {
-            this.Channels.ByName("Users").Chats.Add(chat);
-            SystemLogger.LogEvent($"{chat.Recipient.DisplayName} has joined");
-        }
-
-        /// <summary>
-        /// Remove chat from user channel.
-        /// </summary>
-        /// <param name="chat">Chat to remove.</param>
-        public void RemoveChat(IChat chat)
-        {
-            this.Channels.ByName("Users").Chats.RemoveAll(c => c.Recipient.Id == chat.Recipient.Id);
-            SystemLogger.LogEvent($"{chat.Recipient.DisplayName} has left");
-        }
-
-        /// <summary>
-        /// Add chatgroup to the groups channel.
-        /// </summary>
-        /// <param name="chatGroup">Group to add.</param>
+        /// <inheritdoc/>
         public void AddChatGroup(IChatGroup chatGroup)
         {
             this.Channels.ByName("Groups").ChatGroups.Add(chatGroup);
             SystemLogger.LogEvent($"Group \"{chatGroup.Name}\" was added", LogLevel.Debug);
         }
 
-        /// <summary>
-        /// Remove chat group from groups channel.
-        /// </summary>
-        /// <param name="chatGroup">Group to remove.</param>
+        /// <inheritdoc/>
+        public void AddChat(IChat chat)
+        {
+            this.Channels.ByName("Users").Chats.Add(chat);
+            SystemLogger.LogEvent($"{chat.Recipient.DisplayName} has joined");
+        }
+
+        /// <inheritdoc/>
+        public void RemoveChat(IChat chat)
+        {
+            this.Channels.ByName("Users").Chats.RemoveAll(c => c.Recipient.Id == chat.Recipient.Id);
+            SystemLogger.LogEvent($"{chat.Recipient.DisplayName} has left");
+        }
+
+        /// <inheritdoc/>
         public void RemoveChatGroup(IChatGroup chatGroup)
         {
             this.Channels.ByName("Groups").ChatGroups.Add(chatGroup);
             SystemLogger.LogEvent($"Group \"{chatGroup.Name}\" was added", LogLevel.Debug);
         }
 
-        /// <summary>
-        /// Join group on server.
-        /// </summary>
-        /// <param name="group">Group to join.</param>
+        /// <inheritdoc/>
         public async void JoinChatGroup(IChatGroup group)
         {
             await this.Connection.Hub.InvokeAsync("GroupJoin", group, this.user.Id);
         }
 
-        /// <summary>
-        /// Send invite request for the specified group to the specified user.
-        /// </summary>
-        /// <param name="group">Group to invite to.</param>
-        /// <param name="userId">User to invite.</param>
+        /// <inheritdoc/>
         public async void InviteChatGroup(IChatGroup group, Guid userId)
         {
             await this.Connection.Hub.InvokeAsync("GroupInvite", group, userId);
         }
 
-        protected virtual void OnChatMessageReceived(IChatMessage chatMessage)
+        /// <summary>
+        /// Raised when a chat message has been received.
+        /// </summary>
+        /// <param name="e">ChatMessageEventArgs.</param>
+        protected virtual void OnChatMessageReceived(ChatMessageEventArgs e)
         {
-            this.ChatMessageReceived?.Invoke(this, new ChatMessageEventArgs(chatMessage));
-            this.eventAggregator.GetEvent<ChatMessageReceivedEvent>().Publish(chatMessage);
+            this.ChatMessageReceived?.Invoke(this, e);
+            this.eventAggregator.GetEvent<ChatMessageReceivedEvent>().Publish(e.ChatMessage);
         }
 
-        protected virtual void OnBroadcastReceived(IChatMessage chatMessage)
+        /// <summary>
+        /// Raised when a broadcast has been receveived.
+        /// </summary>
+        /// <param name="e">BroadcastEventArgs.</param>
+        protected virtual void OnBroadcastReceived(BroadcastEventArgs e)
         {
-            this.BroadcastReceived?.Invoke(this, new BroadcastEventArgs(chatMessage));
-            this.eventAggregator.GetEvent<BroadcastReceivedEvent>().Publish(chatMessage);
+            this.BroadcastReceived?.Invoke(this, e);
+            this.eventAggregator.GetEvent<BroadcastReceivedEvent>().Publish(e.ChatMessage);
         }
 
-        protected virtual void OnGroupInviteReceived(IChatGroup group)
+        /// <summary>
+        /// Raised when a group invite has been receveived.
+        /// </summary>
+        /// <param name="e">ChatGroupEventArgs.</param>
+        protected virtual void OnGroupInviteReceived(ChatGroupEventArgs e)
         {
-            this.GroupInviteReceived?.Invoke(this, new ChatGroupEventArgs(group));
-            this.eventAggregator?.GetEvent<GroupInviteReceivedEvent>().Publish(group);
+            this.GroupInviteReceived?.Invoke(this, e);
+            this.eventAggregator?.GetEvent<GroupInviteReceivedEvent>().Publish(e.ChatGroup);
         }
 
         /// <summary>
@@ -261,24 +242,26 @@
                 Sender = sender,
             };
 
-            switch (scope)
+            // ReSharper disable once ConvertIfStatementToSwitchStatement
+            if (scope == ConnectionScope.User)
             {
-                case ConnectionScope.User:
-                    var chat = (Chat) this.Channels.ByName("Users").Chats.ById(chatMessage.Sender.Id);
-                    this.uiContext.Send(x => chat.Messages.Add(chatMessage), null);
-                    this.OnChatMessageReceived(chatMessage);
-                    break;
-                case ConnectionScope.Group:
-                    var group = (ChatGroup) this.Channels.ByName("Groups").ChatGroups.ById(chatMessage.Recipient);
-                    this.uiContext.Send(x => group.Messages.Add(chatMessage), null);
-                    this.OnChatMessageReceived(chatMessage);
-                    break;
-                case ConnectionScope.Broadcast:
-                    this.OnBroadcastReceived(chatMessage);
-                    break;
-                case ConnectionScope.System:
-                    SystemLogger.LogEvent(chatMessage.Content, LogLevel.Broadcast);
-                    break;
+                var chat = (Chat)this.Channels.ByName("Users").Chats.ById(chatMessage.Sender.Id);
+                this.uiContext.Send(x => chat.Messages.Add(chatMessage), null);
+                this.OnChatMessageReceived(new ChatMessageEventArgs(chatMessage));
+            }
+            else if (scope == ConnectionScope.Group)
+            {
+                var group = (ChatGroup)this.Channels.ByName("Groups").ChatGroups.ById(chatMessage.Recipient);
+                this.uiContext.Send(x => group.Messages.Add(chatMessage), null);
+                this.OnChatMessageReceived(new ChatMessageEventArgs(chatMessage));
+            }
+            else if (scope == ConnectionScope.Broadcast)
+            {
+                this.OnBroadcastReceived(new BroadcastEventArgs(chatMessage));
+            }
+            else if (scope == ConnectionScope.System)
+            {
+                SystemLogger.LogEvent(chatMessage.Content, LogLevel.Broadcast);
             }
         }
 
@@ -289,7 +272,7 @@
         private void OnGroupCreated(Group group)
         {
             SystemLogger.LogEvent($"{group.Name} was created.");
-            this.uiContext.Send(x => { this.AddChatGroup((ChatGroup) group); }, null);
+            this.uiContext.Send(x => { this.AddChatGroup((ChatGroup)group); }, null);
         }
 
         /// <summary>
@@ -298,9 +281,9 @@
         /// <param name="group">Group invited to.</param>
         private void OnGroupInvited(Group group)
         {
-            var chatGroup = (ChatGroup) group;
+            var chatGroup = (ChatGroup)group;
             SystemLogger.LogEvent($"Invite received for group {chatGroup.Name}.");
-            this.uiContext.Send(x => this.OnGroupInviteReceived(chatGroup), null);
+            this.uiContext.Send(x => this.OnGroupInviteReceived(new ChatGroupEventArgs(chatGroup)), null);
         }
 
         /// <summary>
@@ -310,7 +293,7 @@
         /// <param name="leaver">User leaving the group.</param>
         private void OnGroupLeft(Group group, User leaver)
         {
-            var chatGroup = (ChatGroup) group;
+            var chatGroup = (ChatGroup)group;
             if (leaver.Id == this.user.Id)
             {
                 SystemLogger.LogEvent($"Group {chatGroup.Name} joined.");
@@ -329,7 +312,7 @@
         /// <param name="joiner">User joining the group.</param>
         private void OnGroupJoined(Group group, User joiner)
         {
-            var chatGroup = (ChatGroup) group;
+            var chatGroup = (ChatGroup)group;
             if (joiner.Id == this.user.Id)
             {
                 SystemLogger.LogEvent($"Group {chatGroup.Name} joined.");

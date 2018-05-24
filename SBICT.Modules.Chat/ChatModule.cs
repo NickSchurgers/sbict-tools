@@ -1,16 +1,18 @@
-﻿using Prism.Modularity;
-using Prism.Ioc;
-using Prism.Regions;
-using SBICT.Infrastructure;
-using SBICT.Infrastructure.Chat;
-using SBICT.Modules.Chat.Views;
-
-
-namespace SBICT.Modules.Chat
+﻿namespace SBICT.Modules.Chat
 {
+    using Prism.Ioc;
+    using Prism.Modularity;
+    using Prism.Regions;
+    using SBICT.Infrastructure;
+    using SBICT.Infrastructure.Chat;
+    using SBICT.Modules.Chat.Views;
+
+    /// <inheritdoc />
     [ModuleDependency("SystemLogModule")]
+    // ReSharper disable once UnusedMember.Global
     public class ChatModule : IModule
     {
+        /// <inheritdoc/>
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             containerRegistry.RegisterSingleton<IChatManager, ChatManager>();
@@ -20,6 +22,7 @@ namespace SBICT.Modules.Chat
             containerRegistry.Register<GroupInviteCreate>();
         }
 
+        /// <inheritdoc/>
         public void OnInitialized(IContainerProvider containerProvider)
         {
             var regionManager = containerProvider.Resolve<IRegionManager>();

@@ -1,150 +1,125 @@
-﻿using System;
-using System.Windows;
-using Prism.Commands;
-using Prism.Events;
-using Prism.Modularity;
-using Prism.Mvvm;
-using SBICT.Data;
-using SBICT.Infrastructure;
-using SBICT.Infrastructure.Connection;
-using SBICT.Infrastructure.Logger;
-
-namespace SBICT.WpfClient.ViewModels
+﻿namespace SBICT.WpfClient.ViewModels
 {
+    using Prism.Commands;
+    using Prism.Events;
+    using Prism.Modularity;
+    using Prism.Mvvm;
+    using SBICT.Infrastructure;
+    using SBICT.Infrastructure.Connection;
+    using SBICT.Infrastructure.Logger;
+
+    /// <inheritdoc />
+    /// <summary>
+    /// ViewModel for MainWindow.
+    /// </summary>
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class MainWindowViewModel : BindableBase
     {
-        #region Commands
-
-        public DelegateCommand WindowClosing { get; set; }
-        public DelegateCommand WindowLoaded { get; set; }
-
-        #endregion
-
-        #region Fields
-
-        private string _title = "SBICT Application";
-        private readonly IEventAggregator _eventAggregator;
-        private readonly IConnectionManager<IConnection> _connectionManager;
-        private readonly ISettingsManager _settingsManager;
-        private IConnection _systemConnection;
-        private string _statusText;
-
-        #endregion
-
-        #region Properties
+        private readonly IConnectionManager<IConnection> connectionManager;
+        private readonly ISettingsManager settingsManager;
+        private string title = "SBICT Application";
+        private string statusText;
+        private IConnection systemConnection;
 
         /// <summary>
-        /// Title of the application
+        /// Initializes a new instance of the <see cref="MainWindowViewModel"/> class.
         /// </summary>
-        public string Title
-        {
-            get => _title;
-            set => SetProperty(ref _title, value);
-        }
-
-        /// <summary>
-        /// Text displayed in the status bar
-        /// </summary>
-        public string StatusText
-        {
-            get => _statusText;
-            set => SetProperty(ref _statusText, value);
-        }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="moduleManager"></param>
-        /// <param name="eventAggregator"></param>
-        /// <param name="connectionManager"></param>
-        /// <param name="settingsManager"></param>
-        public MainWindowViewModel(IModuleManager moduleManager, IEventAggregator eventAggregator,
-            IConnectionManager<IConnection> connectionManager, ISettingsManager settingsManager)
+        /// <param name="moduleManager">Prism ModuleManager.</param>
+        /// <param name="eventAggregator">Prism EventAggregator.</param>
+        /// <param name="connectionManager">ConnectionManager.</param>
+        /// <param name="settingsManager">SettingsManager.</param>
+        public MainWindowViewModel(
+            IModuleManager moduleManager,
+            IEventAggregator eventAggregator,
+            IConnectionManager<IConnection> connectionManager,
+            ISettingsManager settingsManager)
         {
             //Set event aggreggator te event logger
             SystemLogger.EventAggregator = eventAggregator;
 
             //Set up commands
-            WindowClosing = new DelegateCommand(DeInitializeSystemHub);
-            WindowLoaded = new DelegateCommand(OnWindowLoaded);
+            this.WindowClosing = new DelegateCommand(this.DeInitializeSystemHub);
+            this.WindowLoaded = new DelegateCommand(this.OnWindowLoaded);
 
-            _eventAggregator = eventAggregator;
-            _connectionManager = connectionManager;
-            _settingsManager = settingsManager;
-            moduleManager.LoadModuleCompleted += ModuleManagerOnLoadModuleCompleted;
+            this.connectionManager = connectionManager;
+            this.settingsManager = settingsManager;
+            moduleManager.LoadModuleCompleted += this.ModuleManagerOnLoadModuleCompleted;
+        }
+
+        public DelegateCommand WindowClosing { get; set; }
+
+        public DelegateCommand WindowLoaded { get; set; }
+
+        /// <summary>
+        /// Gets or sets title of the application.
+        /// </summary>
+        public string Title
+        {
+            get => this.title;
+            set => this.SetProperty(ref this.title, value);
         }
 
         /// <summary>
-        /// Initialize a connection with the system hub
+        /// Gets or sets text displayed in the status bar.
+        /// </summary>
+        public string StatusText
+        {
+            get => this.statusText;
+            set => this.SetProperty(ref this.statusText, value);
+        }
+
+        /// <summary>
+        /// Initialize a connection with the system hub.
         /// </summary>
         private async void InitializeSystemHub()
         {
-            var user = _settingsManager.User;
-            var (address, port) = _settingsManager.Server;
-            _systemConnection =
-                ConnectionFactory.Create(
-                    $"{address}:{port}/hubs/system?displayName={user.DisplayName}&guid={user.Id.ToString()}");
-            _systemConnection.ConnectionStatusChanged += SystemConnectionOnConnectionStatusChanged;
-            _connectionManager.Set("System", _systemConnection);
-            await _systemConnection.StartAsync();
+            var user = this.settingsManager.User;
+            var (address, port) = this.settingsManager.Server;
+            var connection = $"{address}:{port}/hubs/system?displayName={user.DisplayName}&guid={user.Id.ToString()}";
+
+            this.systemConnection = ConnectionFactory.Create(connection);
+            this.systemConnection.ConnectionStatusChanged += this.SystemConnectionOnConnectionStatusChanged;
+            this.connectionManager.Set("System", this.systemConnection);
+            await this.systemConnection.StartAsync();
             SystemLogger.LogEvent($"Logged in as {user.DisplayName} with id {user.Id.ToString()}", LogLevel.Debug);
         }
 
         /// <summary>
-        /// Dispose of connection with the system hub
+        /// Dispose of connection with the system hub.
         /// </summary>
         private async void DeInitializeSystemHub()
         {
-            await _systemConnection.StopAsync();
-            _connectionManager.Unset("System");
+            await this.systemConnection.StopAsync();
+            this.connectionManager.Unset("System");
         }
 
         /// <summary>
-        /// Update status text
+        /// Triggerd when connection with the system hub changes.
         /// </summary>
-        /// <param name="message"></param>
-        private void UpdateStatusText(string message)
-        {
-            StatusText = message;
-        }
-
-        #endregion
-
-        #region Event Handlers
-
-        /// <summary>
-        /// Triggerd when connection with the system hub changes
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">ConnectionEventArgs.</param>
         private void SystemConnectionOnConnectionStatusChanged(object sender, ConnectionEventArgs e)
         {
-            UpdateStatusText($"State: {e.Status.ToString()}");
+            this.StatusText = $"State: {e.Status.ToString()}";
         }
 
         /// <summary>
-        /// Triggered when a module has been loaded
+        /// Triggered when a module has been loaded.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">LoadModuleCompletedEventArgs.</param>
         private void ModuleManagerOnLoadModuleCompleted(object sender, LoadModuleCompletedEventArgs e)
         {
             SystemLogger.LogEvent($"{e.ModuleInfo.ModuleName} has been loaded");
         }
 
         /// <summary>
-        /// Trigered when window has been loaded
+        /// Trigered when window has been loaded.
         /// </summary>
         private void OnWindowLoaded()
         {
-            InitializeSystemHub();
+            this.InitializeSystemHub();
             SystemLogger.LogEvent("Application Loaded");
         }
-
-        #endregion
     }
 }

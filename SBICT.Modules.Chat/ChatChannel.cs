@@ -1,65 +1,51 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Windows.Data;
-using Prism.Mvvm;
-using SBICT.Infrastructure.Chat;
-
-namespace SBICT.Modules.Chat
+﻿namespace SBICT.Modules.Chat
 {
+    using System.Collections;
+    using System.Collections.ObjectModel;
+    using System.Windows.Data;
+    using Prism.Mvvm;
+    using SBICT.Infrastructure.Chat;
+
+    /// <inheritdoc cref="IChatChannel" />
     public class ChatChannel : BindableBase, IChatChannel
     {
-        #region Fields
-
-        private ObservableCollection<IChat> _chats;
-        private ObservableCollection<IChatGroup> _chatGroups;
-
-        #endregion
-
-        #region Properties
+        private ObservableCollection<IChat> chats;
+        private ObservableCollection<IChatGroup> chatGroups;
 
         /// <summary>
-        /// Collection of chats 
+        /// Initializes a new instance of the <see cref="ChatChannel"/> class.
         /// </summary>
+        public ChatChannel()
+        {
+            this.Chats = new ObservableCollection<IChat>();
+            this.ChatGroups = new ObservableCollection<IChatGroup>();
+        }
+
+        /// <inheritdoc/>
         public ObservableCollection<IChat> Chats
         {
-            get => _chats;
-            set => SetProperty(ref _chats, value);
+            get => this.chats;
+            set => this.SetProperty(ref this.chats, value);
         }
 
-        /// <summary>
-        /// Collection of the chatgroups
-        /// </summary>
+        /// <inheritdoc/>
         public ObservableCollection<IChatGroup> ChatGroups
         {
-            get => _chatGroups;
-            set => SetProperty(ref _chatGroups, value);
+            get => this.chatGroups;
+            set => this.SetProperty(ref this.chatGroups, value);
         }
 
+        /// <inheritdoc/>
         public bool IsExpanded { get; set; }
 
-        /// <summary>
-        /// Property used for enumerating items in the treeview
-        /// </summary>
+        /// <inheritdoc/>
         public IList Items => new CompositeCollection
         {
             new CollectionContainer {Collection = Chats},
-            new CollectionContainer {Collection = ChatGroups}
+            new CollectionContainer {Collection = ChatGroups},
         };
 
-        /// <summary>
-        /// Name of this group
-        /// </summary>
+        /// <inheritdoc/>
         public string Name { get; set; }
-
-        #endregion
-
-        public ChatChannel()
-        {
-            Chats = new ObservableCollection<IChat>();
-            ChatGroups = new ObservableCollection<IChatGroup>();
-        }
     }
 }

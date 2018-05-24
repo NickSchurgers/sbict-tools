@@ -9,6 +9,7 @@ using SBICT.Data;
 using SBICT.Infrastructure.Chat;
 using SBICT.Infrastructure.Connection;
 //http://www.tugberkugurlu.com/archive/mapping-asp-net-signalr-connections-to-real-application-users
+//https://stackoverflow.com/questions/33031517/prevent-duplicate-users-in-online-users-list-signalr?rq=1
 namespace SBICT.Infrastructure.Hubs
 {
     [Authorize]

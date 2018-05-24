@@ -4,16 +4,16 @@ using SBICT.Data;
 
 namespace SBICT.Infrastructure
 {
-    public class UserComparer : EqualityComparer<User>
+    public class UserComparer : IEqualityComparer<IUser>
     {
         private readonly IEqualityComparer<Guid> _c = EqualityComparer<Guid>.Default;
 
-        public override bool Equals(User x, User y)
+        public bool Equals(IUser x, IUser y)
         {
             return  _c.Equals(x.Id, y.Id);
         }
 
-        public override int GetHashCode(User obj)
+        public int GetHashCode(IUser obj)
         {
             unchecked
             {

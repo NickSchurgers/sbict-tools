@@ -14,14 +14,15 @@ namespace SBICT.Infrastructure.Hubs
     [Authorize]
     public abstract class HubBase : Hub
     {
-        #region Fields
+//        protected static readonly ConnectionStore<Guid> UserConnectionStore = new ConnectionStore<Guid>();
+//        protected static readonly HashSet<User> UserList = new HashSet<User>(new UserComparer());
 
-        protected static readonly ConnectionStore<Guid> UserConnectionStore = new ConnectionStore<Guid>();
-        protected static readonly HashSet<User> UserList = new HashSet<User>(new UserComparer());
+        protected static readonly IStore<Guid, string> UserConnectionStore =
+            new InMemoryStore<Guid, string>();
 
-        #endregion
+        protected static readonly IStore<IUser, byte>
+            UserStore = new InMemoryStore<IUser, byte>(new UserComparer());
 
-        #region Methods
 
         /// <summary>
         /// Triggered when a client connects to this hub
@@ -30,22 +31,31 @@ namespace SBICT.Infrastructure.Hubs
         public override async Task OnConnectedAsync()
         {
             var query = Context.Features.Get<IHttpContextFeature>()?.HttpContext.Request.Query;
-            query?.TryGetValue("displayName", out var name);
             query?.TryGetValue("guid", out var id);
-            
-            var user = new User(Guid.Parse(id), Context.User.Identity.Name)
-            {
-                DisplayName = name
-            };
-            
-            UserList.Add(user);
-            UserConnectionStore.Add(user.Id, Context.ConnectionId);
 
-            if (UserConnectionStore.GetConnections(user.Id).Count() == 1)
+            var guid = Guid.Parse(id);
+
+            if (UserConnectionStore.Count(guid) == 0)
             {
-                await Clients.AllExcept(UserConnectionStore.GetConnections(user.Id).ToList())
-                    .SendAsync("Connected", user, ConnectionScope.System);
+                query?.TryGetValue("displayName", out var name);
+                var user = new User(guid, Context.User.Identity.Name)
+                {
+                    DisplayName = name
+                };
+
+                UserStore.Add(user, new byte());
+                await Clients.AllExcept(Context.ConnectionId).SendAsync("Connected", user, ConnectionScope.System);
             }
+
+            UserConnectionStore.Add(guid, Context.ConnectionId);
+//            UserList.Add(user);
+//            UserConnectionStore.Add(user.Id, Context.ConnectionId);
+//
+//            if (UserConnectionStore.GetConnections(user.Id).Count() == 1)
+//            {
+//                await Clients.AllExcept(UserConnectionStore.GetConnections(user.Id).ToList())
+//                    .SendAsync("Connected", user, ConnectionScope.System);
+//            }
 
             await base.OnConnectedAsync();
         }
@@ -59,19 +69,25 @@ namespace SBICT.Infrastructure.Hubs
         {
             var query = Context.Features.Get<IHttpContextFeature>()?.HttpContext.Request.Query;
             query?.TryGetValue("guid", out var id);
-            
-            var user = UserList.Single(u => u.Id == Guid.Parse(id));
-            UserConnectionStore.Remove(user.Id, Context.ConnectionId);
+            var guid = Guid.Parse(id);
 
-            if (!UserConnectionStore.GetConnections(user.Id).Any())
+            UserConnectionStore.Remove(guid, Context.ConnectionId);
+            if (UserConnectionStore.Count(guid) == 0)
             {
-                UserList.Remove(user);
+                var user = UserStore.GetKey(u => u.Id == guid);
+                UserStore.Remove(user);
                 await Clients.All.SendAsync("Disconnected", user, ConnectionScope.System);
             }
+//            var user = UserList.Single(u => u.Id == Guid.Parse(id));
+//            UserConnectionStore.Remove(user.Id, Context.ConnectionId);
+//
+//            if (!UserConnectionStore.GetConnections(user.Id).Any())
+//            {
+//                UserList.Remove(user);
+//                await Clients.All.SendAsync("Disconnected", user, ConnectionScope.System);
+//            }
 
             await base.OnDisconnectedAsync(ex);
         }
-
-        #endregion
     }
 }

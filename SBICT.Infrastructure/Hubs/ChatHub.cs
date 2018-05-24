@@ -8,8 +8,7 @@ using Microsoft.AspNetCore.SignalR;
 using SBICT.Data;
 using SBICT.Infrastructure.Chat;
 using SBICT.Infrastructure.Connection;
-//http://www.tugberkugurlu.com/archive/mapping-asp-net-signalr-connections-to-real-application-users
-//https://stackoverflow.com/questions/33031517/prevent-duplicate-users-in-online-users-list-signalr?rq=1
+
 namespace SBICT.Infrastructure.Hubs
 {
     [Authorize]
@@ -29,7 +28,7 @@ namespace SBICT.Infrastructure.Hubs
         /// <returns></returns>
         public IEnumerable<User> GetUserList(Guid userId)
         {
-            return UserList.Where(u => u.Id != userId);
+            return UserStore.GetKeys(u => u.Id != userId).Cast<User>();
         }
 
 
@@ -54,8 +53,8 @@ namespace SBICT.Infrastructure.Hubs
         // ReSharper disable once UnusedMember.Global
         public async Task GroupJoin(Group group, Guid userId)
         {
-            var userConnections = UserConnectionStore.GetConnections(userId).ToList();
-            var user = UserList.Single(u => u.Id == userId);
+            var userConnections = UserConnectionStore.GetValues(userId);
+            var user = UserStore.GetKey(u => u.Id == userId);
             foreach (var conId in userConnections)
             {
                 await Groups.AddToGroupAsync(conId, group.Name);
@@ -81,9 +80,9 @@ namespace SBICT.Infrastructure.Hubs
         // ReSharper disable once UnusedMember.Global
         public async Task GroupInvite(Group group, Guid userId)
         {
-            var userConnections = UserConnectionStore.GetConnections(userId).ToList();
+            var userConnections = UserConnectionStore.GetValues(userId);
             var storedGroup = GroupList.Single(g => g.Id == group.Id);
-            await Clients.Clients(userConnections).SendAsync("GroupInvited", storedGroup);
+            await Clients.Clients(userConnections.ToList()).SendAsync("GroupInvited", storedGroup);
         }
 
         /// <summary>
@@ -95,8 +94,8 @@ namespace SBICT.Infrastructure.Hubs
         // ReSharper disable once UnusedMember.Global
         public async Task GroupLeave(Group group, Guid userId)
         {
-            var userConnections = UserConnectionStore.GetConnections(userId).ToList();
-            var user = UserList.Single(u => u.Id == userId);
+            var userConnections = UserConnectionStore.GetValues(userId);
+            var user = UserStore.GetKey(u => u.Id == userId);
             foreach (var conId in userConnections)
             {
                 await Groups.RemoveFromGroupAsync(conId, group.Name);
@@ -129,10 +128,10 @@ namespace SBICT.Infrastructure.Hubs
             {
                 case ConnectionScope.Group:
                     target = Clients.GroupExcept(recipient.ToString(),
-                        UserConnectionStore.GetConnections(sender).ToList());
+                        UserConnectionStore.GetValues(sender).ToList());
                     break;
                 case ConnectionScope.User:
-                    target = Clients.Clients(UserConnectionStore.GetConnections(recipient).ToList());
+                    target = Clients.Clients(UserConnectionStore.GetValues(recipient).ToList());
                     break;
                 default:
                     target = Clients.All;
@@ -140,7 +139,7 @@ namespace SBICT.Infrastructure.Hubs
             }
 
 
-            await target.SendAsync("MessageReceived", recipient, UserList.Single(u => u.Id == sender), message, scope);
+            await target.SendAsync("MessageReceived", recipient, UserStore.GetKey(u => u.Id == sender), message, scope);
         }
     }
 }

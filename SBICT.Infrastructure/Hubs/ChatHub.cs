@@ -8,14 +8,12 @@ using Microsoft.AspNetCore.SignalR;
 using SBICT.Data;
 using SBICT.Infrastructure.Chat;
 using SBICT.Infrastructure.Connection;
-
+//http://www.tugberkugurlu.com/archive/mapping-asp-net-signalr-connections-to-real-application-users
 namespace SBICT.Infrastructure.Hubs
 {
     [Authorize]
     public class ChatHub : HubBase
     {
-        #region Fields
-
         /// <summary>
         /// Store for groups
         /// </summary>
@@ -23,9 +21,6 @@ namespace SBICT.Infrastructure.Hubs
 
         private static readonly HashSet<Group> GroupList = new HashSet<Group>();
 
-        #endregion
-
-        #region Properties
 
         /// <summary>
         /// Return list of currently connected users
@@ -36,9 +31,6 @@ namespace SBICT.Infrastructure.Hubs
             return UserList.Where(u => u.Id != userId);
         }
 
-        #endregion
-
-        #region Group Methods
 
         /// <summary>
         /// Return a list of groups the user is currently connected to on other clients.
@@ -118,8 +110,6 @@ namespace SBICT.Infrastructure.Hubs
                 GroupList.RemoveWhere(g => g.Id == group.Id);
             }
         }
-
-        #endregion
 
         /// <summary>
         /// Send message to a user/group.

@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace SBICT.Infrastructure.Connection
 {
@@ -11,7 +14,8 @@ namespace SBICT.Infrastructure.Connection
     {
         #region Fields
 
-        private readonly Dictionary<T, HashSet<string>> _connections = new Dictionary<T, HashSet<string>>();
+        private readonly ConcurrentDictionary<T, HashSet<string>> _connections =
+            new ConcurrentDictionary<T, HashSet<string>>();
 
         #endregion
 
@@ -43,7 +47,7 @@ namespace SBICT.Infrastructure.Connection
                 if (!_connections.TryGetValue(key, out var connections))
                 {
                     connections = new HashSet<string>();
-                    _connections.Add(key, connections);
+                    _connections.TryAdd(key, connections);
                 }
 
                 lock (connections)
@@ -116,7 +120,7 @@ namespace SBICT.Infrastructure.Connection
 
                     if (connections.Count == 0)
                     {
-                        _connections.Remove(key);
+                        _connections.TryRemove(key, out var disconnected);
                     }
                 }
             }

@@ -31,9 +31,11 @@
         public bool IsNew { get; }
 
         /// <summary>
-        /// Gets the name of the group.
+        /// Gets or sets the name of the group.
         /// </summary>
-        public string GroupName { get; }
+        // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
+        // ReSharper disable once MemberCanBePrivate.Global
+        public string GroupName { get; set; }
 
         /// <summary>
         /// Gets or sets the items selected.

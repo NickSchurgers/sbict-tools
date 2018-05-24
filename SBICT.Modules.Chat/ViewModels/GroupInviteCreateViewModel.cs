@@ -30,12 +30,12 @@
         /// <summary>
         /// Gets the command raised when pressing the Ok button.
         /// </summary>
-        public DelegateCommand<object> OkCommand { get; private set; }
+        public DelegateCommand<object> OkCommand { get; }
 
         /// <summary>
         /// Gets the command raised when pressing the Cancel button.
         /// </summary>
-        public DelegateCommand CancelCommand { get; private set; }
+        public DelegateCommand CancelCommand { get; }
 
         /// <inheritdoc/>
         public Action FinishInteraction { get; set; }

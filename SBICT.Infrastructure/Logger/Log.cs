@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace SBICT.Infrastructure.Logger
+﻿namespace SBICT.Infrastructure.Logger
 {
+    using System;
+
     public class Log
     {
         public DateTime DateTime { get; set; } = DateTime.Now;

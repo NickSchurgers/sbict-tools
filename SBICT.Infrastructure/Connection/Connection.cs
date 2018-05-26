@@ -2,12 +2,15 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
+using Prism.Events;
 using SBICT.Data;
 
 namespace SBICT.Infrastructure.Connection
 {
     public class Connection : IConnection
     {
+        private readonly IEventAggregator eventAggregator;
+
         #region Fields
 
         private ConnectionStatus _status = ConnectionStatus.Disconnected;
@@ -24,11 +27,13 @@ namespace SBICT.Infrastructure.Connection
             {
                 if (value == _status) return;
                 _status = value;
-                OnConnectionStatusChanged(new ConnectionEventArgs {Status = _status});
+                OnConnectionStatusChanged(new ConnectionEventArgs { Status = _status });
             }
         }
 
         public HubConnection Hub { get; set; }
+
+        public string HubName { get; }
 
         #endregion
 
@@ -38,9 +43,13 @@ namespace SBICT.Infrastructure.Connection
         /// Constructor
         /// </summary>
         /// <param name="connection"></param>
-        public Connection(HubConnection connection)
+        /// <param name="hubName"></param>
+        /// <param name="eventAggregator"></param>
+        public Connection(HubConnection connection, string hubName, IEventAggregator eventAggregator)
         {
+            this.eventAggregator = eventAggregator;
             Hub = connection;
+            HubName = hubName;
         }
 
         /// <summary>
@@ -55,20 +64,23 @@ namespace SBICT.Infrastructure.Connection
                 try
                 {
                     Status = ConnectionStatus.Connecting;
-
-                    Hub.On<User, ConnectionScope>("Connected",
-                        (user, scope) => OnUserStatusChanged(new ConnectionEventArgs
+                    Hub.On<User, ConnectionScope>(
+                        "Connected",
+                        (connUser, scope) => this.OnUserStatusChanged(new ConnectionEventArgs
                         {
+                            User = connUser,
+                            HubName = this.HubName,
                             Status = ConnectionStatus.Connected,
-                            User = user
-                        }));
-                    Hub.On<User, ConnectionScope>("Disconnected",
-                        (user, scope) => OnUserStatusChanged(new ConnectionEventArgs
-                        {
-                            Status = ConnectionStatus.Disconnected,
-                            User = user
                         }));
 
+                   Hub.On<User, ConnectionScope>(
+                        "Disconnected",
+                        (connUser, scope) => this.OnUserStatusChanged(new ConnectionEventArgs
+                       {
+                           User = connUser,
+                           HubName = this.HubName,
+                           Status = ConnectionStatus.Disconnected,
+                       }));
                     await Hub.StartAsync();
                     Status = ConnectionStatus.Connected;
                     _isStarted = true;
@@ -80,6 +92,7 @@ namespace SBICT.Infrastructure.Connection
                 }
             }
         }
+
 
         /// <summary>
         /// Dispose of the connection with the hub
@@ -109,12 +122,12 @@ namespace SBICT.Infrastructure.Connection
         }
 
         /// <summary>
-        /// Triggered when another client (dis)connects or updates it's status
+        /// Triggered when the status of a user changes.
         /// </summary>
-        /// <param name="args"></param>
-        protected virtual void OnUserStatusChanged(ConnectionEventArgs args)
+        /// <param name="e"></param>
+        protected virtual void OnUserStatusChanged(ConnectionEventArgs e)
         {
-            UserStatusChanged?.Invoke(this, args);
+            UserStatusChanged?.Invoke(this, e);
         }
 
         #endregion

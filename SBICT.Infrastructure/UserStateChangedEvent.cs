@@ -2,13 +2,16 @@
 // Copyright (c) SBICT. All rights reserved.
 // </copyright>
 
+using SBICT.Data;
+using SBICT.Infrastructure.Connection;
+
 namespace SBICT.Infrastructure
 {
     using Prism.Events;
     using SBICT.Infrastructure.Logger;
 
     /// <inheritdoc />
-    public class SystemLogEvent : PubSubEvent<Log>
+    public class UserStateChangedEvent : PubSubEvent<ConnectionEventArgs>
     {
     }
 }

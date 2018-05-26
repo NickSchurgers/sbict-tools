@@ -1,26 +1,25 @@
-﻿using System;
-using System.Runtime.Remoting.Channels;
-using System.Security.Principal;
-using System.Windows;
-using Microsoft.AspNetCore.Hosting;
-using SBICT.Data;
-using SBICT.Infrastructure;
-using SBICT.Infrastructure.Logger;
-using SBICT.WpfClient.Properties;
+﻿// <copyright file="SettingsManager.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace SBICT.WpfClient
 {
+    using System;
+    using System.Security.Principal;
+    using SBICT.Data;
+    using SBICT.Infrastructure;
+    using SBICT.WpfClient.Properties;
+
+    /// <inheritdoc />
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class SettingsManager : ISettingsManager
     {
-        public bool IsFirstRun => Settings.Default.FirstRun;
-
-        public User User { get; }
-
-        public (string, int) Server => (Settings.Default.ServerAddress, Settings.Default.ServerPort);
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SettingsManager"/> class.
+        /// </summary>
         public SettingsManager()
         {
-            if (IsFirstRun)
+            if (this.IsFirstRun)
             {
                 Settings.Default.Guid = Guid.NewGuid();
                 Settings.Default.FirstRun = false;
@@ -28,20 +27,28 @@ namespace SBICT.WpfClient
                 Settings.Default.Save();
             }
 
-
-            User = new User(Settings.Default.Guid, WindowsIdentity.GetCurrent().Name)
+            this.User = new User(Settings.Default.Guid, WindowsIdentity.GetCurrent().Name)
             {
-                DisplayName = Settings.Default.DisplayName
+                DisplayName = Settings.Default.DisplayName,
             };
 
 #if DEBUG
             var rand = new Random().Next();
             var name = $"TestUser{rand}";
-            User = new User(Guid.NewGuid(), name)
+            this.User = new User(Guid.NewGuid(), name)
             {
-                DisplayName = name
+                DisplayName = name,
             };
 #endif
         }
+
+        /// <inheritdoc />
+        public bool IsFirstRun => Settings.Default.FirstRun;
+
+        /// <inheritdoc />
+        public IUser User { get; }
+
+        /// <inheritdoc />
+        public (string, int) Server => (Settings.Default.ServerAddress, Settings.Default.ServerPort);
     }
 }

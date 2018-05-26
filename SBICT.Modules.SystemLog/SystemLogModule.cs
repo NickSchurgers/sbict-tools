@@ -1,4 +1,8 @@
-﻿namespace SBICT.Modules.SystemLog
+﻿// <copyright file="SystemLogModule.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace SBICT.Modules.SystemLog
 {
     using Prism.Ioc;
     using Prism.Modularity;

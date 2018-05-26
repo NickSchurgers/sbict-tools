@@ -1,68 +1,107 @@
-﻿namespace SBICT.Infrastructure
+﻿// <copyright file="InMemoryStore.cs" company="SBICT">
+// Copyright (c) SBICT. All rights reserved.
+// </copyright>
+
+namespace SBICT.Infrastructure
 {
-    //http://www.tugberkugurlu.com/archive/mapping-asp-net-signalr-connections-to-real-application-users
-    //https://stackoverflow.com/questions/33031517/prevent-duplicate-users-in-online-users-list-signalr?rq=1
+    // http://www.tugberkugurlu.com/archive/mapping-asp-net-signalr-connections-to-real-application-users
+    // https://stackoverflow.com/questions/33031517/prevent-duplicate-users-in-online-users-list-signalr?rq=1
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Linq;
 
-    /// <inheritdoc cref="IStore{T,G}" />
-    public class InMemoryStore<T, G> : IStore<T, G>
+    /// <inheritdoc cref="IStore{TKey,TValue}" />
+    public class InMemoryStore<TKey, TValue> : IStore<TKey, TValue>
     {
-        private ConcurrentDictionary<T, HashSet<G>> data;
+        private readonly ConcurrentDictionary<TKey, HashSet<TValue>> data;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InMemoryStore{T, G}"/> class.
+        /// </summary>
         public InMemoryStore()
         {
-            data = new ConcurrentDictionary<T, HashSet<G>>();
+            this.data = new ConcurrentDictionary<TKey, HashSet<TValue>>();
         }
 
-        public InMemoryStore(IEqualityComparer<T> equalityComparer)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InMemoryStore{TKey, TValue}"/> class.
+        /// </summary>
+        /// <param name="equalityComparer">Instance of IEqualityComparer used to compare keys.</param>
+        public InMemoryStore(IEqualityComparer<TKey> equalityComparer)
         {
-            data = new ConcurrentDictionary<T, HashSet<G>>(equalityComparer);
+            this.data = new ConcurrentDictionary<TKey, HashSet<TValue>>(equalityComparer);
         }
 
         /// <inheritdoc />
-        public void Add(T key, G value)
+        public void Add(TKey key, TValue value)
         {
-            throw new System.NotImplementedException();
+            this.data.AddOrUpdate(key, new HashSet<TValue> { value }, (k, s) =>
+            {
+                s.Add(value);
+                return s;
+            });
         }
 
+        /// <inheritdoc/>
         public int Count()
         {
-            return data.Count;
+            return this.data.Count;
         }
 
         /// <inheritdoc />
-        public int Count(T key)
+        public int Count(TKey key)
         {
-            throw new System.NotImplementedException();
+            if (this.data.TryGetValue(key, out var values))
+            {
+                return values.Count;
+            }
+
+            return 0;
         }
 
         /// <inheritdoc />
-        public IEnumerable<G> GetValues(T key)
+        public IEnumerable<TValue> GetValues(TKey key)
         {
-            throw new System.NotImplementedException();
+            return this.data.TryGetValue(key, out var values) ? values : new HashSet<TValue>();
         }
 
-        public T GetKey(Func<T, bool> func)
+        /// <inheritdoc/>
+        public TKey GetKey(Func<TKey, bool> func)
         {
-            throw new NotImplementedException();
+            lock (this.data)
+            {
+                return this.data.Keys.Single(func);
+            }
         }
 
-        public IEnumerable<T> GetKeys(Func<T, bool> func)
+        /// <inheritdoc/>
+        public IEnumerable<TKey> GetKeys(Func<TKey, bool> func)
         {
-            throw new NotImplementedException();
+            lock (this.data)
+            {
+                return this.data.Keys.Where(func).ToList();
+            }
         }
 
         /// <inheritdoc />
-        public void Remove(T key, G value)
+        public void Remove(TKey key, TValue value)
         {
-            throw new System.NotImplementedException();
+            lock (this.data)
+            {
+                var values = this.data.Single(k => k.Key.Equals(key)).Value;
+                values.Remove(value);
+                if (values.Count == 0)
+                {
+                    this.Remove(key);
+                }
+            }
         }
 
-        public void Remove(T key)
+        /// <inheritdoc/>
+        public void Remove(TKey key)
         {
-            throw new System.NotImplementedException();
+            this.data.TryRemove(key, out var removedValue);
         }
     }
 }

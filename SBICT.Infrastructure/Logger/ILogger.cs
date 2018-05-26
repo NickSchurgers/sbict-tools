@@ -1,7 +1,11 @@
-﻿using System;
+﻿// <copyright file="ILogger.cs" company="SBICT">
+// Copyright (c) SBICT. All rights reserved.
+// </copyright>
 
 namespace SBICT.Infrastructure.Logger
 {
+    using System;
+
     public interface ILogger
     {
         event EventHandler<LoggerEventArgs> LogAdded;

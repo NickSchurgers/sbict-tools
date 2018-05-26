@@ -1,4 +1,8 @@
-﻿namespace SBICT.Modules.Chat.Extensions
+﻿// <copyright file="ObservableCollectionExtensions.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace SBICT.Modules.Chat.Extensions
 {
     using System;
     using System.Collections.Generic;

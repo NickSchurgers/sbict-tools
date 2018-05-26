@@ -1,4 +1,8 @@
-﻿namespace SBICT.Modules.Chat.ViewModels
+﻿// <copyright file="ChatWindowViewModel.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace SBICT.Modules.Chat.ViewModels
 {
     using System;
     using System.Collections.ObjectModel;

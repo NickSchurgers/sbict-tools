@@ -1,4 +1,8 @@
-﻿namespace SBICT.Modules.Chat
+﻿// <copyright file="ChatBase.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace SBICT.Modules.Chat
 {
     using System;
     using System.Collections.ObjectModel;

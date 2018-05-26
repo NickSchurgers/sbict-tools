@@ -1,4 +1,8 @@
-﻿namespace SBICT.WpfClient.ViewModels
+﻿// <copyright file="MainWindowViewModel.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace SBICT.WpfClient.ViewModels
 {
     using Prism.Commands;
     using Prism.Events;
@@ -15,7 +19,9 @@
     // ReSharper disable once ClassNeverInstantiated.Global
     public class MainWindowViewModel : BindableBase
     {
+        private readonly IEventAggregator eventAggregator;
         private readonly IConnectionManager<IConnection> connectionManager;
+        private readonly IConnectionFactory connectionFactory;
         private readonly ISettingsManager settingsManager;
         private string title = "SBICT Application";
         private string statusText;
@@ -27,27 +33,37 @@
         /// <param name="moduleManager">Prism ModuleManager.</param>
         /// <param name="eventAggregator">Prism EventAggregator.</param>
         /// <param name="connectionManager">ConnectionManager.</param>
+        /// <param name="connectionFactory"></param>
         /// <param name="settingsManager">SettingsManager.</param>
         public MainWindowViewModel(
             IModuleManager moduleManager,
             IEventAggregator eventAggregator,
             IConnectionManager<IConnection> connectionManager,
+            IConnectionFactory connectionFactory,
             ISettingsManager settingsManager)
         {
-            //Set event aggreggator te event logger
+            // Set event aggreggator te event logger
             SystemLogger.EventAggregator = eventAggregator;
 
-            //Set up commands
+            // Set up commands
             this.WindowClosing = new DelegateCommand(this.DeInitializeSystemHub);
             this.WindowLoaded = new DelegateCommand(this.OnWindowLoaded);
 
+            this.eventAggregator = eventAggregator;
             this.connectionManager = connectionManager;
+            this.connectionFactory = connectionFactory;
             this.settingsManager = settingsManager;
             moduleManager.LoadModuleCompleted += this.ModuleManagerOnLoadModuleCompleted;
         }
 
+        /// <summary>
+        /// Gets or Sets the command raising the WindowClosing event.
+        /// </summary>
         public DelegateCommand WindowClosing { get; set; }
 
+        /// <summary>
+        /// Gets or Sets the command raising the WindowLoaded event.
+        /// </summary>
         public DelegateCommand WindowLoaded { get; set; }
 
         /// <summary>
@@ -77,7 +93,7 @@
             var (address, port) = this.settingsManager.Server;
             var connection = $"{address}:{port}/hubs/system?displayName={user.DisplayName}&guid={user.Id.ToString()}";
 
-            this.systemConnection = ConnectionFactory.Create(connection);
+            this.systemConnection = this.connectionFactory.Create(connection, HubNames.SystemHub);
             this.systemConnection.ConnectionStatusChanged += this.SystemConnectionOnConnectionStatusChanged;
             this.connectionManager.Set("System", this.systemConnection);
             await this.systemConnection.StartAsync();

@@ -1,4 +1,8 @@
-﻿namespace SBICT.Modules.Chat
+﻿// <copyright file="GroupInviteCreateNotification.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace SBICT.Modules.Chat
 {
     using System.Collections.Generic;
     using Prism.Interactivity.InteractionRequest;

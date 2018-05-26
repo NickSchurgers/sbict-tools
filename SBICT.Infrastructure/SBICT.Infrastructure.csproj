@@ -9,6 +9,12 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="stylecop.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <AdditionalFiles Include="stylecop.json" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\SBICT.Domain\SBICT.Data.csproj" />
   </ItemGroup>
   <ItemGroup>

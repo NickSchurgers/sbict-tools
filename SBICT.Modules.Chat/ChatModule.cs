@@ -1,4 +1,8 @@
-﻿namespace SBICT.Modules.Chat
+﻿// <copyright file="ChatModule.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace SBICT.Modules.Chat
 {
     using Prism.Ioc;
     using Prism.Modularity;

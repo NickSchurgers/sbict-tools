@@ -20,6 +20,7 @@ namespace SBICT.API
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .ConfigureLogging((context, builder) => builder.AddFile("Logs/api-{Date}.log", LogLevel.Debug))
                 .UseStartup<Startup>()
                 .UseHttpSys(options =>
                 {

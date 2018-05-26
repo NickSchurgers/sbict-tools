@@ -1,4 +1,8 @@
-﻿namespace SBICT.Modules.Chat
+﻿// <copyright file="Chat.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace SBICT.Modules.Chat
 {
     using System;
     using SBICT.Data;
@@ -9,7 +13,7 @@
     public class Chat : ChatBase, IChat
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="Chat"/> class.
+        /// Initializes a new instance of the <see cref="T:SBICT.Modules.Chat.Chat" /> class.
         /// </summary>
         /// <param name="recipient">User chatting with.</param>
         public Chat(IUser recipient)

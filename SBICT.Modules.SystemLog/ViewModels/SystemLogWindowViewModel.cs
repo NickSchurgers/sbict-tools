@@ -1,4 +1,8 @@
-﻿namespace SBICT.Modules.SystemLog.ViewModels
+﻿// <copyright file="SystemLogWindowViewModel.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace SBICT.Modules.SystemLog.ViewModels
 {
     using System.Collections.ObjectModel;
     using Prism.Events;

@@ -1,4 +1,8 @@
-﻿namespace SBICT.Modules.Chat.ViewModels
+﻿// <copyright file="ChatListViewModel.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace SBICT.Modules.Chat.ViewModels
 {
     using System.Collections.ObjectModel;
     using Prism.Commands;
@@ -24,7 +28,6 @@
         public ChatListViewModel(IChatManager chatManager)
         {
             this.chatManager = chatManager;
-            this.chatManager.InitChannels();
             this.chatManager.GroupInviteReceived += this.OnGroupInviteReceived;
 
             this.ChatListSelectedItemChanged = new DelegateCommand<object>(this.OnSelectedItemChanged);

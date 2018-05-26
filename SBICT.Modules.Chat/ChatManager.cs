@@ -1,4 +1,11 @@
-﻿namespace SBICT.Modules.Chat
+﻿// <copyright file="ChatManager.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+using System.Data;
+using System.Threading.Tasks;
+
+namespace SBICT.Modules.Chat
 {
     using System;
     using System.Collections.Generic;
@@ -26,25 +33,29 @@
         private readonly SynchronizationContext uiContext = SynchronizationContext.Current;
         private readonly IEventAggregator eventAggregator;
         private readonly IConnectionManager<IConnection> connectionManager;
+        private readonly Infrastructure.Connection.IConnectionFactory connectionFactory;
         private readonly IRegionManager regionManager;
         private readonly ISettingsManager settingsManager;
-        private readonly User user;
+        private readonly IUser user;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChatManager"/> class.
         /// </summary>
         /// <param name="eventAggregator">Instance of Prism EventAggregator.</param>
         /// <param name="connectionManager">Instance of ConnectionManager.</param>
+        /// <param name="connectionFactory">Instance of ConnectionFactory.</param>
         /// <param name="regionManager">Instance of the Prism RegionManager.</param>
         /// <param name="settingsManager">Instance of SettingsManager.</param>
         public ChatManager(
             IEventAggregator eventAggregator,
             IConnectionManager<IConnection> connectionManager,
+            Infrastructure.Connection.IConnectionFactory connectionFactory,
             IRegionManager regionManager,
             ISettingsManager settingsManager)
         {
             this.eventAggregator = eventAggregator;
             this.connectionManager = connectionManager;
+            this.connectionFactory = connectionFactory;
 
             this.regionManager = regionManager;
             this.settingsManager = settingsManager;
@@ -57,7 +68,6 @@
 
             this.InitHub();
         }
-
 
         /// <inheritdoc/>
         public event EventHandler<ChatGroupEventArgs> GroupInviteReceived;
@@ -93,7 +103,7 @@
             this.regionManager.RequestNavigate(
                 RegionNames.MainRegion,
                 new Uri("ChatWindow", UriKind.Relative),
-                new NavigationParameters {{"Chat", window}});
+                new NavigationParameters { { "Chat", window } });
         }
 
         /// <inheritdoc />
@@ -104,9 +114,9 @@
         }
 
         /// <inheritdoc />
-        public async void InitChannels()
+        public async Task InitChannels()
         {
-            this.AddChatChannel(new ChatChannel {Name = "Users", IsExpanded = true});
+            this.AddChatChannel(new ChatChannel { Name = "Users", IsExpanded = true });
 
             var users = await this.Connection.Hub.InvokeAsync<IEnumerable<User>>("GetUserList", this.user.Id);
             this.ConnectedUsers = new ObservableCollection<IUser>(users.Cast<IUser>());
@@ -115,9 +125,10 @@
                 this.AddChat(new Chat(connectedUser));
             }
 
-            this.AddChatChannel(new ChatChannel {Name = "Groups", IsExpanded = true});
-            //var groups = await this.Connection.Hub.InvokeAsync<IEnumerable<Group>>("GetGroupsForUser", this.user.Id);
-            //TODO: Add Groups when user connects with a new client
+            this.AddChatChannel(new ChatChannel { Name = "Groups", IsExpanded = true });
+
+            // var groups = await this.Connection.Hub.InvokeAsync<IEnumerable<Group>>("GetGroupsForUser", this.user.Id);
+            // TODO: Add Groups when user connects with a new client
         }
 
         /// <inheritdoc />
@@ -203,29 +214,27 @@
         private async void InitHub()
         {
             var (address, port) = this.settingsManager.Server;
-            this.Connection =
-                ConnectionFactory.Create(
-                    $"{address}:{port}/hubs/chat?displayName={this.user.DisplayName}&guid={this.user.Id.ToString()}");
-            this.Connection.UserStatusChanged += this.OnUserStatusChanged;
-
+            var url = $"{address}:{port}/hubs/chat?displayName={this.user.DisplayName}&guid={this.user.Id.ToString()}";
+            this.Connection = this.connectionFactory.Create(url, HubNames.ChatHub);
+            this.Connection.UserStatusChanged += this.OnUserStateChanged;
             this.Connection.Hub.On<Guid, User, Message, ConnectionScope>("MessageReceived", this.OnMessageReceived);
 
-            //Set up handling of group creation
+            // Set up handling of group creation
             this.Connection.Hub.On<Group>("GroupCreated", this.OnGroupCreated);
 
-            //Set up handling of a group invite.
+            // Set up handling of a group invite.
             this.Connection.Hub.On<Group>("GroupInvited", this.OnGroupInvited);
 
-            //Set up handling of group join.
+            // Set up handling of group join.
             this.Connection.Hub.On<Group, User>("GroupJoined", this.OnGroupJoined);
 
-            //Set up handling of group leave.
+            // Set up handling of group leave.
             this.Connection.Hub.On<Group, User>("GroupLeft", this.OnGroupLeft);
 
             this.connectionManager.Set("Chat", this.Connection);
             await this.Connection.StartAsync();
+            await this.InitChannels();
         }
-
 
         /// <summary>
         /// Handle received messages.
@@ -245,13 +254,13 @@
             // ReSharper disable once ConvertIfStatementToSwitchStatement
             if (scope == ConnectionScope.User)
             {
-                var chat = (Chat)this.Channels.ByName("Users").Chats.ById(chatMessage.Sender.Id);
+                var chat = (Chat) this.Channels.ByName("Users").Chats.ById(chatMessage.Sender.Id);
                 this.uiContext.Send(x => chat.Messages.Add(chatMessage), null);
                 this.OnChatMessageReceived(new ChatMessageEventArgs(chatMessage));
             }
             else if (scope == ConnectionScope.Group)
             {
-                var group = (ChatGroup)this.Channels.ByName("Groups").ChatGroups.ById(chatMessage.Recipient);
+                var group = (ChatGroup) this.Channels.ByName("Groups").ChatGroups.ById(chatMessage.Recipient);
                 this.uiContext.Send(x => group.Messages.Add(chatMessage), null);
                 this.OnChatMessageReceived(new ChatMessageEventArgs(chatMessage));
             }
@@ -272,7 +281,7 @@
         private void OnGroupCreated(Group group)
         {
             SystemLogger.LogEvent($"{group.Name} was created.");
-            this.uiContext.Send(x => { this.AddChatGroup((ChatGroup)group); }, null);
+            this.uiContext.Send(x => { this.AddChatGroup((ChatGroup) group); }, null);
         }
 
         /// <summary>
@@ -281,7 +290,7 @@
         /// <param name="group">Group invited to.</param>
         private void OnGroupInvited(Group group)
         {
-            var chatGroup = (ChatGroup)group;
+            var chatGroup = (ChatGroup) group;
             SystemLogger.LogEvent($"Invite received for group {chatGroup.Name}.");
             this.uiContext.Send(x => this.OnGroupInviteReceived(new ChatGroupEventArgs(chatGroup)), null);
         }
@@ -293,7 +302,7 @@
         /// <param name="leaver">User leaving the group.</param>
         private void OnGroupLeft(Group group, User leaver)
         {
-            var chatGroup = (ChatGroup)group;
+            var chatGroup = (ChatGroup) group;
             if (leaver.Id == this.user.Id)
             {
                 SystemLogger.LogEvent($"Group {chatGroup.Name} joined.");
@@ -312,7 +321,7 @@
         /// <param name="joiner">User joining the group.</param>
         private void OnGroupJoined(Group group, User joiner)
         {
-            var chatGroup = (ChatGroup)group;
+            var chatGroup = (ChatGroup) group;
             if (joiner.Id == this.user.Id)
             {
                 SystemLogger.LogEvent($"Group {chatGroup.Name} joined.");
@@ -324,24 +333,21 @@
             }
         }
 
-        /// <summary>
-        /// Triggered when a user (dis)connects from the chat hub.
-        /// </summary>
-        /// <param name="sender">Event Sender.</param>
-        /// <param name="e">Event arguments.</param>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown when event Status is non existing.</exception>
-        private void OnUserStatusChanged(object sender, ConnectionEventArgs e)
+        private void OnUserStateChanged(object sender, ConnectionEventArgs connectionEventArgs)
         {
-            IUser subject;
-            switch (e.Status)
+            if (connectionEventArgs.HubName != HubNames.ChatHub)
+            {
+                return;
+            }
+
+            switch (connectionEventArgs.Status)
             {
                 case ConnectionStatus.Connected:
-                    subject = e.User;
-                    this.ConnectedUsers.Add(subject);
-                    this.uiContext.Send(x => this.AddChat(new Chat(subject)), null);
+                    this.ConnectedUsers.Add(connectionEventArgs.User);
+                    this.uiContext.Send(x => this.AddChat(new Chat(connectionEventArgs.User)), null);
                     break;
                 case ConnectionStatus.Disconnected:
-                    subject = this.ConnectedUsers.Single(u => u.Id == e.User.Id);
+                    var subject = this.ConnectedUsers.Single(u => u.Id == connectionEventArgs.User.Id);
                     var chat = this.Channels.ByName("Users").Chats.ById(subject.Id);
                     this.ConnectedUsers.Remove(subject);
                     this.uiContext.Send(x => this.RemoveChat(chat), null);
@@ -352,7 +358,15 @@
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+
+            this.eventAggregator.GetEvent<UserStateChangedEvent>().Publish(new ConnectionEventArgs
+            {
+                HubName = HubNames.ChatHub,
+                Status = connectionEventArgs.Status,
+                User = connectionEventArgs.User,
+            });
         }
+
 
         /// <summary>
         /// Triggered on closing of the main window.

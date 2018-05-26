@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace SBICT.Infrastructure.Logger
+﻿namespace SBICT.Infrastructure.Logger
 {
+    using System;
+
     public class Logger : ILogger
     {
         #region Methods

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using SBICT.Data;
 using SBICT.Infrastructure.Connection;
 
@@ -19,7 +20,7 @@ namespace SBICT.Infrastructure.Chat
         /// <summary>
         /// Create list of channels and populate them.
         /// </summary>
-        void InitChannels();
+        Task InitChannels();
         
         /// <summary>
         /// Add channel to list of channels.

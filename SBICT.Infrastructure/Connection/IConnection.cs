@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
+using Prism.Events;
 
 namespace SBICT.Infrastructure.Connection
 {
@@ -8,6 +9,7 @@ namespace SBICT.Infrastructure.Connection
     {
         ConnectionStatus Status { get; set; }
         HubConnection Hub { get; set; }
+        string HubName { get; }
         Task StartAsync();
         Task StopAsync();
 

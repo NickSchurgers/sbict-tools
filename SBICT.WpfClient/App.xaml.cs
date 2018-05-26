@@ -18,15 +18,17 @@ using SBICT.Infrastructure.Connection;
 namespace SBICT.WpfClient
 {
     /// <summary>
-    /// Interaction logic for App.xaml
+    /// Interaction logic for App.xaml.
     /// </summary>
     public partial class App : PrismApplication
     {
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
             containerRegistry.RegisterSingleton<ISettingsManager, SettingsManager>();
+            containerRegistry.RegisterSingleton<IConnectionFactory, ConnectionFactory>();
             containerRegistry.Register<IConnection, Connection>();
             containerRegistry.Register<IConnectionManager<IConnection>, ConnectionManager>();
+
         }
 
         protected override Window CreateShell()

@@ -1,4 +1,8 @@
-﻿namespace SBICT.Modules.Chat
+﻿// <copyright file="ChatGroup.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace SBICT.Modules.Chat
 {
     using System;
     using System.Collections.ObjectModel;
@@ -9,8 +13,9 @@
     /// <inheritdoc cref="IChatGroup" />
     public class ChatGroup : ChatBase, IChatGroup
     {
+        /// <inheritdoc />
         /// <summary>
-        /// Initializes a new instance of the <see cref="ChatGroup"/> class.
+        /// Initializes a new instance of the <see cref="T:SBICT.Modules.Chat.ChatGroup" /> class.
         /// </summary>
         /// <param name="groupName">Name of this group.</param>
         public ChatGroup(string groupName)

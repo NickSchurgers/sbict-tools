@@ -1,22 +1,25 @@
-﻿using System;
+﻿// <copyright file="IStore.cs" company="SBICT">
+// Copyright (c) SBICT. All rights reserved.
+// </copyright>
 
 namespace SBICT.Infrastructure
 {
+    using System;
     using System.Collections.Generic;
 
     /// <summary>
     /// Interface for storage providers.
     /// </summary>
-    /// <typeparam name="T">Type to key by.</typeparam>
-    /// <typeparam name="G">Type of value.</typeparam>
-    public interface IStore<T, G>
+    /// <typeparam name="TKey">Type to key by.</typeparam>
+    /// <typeparam name="TValue">Type of value.</typeparam>
+    public interface IStore<TKey, TValue>
     {
         /// <summary>
         /// Add a value to the specified key. If key doesn't exist, it gets inserted.
         /// </summary>
         /// <param name="key">Key to add to.</param>
         /// <param name="value">Value to add.</param>
-        void Add(T key, G value);
+        void Add(TKey key, TValue value);
 
         /// <summary>
         /// Count all keys.
@@ -29,40 +32,40 @@ namespace SBICT.Infrastructure
         /// </summary>
         /// <param name="key">Key to count values of.</param>
         /// <returns>Amount of values.</returns>
-        int Count(T key);
+        int Count(TKey key);
 
         /// <summary>
         /// Get values belonging to the key.
         /// </summary>
         /// <param name="key">Key to get values of.</param>
         /// <returns>List of values.</returns>
-        IEnumerable<G> GetValues(T key);
+        IEnumerable<TValue> GetValues(TKey key);
 
         /// <summary>
         /// Get a key by predicate.
         /// </summary>
         /// <param name="func">Predicate to find the key with.</param>
-        /// <returns></returns>
-        T GetKey(Func<T, bool> func);
+        /// <returns>Found key.</returns>
+        TKey GetKey(Func<TKey, bool> func);
 
         /// <summary>
         /// Get a list of keys.
         /// </summary>
-        /// <param name="func">Predicate to find the key with.</param>
-        /// <returns></returns>
-        IEnumerable<T> GetKeys(Func<T, bool> func);
+        /// <param name="func">Predicate to filter the list with.</param>
+        /// <returns>List of keys matching the predicate.</returns>
+        IEnumerable<TKey> GetKeys(Func<TKey, bool> func);
 
         /// <summary>
         /// Remove a value from the specified key. If a key no longer has any values, it gets deleted.
         /// </summary>
         /// <param name="key">Key to remove from.</param>
         /// <param name="value">Value to remove.</param>
-        void Remove(T key, G value);
+        void Remove(TKey key, TValue value);
 
         /// <summary>
         /// Remove the specified key and all it's values.
         /// </summary>
         /// <param name="key">Key to remove from.</param>
-        void Remove(T key);
+        void Remove(TKey key);
     }
 }

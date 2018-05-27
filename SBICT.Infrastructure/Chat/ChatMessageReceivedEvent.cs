@@ -6,7 +6,10 @@ namespace SBICT.Infrastructure.Chat
 {
     using Prism.Events;
 
-    public class ChatMessageReceivedEvent: PubSubEvent<IChatMessage>
+    /// <summary>
+    /// Event raised when a chatmassege is received.
+    /// </summary>
+    public class ChatMessageReceivedEvent : PubSubEvent<IChatMessage>
     {
     }
 }

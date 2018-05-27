@@ -7,8 +7,14 @@ namespace SBICT.Infrastructure.Chat
     using System.Collections.ObjectModel;
     using SBICT.Data;
 
-    public interface IChatGroup: IGroup
+    /// <summary>
+    /// A chatgroup.
+    /// </summary>
+    public interface IChatGroup : IGroup
     {
+        /// <summary>
+        /// Gets all users participating in this group.
+        /// </summary>
         ObservableCollection<IUser> Participants { get; }
     }
 }

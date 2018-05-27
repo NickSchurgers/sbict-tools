@@ -12,7 +12,6 @@ namespace SBICT.Modules.Chat
     using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
-    using Infrastructure.Hubs;
     using Microsoft.AspNetCore.SignalR.Client;
     using Prism.Events;
     using Prism.Mvvm;
@@ -22,6 +21,7 @@ namespace SBICT.Modules.Chat
     using SBICT.Infrastructure.Chat;
     using SBICT.Infrastructure.Connection;
     using SBICT.Infrastructure.Extensions;
+    using SBICT.Infrastructure.Hubs;
     using SBICT.Infrastructure.Logger;
     using SBICT.Modules.Chat.Extensions;
 
@@ -75,16 +75,16 @@ namespace SBICT.Modules.Chat
         public event EventHandler<BroadcastEventArgs> BroadcastReceived;
 
         /// <inheritdoc/>
-        public IConnection Connection { get; set; }
+        public IConnection Connection { get; private set; }
 
         /// <inheritdoc/>
-        public IChatWindow ActiveChat { get; set; }
+        public IChatWindow ActiveChat { get; private set; }
 
         /// <inheritdoc/>
-        public ObservableCollection<IChatChannel> Channels { get; set; } = new ObservableCollection<IChatChannel>();
+        public ObservableCollection<IChatChannel> Channels { get; } = new ObservableCollection<IChatChannel>();
 
         /// <inheritdoc/>
-        public ObservableCollection<IUser> ConnectedUsers { get; set; } = new ObservableCollection<IUser>();
+        public ObservableCollection<IUser> ConnectedUsers { get; private set; } = new ObservableCollection<IUser>();
 
         /// <inheritdoc/>
         public void ActivateWindow(IChatWindow window)
@@ -108,7 +108,7 @@ namespace SBICT.Modules.Chat
         /// <inheritdoc />
         public async void SendMessage(Guid recipient, string message, ConnectionScope scope)
         {
-            var chatMessage = new ChatMessage(message, DateTime.Now);
+            var chatMessage = new ChatMessage(message, DateTime.Now, this.user, recipient);
             await this.Connection.Hub.InvokeAsync("SendMessage", recipient, this.user.Id, chatMessage, scope);
         }
 
@@ -243,11 +243,7 @@ namespace SBICT.Modules.Chat
         /// <param name="scope">Scope of message.</param>
         private void OnMessageReceived(Guid recipient, User sender, Message message, ConnectionScope scope)
         {
-            var chatMessage = new ChatMessage(message.Content, message.Received)
-            {
-                Recipient = recipient,
-                Sender = sender,
-            };
+            var chatMessage = new ChatMessage(message.Content, message.Received, sender, recipient);
 
             // ReSharper disable once ConvertIfStatementToSwitchStatement
             if (scope == ConnectionScope.User)

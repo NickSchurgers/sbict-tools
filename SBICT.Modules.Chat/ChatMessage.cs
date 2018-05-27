@@ -16,22 +16,22 @@ namespace SBICT.Modules.Chat
         /// </summary>
         /// <param name="messageContent">Content of the message.</param>
         /// <param name="messageReceived">Date when the message is sent/received.</param>
-        public ChatMessage(string messageContent, DateTime messageReceived)
+        public ChatMessage(string messageContent, DateTime messageReceived, IUser sender, Guid recipient = default)
         {
             this.Received = messageReceived;
             this.Content = messageContent;
-            this.Sender = null;
-            this.Recipient = Guid.Empty;
+            this.Sender = sender;
+            this.Recipient = recipient;
         }
 
         /// <inheritdoc/>
         public string Content { get; }
 
         /// <inheritdoc/>
-        public IUser Sender { get; set; }
+        public IUser Sender { get; }
 
         /// <inheritdoc/>
-        public Guid Recipient { get; set; }
+        public Guid Recipient { get; }
 
         /// <inheritdoc/>
         public DateTime Received { get; }

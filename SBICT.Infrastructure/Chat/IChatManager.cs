@@ -10,24 +10,50 @@ namespace SBICT.Infrastructure.Chat
     using SBICT.Data;
     using SBICT.Infrastructure.Connection;
 
+    /// <summary>
+    /// Used to manage chatchannels, chats, chatgroups, the chat connection and various events related to chats.
+    /// </summary>
     public interface IChatManager
     {
+        /// <summary>
+        /// Raised when a chatmessage is received.
+        /// </summary>
         event EventHandler<ChatMessageEventArgs> ChatMessageReceived;
 
+        /// <summary>
+        /// Raised when a broadcast is received.
+        /// </summary>
         event EventHandler<BroadcastEventArgs> BroadcastReceived;
 
+        /// <summary>
+        /// Raised when a group invite is received.
+        /// </summary>
         event EventHandler<ChatGroupEventArgs> GroupInviteReceived;
 
-        IConnection Connection { get; set; }
+        /// <summary>
+        /// Gets the connection used for chat.
+        /// </summary>
+        IConnection Connection { get; }
 
-        IChatWindow ActiveChat { get; set; }
+        /// <summary>
+        /// Gets the active chat window.
+        /// </summary>
+        IChatWindow ActiveChat { get; }
 
-        ObservableCollection<IChatChannel> Channels { get; set; }
+        /// <summary>
+        /// Gets the channels used.
+        /// </summary>
+        ObservableCollection<IChatChannel> Channels { get; }
 
-        ObservableCollection<IUser> ConnectedUsers { get; set; }
+        /// <summary>
+        /// Gets all connected users.
+        /// </summary>
+        ObservableCollection<IUser> ConnectedUsers { get; }
+
         /// <summary>
         /// Create list of channels and populate them.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task InitChannels();
 
         /// <summary>

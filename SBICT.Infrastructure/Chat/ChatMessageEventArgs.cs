@@ -4,17 +4,23 @@
 
 namespace SBICT.Infrastructure.Chat
 {
+    /// <summary>
+    /// Event arguments for ChatMessage related events.
+    /// </summary>
     public class ChatMessageEventArgs
     {
-        public IChatMessage ChatMessage { get; }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ChatMessageEventArgs"/> class.
         /// </summary>
-        /// <param name="chatMessage"></param>
+        /// <param name="chatMessage">Instance of the ChatMessage.</param>
         public ChatMessageEventArgs(IChatMessage chatMessage)
         {
-            ChatMessage = chatMessage;
+            this.ChatMessage = chatMessage;
         }
+
+        /// <summary>
+        /// Gets the ChatMessage associated with this event.
+        /// </summary>
+        public IChatMessage ChatMessage { get; }
     }
 }

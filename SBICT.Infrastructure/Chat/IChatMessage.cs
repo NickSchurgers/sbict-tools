@@ -7,10 +7,19 @@ namespace SBICT.Infrastructure.Chat
     using System;
     using SBICT.Data;
 
+    /// <summary>
+    /// Single chat message.
+    /// </summary>
     public interface IChatMessage : IMessage
     {
-        IUser Sender { get; set; }
+        /// <summary>
+        /// Gets sender of the message.
+        /// </summary>
+        IUser Sender { get; }
 
-        Guid Recipient { get; set; }
+        /// <summary>
+        /// Gets receiver of the message.
+        /// </summary>
+        Guid Recipient { get; }
     }
 }

@@ -22,20 +22,21 @@ namespace SBICT.WpfClient
     /// </summary>
     public partial class App : PrismApplication
     {
+        /// <inheritdoc />
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
             containerRegistry.RegisterSingleton<ISettingsManager, SettingsManager>();
             containerRegistry.RegisterSingleton<IConnectionFactory, ConnectionFactory>();
             containerRegistry.Register<IConnection, Connection>();
-            containerRegistry.Register<IConnectionManager<IConnection>, ConnectionManager>();
-
         }
 
+        /// <inheritdoc />
         protected override Window CreateShell()
         {
             return ServiceLocator.Current.GetInstance<MainWindow>();
         }
 
+        /// <inheritdoc />
         protected override IModuleCatalog CreateModuleCatalog()
         {
             return new DirectoryModuleCatalog {ModulePath = @".\Modules"};

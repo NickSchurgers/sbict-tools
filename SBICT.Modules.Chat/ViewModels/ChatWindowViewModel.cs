@@ -114,7 +114,7 @@ namespace SBICT.Modules.Chat.ViewModels
             //As a chatgroup is cast to a chat, we use participants to determine what the scope is
             this.chatManager.SendMessage(this.ChatWindow.GetRecipient(), this.Message, this.ChatWindow.Scope);
             this.ChatWindow.Messages.Add(
-                new ChatMessage(this.Message, DateTime.Now) {Sender = this.settingsManager.User});
+                new ChatMessage(this.Message, DateTime.Now,  this.settingsManager.User));
             this.Message = string.Empty;
         }
     }

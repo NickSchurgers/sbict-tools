@@ -1,70 +1,70 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.SignalR.Client;
-using Prism.Events;
-using SBICT.Data;
+﻿// <copyright file="Connection.cs" company="SBICT">
+// Copyright (c) SBICT. All rights reserved.
+// </copyright>
 
 namespace SBICT.Infrastructure.Connection
 {
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.SignalR;
+    using Microsoft.AspNetCore.SignalR.Client;
+    using SBICT.Data;
+
+    /// <inheritdoc />
     public class Connection : IConnection
     {
-        private readonly IEventAggregator eventAggregator;
 
-        #region Fields
+        private ConnectionStatus status = ConnectionStatus.Disconnected;
+        private bool isStarted;
 
-        private ConnectionStatus _status = ConnectionStatus.Disconnected;
-        private bool _isStarted;
+        /// <inheritdoc />
+        public event EventHandler<ConnectionEventArgs> ConnectionStatusChanged;
 
-        #endregion
+        /// <inheritdoc />
+        public event EventHandler<ConnectionEventArgs> UserStatusChanged;
 
-        #region Properties
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Connection"/> class.
+        /// </summary>
+        /// <param name="connection">Instance of Hubconnection.</param>
+        /// <param name="hubName">Name of the hub.</param>
+        public Connection(HubConnection connection, string hubName)
+        {
+            this.Hub = connection;
+            this.HubName = hubName;
+        }
 
+        /// <inheritdoc />
         public ConnectionStatus Status
         {
-            get => _status;
+            get => this.status;
             set
             {
-                if (value == _status) return;
-                _status = value;
-                OnConnectionStatusChanged(new ConnectionEventArgs { Status = _status });
+                if (value == this.status)
+                {
+                    return;
+                }
+
+                this.status = value;
+                this.OnConnectionStatusChanged(new ConnectionEventArgs { Status = this.status });
             }
         }
 
-        public HubConnection Hub { get; set; }
+        /// <inheritdoc />
+        public HubConnection Hub { get; }
 
+        /// <inheritdoc />
         public string HubName { get; }
 
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="connection"></param>
-        /// <param name="hubName"></param>
-        /// <param name="eventAggregator"></param>
-        public Connection(HubConnection connection, string hubName, IEventAggregator eventAggregator)
-        {
-            this.eventAggregator = eventAggregator;
-            Hub = connection;
-            HubName = hubName;
-        }
-
-        /// <summary>
-        /// Start the connection withe the hub
-        /// </summary>
-        /// <returns></returns>
-        /// <exception cref="HubException"></exception>
+        /// <inheritdoc/>
         public async Task StartAsync()
         {
-            if (!_isStarted)
+            if (!this.isStarted)
             {
                 try
                 {
-                    Status = ConnectionStatus.Connecting;
-                    Hub.On<User, ConnectionScope>(
+                    this.Status = ConnectionStatus.Connecting;
+                    this.Hub.On<User, ConnectionScope>(
                         "Connected",
                         (connUser, scope) => this.OnUserStatusChanged(new ConnectionEventArgs
                         {
@@ -73,70 +73,53 @@ namespace SBICT.Infrastructure.Connection
                             Status = ConnectionStatus.Connected,
                         }));
 
-                   Hub.On<User, ConnectionScope>(
+                    this.Hub.On<User, ConnectionScope>(
                         "Disconnected",
                         (connUser, scope) => this.OnUserStatusChanged(new ConnectionEventArgs
-                       {
-                           User = connUser,
-                           HubName = this.HubName,
-                           Status = ConnectionStatus.Disconnected,
-                       }));
-                    await Hub.StartAsync();
-                    Status = ConnectionStatus.Connected;
-                    _isStarted = true;
+                        {
+                            User = connUser,
+                            HubName = this.HubName,
+                            Status = ConnectionStatus.Disconnected,
+                        }));
+                    await this.Hub.StartAsync();
+                    this.Status = ConnectionStatus.Connected;
+                    this.isStarted = true;
                 }
                 catch (Exception e)
                 {
-                    await StopAsync();
+                    await this.StopAsync();
                     throw new HubException(e.Message);
                 }
             }
         }
 
-
-        /// <summary>
-        /// Dispose of the connection with the hub
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public async Task StopAsync()
         {
-            if (_isStarted)
+            if (this.isStarted)
             {
-                await Hub.StopAsync();
-                Status = ConnectionStatus.Disconnected;
-                _isStarted = false;
+                await this.Hub.StopAsync();
+                this.Status = ConnectionStatus.Disconnected;
+                this.isStarted = false;
             }
         }
 
-        #endregion
-
-        #region Event Handlers
-
         /// <summary>
-        /// Triggered when the status of this connection changes
+        /// Raised when the status of this connection changes
         /// </summary>
-        /// <param name="e"></param>
+        /// <param name="e">ConnectionEventArgs</param>
         protected virtual void OnConnectionStatusChanged(ConnectionEventArgs e)
         {
-            ConnectionStatusChanged?.Invoke(this, e);
+            this.ConnectionStatusChanged?.Invoke(this, e);
         }
 
         /// <summary>
-        /// Triggered when the status of a user changes.
+        /// Raised when the status of a user changes.
         /// </summary>
-        /// <param name="e"></param>
+        /// <param name="e">ConnectionEventArgs</param>
         protected virtual void OnUserStatusChanged(ConnectionEventArgs e)
         {
-            UserStatusChanged?.Invoke(this, e);
+            this.UserStatusChanged?.Invoke(this, e);
         }
-
-        #endregion
-
-        #region Events
-
-        public event EventHandler<ConnectionEventArgs> ConnectionStatusChanged;
-        public event EventHandler<ConnectionEventArgs> UserStatusChanged;
-
-        #endregion
     }
 }

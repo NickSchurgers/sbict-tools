@@ -13,7 +13,7 @@ namespace SBICT.Modules.Chat
     public class Chat : ChatBase, IChat
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:SBICT.Modules.Chat.Chat" /> class.
+        /// Initializes a new instance of the <see cref="Chat"/> class.
         /// </summary>
         /// <param name="recipient">User chatting with.</param>
         public Chat(IUser recipient)

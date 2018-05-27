@@ -2,9 +2,6 @@
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
-using System.Data;
-using System.Threading.Tasks;
-
 namespace SBICT.Modules.Chat
 {
     using System;
@@ -13,7 +10,9 @@ namespace SBICT.Modules.Chat
     using System.ComponentModel;
     using System.Linq;
     using System.Threading;
+    using System.Threading.Tasks;
     using System.Windows;
+    using Infrastructure.Hubs;
     using Microsoft.AspNetCore.SignalR.Client;
     using Prism.Events;
     using Prism.Mvvm;
@@ -27,12 +26,12 @@ namespace SBICT.Modules.Chat
     using SBICT.Modules.Chat.Extensions;
 
     /// <inheritdoc cref="IChatManager" />
+
     // ReSharper disable once ClassNeverInstantiated.Global
     public class ChatManager : BindableBase, IChatManager
     {
         private readonly SynchronizationContext uiContext = SynchronizationContext.Current;
         private readonly IEventAggregator eventAggregator;
-        private readonly IConnectionManager<IConnection> connectionManager;
         private readonly Infrastructure.Connection.IConnectionFactory connectionFactory;
         private readonly IRegionManager regionManager;
         private readonly ISettingsManager settingsManager;
@@ -42,19 +41,16 @@ namespace SBICT.Modules.Chat
         /// Initializes a new instance of the <see cref="ChatManager"/> class.
         /// </summary>
         /// <param name="eventAggregator">Instance of Prism EventAggregator.</param>
-        /// <param name="connectionManager">Instance of ConnectionManager.</param>
         /// <param name="connectionFactory">Instance of ConnectionFactory.</param>
         /// <param name="regionManager">Instance of the Prism RegionManager.</param>
         /// <param name="settingsManager">Instance of SettingsManager.</param>
         public ChatManager(
             IEventAggregator eventAggregator,
-            IConnectionManager<IConnection> connectionManager,
             Infrastructure.Connection.IConnectionFactory connectionFactory,
             IRegionManager regionManager,
             ISettingsManager settingsManager)
         {
             this.eventAggregator = eventAggregator;
-            this.connectionManager = connectionManager;
             this.connectionFactory = connectionFactory;
 
             this.regionManager = regionManager;
@@ -103,7 +99,10 @@ namespace SBICT.Modules.Chat
             this.regionManager.RequestNavigate(
                 RegionNames.MainRegion,
                 new Uri("ChatWindow", UriKind.Relative),
-                new NavigationParameters { { "Chat", window } });
+                new NavigationParameters
+                {
+                    { "Chat", window },
+                });
         }
 
         /// <inheritdoc />
@@ -231,7 +230,6 @@ namespace SBICT.Modules.Chat
             // Set up handling of group leave.
             this.Connection.Hub.On<Group, User>("GroupLeft", this.OnGroupLeft);
 
-            this.connectionManager.Set("Chat", this.Connection);
             await this.Connection.StartAsync();
             await this.InitChannels();
         }
@@ -254,13 +252,13 @@ namespace SBICT.Modules.Chat
             // ReSharper disable once ConvertIfStatementToSwitchStatement
             if (scope == ConnectionScope.User)
             {
-                var chat = (Chat) this.Channels.ByName("Users").Chats.ById(chatMessage.Sender.Id);
+                var chat = (Chat)this.Channels.ByName("Users").Chats.ById(chatMessage.Sender.Id);
                 this.uiContext.Send(x => chat.Messages.Add(chatMessage), null);
                 this.OnChatMessageReceived(new ChatMessageEventArgs(chatMessage));
             }
             else if (scope == ConnectionScope.Group)
             {
-                var group = (ChatGroup) this.Channels.ByName("Groups").ChatGroups.ById(chatMessage.Recipient);
+                var group = (ChatGroup)this.Channels.ByName("Groups").ChatGroups.ById(chatMessage.Recipient);
                 this.uiContext.Send(x => group.Messages.Add(chatMessage), null);
                 this.OnChatMessageReceived(new ChatMessageEventArgs(chatMessage));
             }
@@ -281,7 +279,7 @@ namespace SBICT.Modules.Chat
         private void OnGroupCreated(Group group)
         {
             SystemLogger.LogEvent($"{group.Name} was created.");
-            this.uiContext.Send(x => { this.AddChatGroup((ChatGroup) group); }, null);
+            this.uiContext.Send(x => { this.AddChatGroup((ChatGroup)group); }, null);
         }
 
         /// <summary>
@@ -290,7 +288,7 @@ namespace SBICT.Modules.Chat
         /// <param name="group">Group invited to.</param>
         private void OnGroupInvited(Group group)
         {
-            var chatGroup = (ChatGroup) group;
+            var chatGroup = (ChatGroup)group;
             SystemLogger.LogEvent($"Invite received for group {chatGroup.Name}.");
             this.uiContext.Send(x => this.OnGroupInviteReceived(new ChatGroupEventArgs(chatGroup)), null);
         }
@@ -302,7 +300,7 @@ namespace SBICT.Modules.Chat
         /// <param name="leaver">User leaving the group.</param>
         private void OnGroupLeft(Group group, User leaver)
         {
-            var chatGroup = (ChatGroup) group;
+            var chatGroup = (ChatGroup)group;
             if (leaver.Id == this.user.Id)
             {
                 SystemLogger.LogEvent($"Group {chatGroup.Name} joined.");
@@ -321,7 +319,7 @@ namespace SBICT.Modules.Chat
         /// <param name="joiner">User joining the group.</param>
         private void OnGroupJoined(Group group, User joiner)
         {
-            var chatGroup = (ChatGroup) group;
+            var chatGroup = (ChatGroup)group;
             if (joiner.Id == this.user.Id)
             {
                 SystemLogger.LogEvent($"Group {chatGroup.Name} joined.");
@@ -367,7 +365,6 @@ namespace SBICT.Modules.Chat
             });
         }
 
-
         /// <summary>
         /// Triggered on closing of the main window.
         /// </summary>
@@ -375,7 +372,6 @@ namespace SBICT.Modules.Chat
         /// <param name="e">Event arguments.</param>
         private async void OnMainWindowClosing(object sender, CancelEventArgs e)
         {
-            this.connectionManager.Unset("Chat");
             await this.Connection.StopAsync();
         }
     }

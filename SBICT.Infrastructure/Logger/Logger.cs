@@ -1,81 +1,43 @@
-﻿namespace SBICT.Infrastructure.Logger
-{
-    using System;
+﻿// <copyright file="Logger.cs" company="SBICT">
+// Copyright (c) SBICT. All rights reserved.
+// </copyright>
 
+namespace SBICT.Infrastructure.Logger
+{
+    /// <inheritdoc />
     public class Logger : ILogger
     {
-        #region Methods
-
         /// <summary>
-        /// Log item
+        /// Log a message.
         /// </summary>
-        /// <param name="message"></param>
-        /// <param name="logLevel"></param>
+        /// <param name="message">Message to log.</param>
+        /// <param name="logLevel">Level of the message.</param>
         private void Log(string message, LogLevel logLevel)
         {
-            var args = new LoggerEventArgs
-            {
-                Log = new Log
-                {
-                    Message = message,
-                    DateTime = DateTime.Now,
-                    LogLevel = logLevel
-                }
-            };
-            OnLogAdded(args);
         }
 
-        /// <summary>
-        /// Log item with loglevel info
-        /// </summary>
-        /// <param name="message"></param>
+        /// <inheritdoc />
         public void Info(string message)
         {
-            Log(message, LogLevel.Info);
+            this.Log(message, LogLevel.Info);
         }
 
-        /// <summary>
-        /// Log item with loglevel debug
-        /// </summary>
-        /// <param name="message"></param>
+        /// <inheritdoc/>
         public void Debug(string message)
         {
-            Log(message, LogLevel.Debug);
+            this.Log(message, LogLevel.Debug);
         }
 
-        /// <summary>
-        /// Log item with loglevel error
-        /// </summary>
-        /// <param name="message"></param>
+        /// <inheritdoc/>
         public void Error(string message)
         {
-            Log(message, LogLevel.Error);
+            this.Log(message, LogLevel.Error);
         }
 
-        /// <summary>
-        /// Log item with loglevel warning
-        /// </summary>
-        /// <param name="message"></param>
+        /// <inheritdoc/>
         public void Warning(string message)
         {
-            Log(message, LogLevel.Warning);
+            this.Log(message, LogLevel.Warning);
         }
-
-        #endregion
-
-        #region Events
-
-        public event EventHandler<LoggerEventArgs> LogAdded;
-
-        #endregion
-
-        #region Event Handlers
-
-        protected virtual void OnLogAdded(LoggerEventArgs e)
-        {
-            LogAdded?.Invoke(this, e);
-        }
-
-        #endregion
     }
 }

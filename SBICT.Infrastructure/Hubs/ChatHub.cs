@@ -4,9 +4,6 @@
 
 // ReSharper disable ClassNeverInstantiated.Global
 
-using Microsoft.AspNetCore.Http.Connections.Features;
-using Microsoft.Extensions.Logging;
-
 namespace SBICT.Infrastructure.Hubs
 {
     using System;
@@ -15,6 +12,7 @@ namespace SBICT.Infrastructure.Hubs
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.SignalR;
+    using Microsoft.Extensions.Logging;
     using SBICT.Data;
     using SBICT.Infrastructure.Connection;
 
@@ -22,60 +20,26 @@ namespace SBICT.Infrastructure.Hubs
     /// Hub used for chat connections.
     /// </summary>
     [Authorize]
-    public class ChatHub: Hub
+    public class ChatHub : HubBase
     {
-        private static readonly IStore<IUser, string> _userConnectionStore =
+        private static readonly IStore<IUser, string> UserConnectionStore =
             new InMemoryStore<IUser, string>(new UserComparer());
-        
-        private ILogger _logger;
-        
-        /// <inheritdoc />
-        public override async Task OnConnectedAsync()
-        {
-            var query = this.Context.Features.Get<IHttpContextFeature>()?.HttpContext.Request.Query;
-            query?.TryGetValue("guid", out var id);
-            query?.TryGetValue("displayName", out var name);
 
-            var guid = Guid.Parse(id);
-            var user = new User(guid, this.Context.User.Identity.Name)
-            {
-                DisplayName = name,
-            };
+        private static readonly IStore<IGroup, Guid> GroupConnectionStore = new InMemoryStore<IGroup, Guid>();
 
-            _userConnectionStore.Add(user, this.Context.ConnectionId);
-            if (_userConnectionStore.Count(user) < 2)
-            {
-                await this.Clients.AllExcept(this.Context.ConnectionId)
-                    .SendAsync("Connected", user, ConnectionScope.System);
-            }
-
-            await base.OnConnectedAsync();
-        }
-
-        /// <inheritdoc />
-        public override async Task OnDisconnectedAsync(Exception ex)
-        {
-            var query = this.Context.Features.Get<IHttpContextFeature>()?.HttpContext.Request.Query;
-            query?.TryGetValue("guid", out var id);
-
-            var guid = Guid.Parse(id);
-            var user = _userConnectionStore.GetKey(u => u.Id == guid);
-            _userConnectionStore.Remove(user, this.Context.ConnectionId);
-            if (_userConnectionStore.Count(user) == 0)
-            {
-                await this.Clients.All.SendAsync("Disconnected", user, ConnectionScope.System);
-            }
-
-            await base.OnDisconnectedAsync(ex);
-        }
+        private readonly ILogger logger;
 
         /// <summary>
-        /// Store for groups.
+        /// Initializes a new instance of the <see cref="ChatHub"/> class.
         /// </summary>
-        private static readonly ConnectionStore<Guid> GroupStore = new ConnectionStore<Guid>();
+        /// <param name="loggerFactory">Instance of ILoggerFactory.</param>
+        public ChatHub(ILoggerFactory loggerFactory)
+            : base(loggerFactory)
+        {
+            this.logger = loggerFactory.CreateLogger("ChatHub");
+        }
 
-        private static readonly HashSet<Group> GroupList = new HashSet<Group>();
-
+        // ReSharper disable once UnusedMember.Global
 
         /// <summary>
         /// Return list of currently connected users.
@@ -84,21 +48,22 @@ namespace SBICT.Infrastructure.Hubs
         /// <returns>List of connected users.</returns>
         public IEnumerable<User> GetUserList(Guid userId)
         {
-            return _userConnectionStore.GetKeys(u => u.Id != userId).Cast<User>();
+            return UserConnectionStore.GetKeys(u => u.Key.Id != userId).Cast<User>();
         }
 
+        // ReSharper disable once UnusedMember.Global
 
         /// <summary>
         /// Return a list of groups the user is currently connected to on other clients.
         /// </summary>
         /// <param name="userId">UserId of the user to get the groups for.</param>
         /// <returns>List of groups the users is in.</returns>
-        // ReSharper disable once UnusedMember.Global
         public IEnumerable<Group> GetGroupsForUser(Guid userId)
         {
-            var connectedGroups = GroupStore.GetByConnection(userId.ToString());
-            return GroupList.Where(g => connectedGroups.Contains(g.Id));
+            return GroupConnectionStore.GetKeys(x => x.Value.Contains(userId)).Cast<Group>();
         }
+
+        // ReSharper disable once UnusedMember.Global
 
         /// <summary>
         /// Join a group or create if not exists.
@@ -106,28 +71,27 @@ namespace SBICT.Infrastructure.Hubs
         /// <param name="group">Group to create or join.</param>
         /// <param name="userId">UserId of the user to add to the group.</param>
         /// <returns>GroupCreated or GroupJoined event.</returns>
-        // ReSharper disable once UnusedMember.Global
         public async Task GroupJoin(Group group, Guid userId)
         {
-            var user = _userConnectionStore.GetKey(u => u.Id == userId);
-            var userConnections = _userConnectionStore.GetValues(user);
-            foreach (var conId in userConnections)
+            var pair = UserConnectionStore.GetKeyValuePair(u => u.Key.Id == userId);
+            foreach (var conId in pair.Value)
             {
                 await this.Groups.AddToGroupAsync(conId, group.Name);
             }
 
-            GroupStore.Add(group.Id, userId.ToString());
+            GroupConnectionStore.Add(group, pair.Key.Id);
 
-            if (GroupStore.GetConnections(group.Id).Count() < 2)
+            if (GroupConnectionStore.Count(group) == 1)
             {
-                GroupList.Add(group);
                 await this.Clients.Group(group.Name).SendAsync("GroupCreated", group);
             }
             else
             {
-                await this.Clients.Group(group.Name).SendAsync("GroupJoined", group, user);
+                await this.Clients.Group(group.Name).SendAsync("GroupJoined", group, pair.Key);
             }
         }
+
+        // ReSharper disable once UnusedMember.Global
 
         /// <summary>
         /// Invite a client to join a group.
@@ -135,14 +99,14 @@ namespace SBICT.Infrastructure.Hubs
         /// <param name="group">Group to invite the user to.</param>
         /// <param name="userId">UserId of the user to invite to the group.</param>
         /// <returns>GroupInvited event.</returns>
-        // ReSharper disable once UnusedMember.Global
         public async Task GroupInvite(Group group, Guid userId)
         {
-            var user = _userConnectionStore.GetKey(u => u.Id == userId);
-            var userConnections = _userConnectionStore.GetValues(user);
-            var storedGroup = GroupList.Single(g => g.Id == group.Id);
-            await this.Clients.Clients(userConnections.ToList()).SendAsync("GroupInvited", storedGroup);
+            var pair = UserConnectionStore.GetKeyValuePair(u => u.Key.Id == userId);
+            var storedGroup = GroupConnectionStore.GetKey(g => g.Id == group.Id);
+            await this.Clients.Clients(pair.Value.ToList()).SendAsync("GroupInvited", storedGroup);
         }
+
+        // ReSharper disable once UnusedMember.Global
 
         /// <summary>
         /// Leave a group.
@@ -150,26 +114,21 @@ namespace SBICT.Infrastructure.Hubs
         /// <param name="group">Group to leave.</param>
         /// <param name="userId">UserId of the user to leave the group.</param>
         /// <returns>GroupLeft event.</returns>
-        // ReSharper disable once UnusedMember.Global
         public async Task GroupLeave(Group group, Guid userId)
         {
-            var user = _userConnectionStore.GetKey(u => u.Id == userId);
-            var userConnections = _userConnectionStore.GetValues(user);
-
-            foreach (var conId in userConnections)
+            var pair = UserConnectionStore.GetKeyValuePair(u => u.Key.Id == userId);
+            var storedGroup = GroupConnectionStore.GetKey(g => g.Id == group.Id);
+            foreach (var conId in pair.Value)
             {
                 await this.Groups.RemoveFromGroupAsync(conId, group.Name);
             }
 
-            GroupStore.Remove(group.Id, user.Id.ToString());
+            GroupConnectionStore.Remove(storedGroup, pair.Key.Id);
 
-            await this.Clients.Group(group.Name).SendAsync("GroupLeft", group, user);
-
-            if (!GroupStore.GetConnections(group.Id).Any())
-            {
-                GroupList.RemoveWhere(g => g.Id == group.Id);
-            }
+            await this.Clients.Group(storedGroup.Name).SendAsync("GroupLeft", group, pair.Key);
         }
+
+        // ReSharper disable once UnusedMember.Global
 
         /// <summary>
         /// Send message to a user/group.
@@ -179,20 +138,21 @@ namespace SBICT.Infrastructure.Hubs
         /// <param name="message">Message being sent.</param>
         /// <param name="scope">Scope of the message.</param>
         /// <returns>MessageReceived event.</returns>
-        // ReSharper disable once UnusedMember.Global
         public async Task SendMessage(Guid recipient, Guid sender, Message message, ConnectionScope scope)
         {
             IClientProxy target;
-            var user = _userConnectionStore.GetKey(u => u.Id == sender);
+            var user = UserConnectionStore.GetKey(u => u.Id == sender);
             switch (scope)
             {
                 case ConnectionScope.Group:
-                    target = this.Clients.GroupExcept(recipient.ToString(),
-                        _userConnectionStore.GetValues(user).ToList());
+                    var group = GroupConnectionStore.GetKey(g => g.Id == recipient);
+                    target = this.Clients.GroupExcept(
+                        group.Name,
+                        UserConnectionStore.GetValues(user).ToList());
                     break;
                 case ConnectionScope.User:
-                    var rec = _userConnectionStore.GetKey(r => r.Id == recipient);
-                    var values = _userConnectionStore.GetValues(rec);
+                    var rec = UserConnectionStore.GetKey(r => r.Id == recipient);
+                    var values = UserConnectionStore.GetValues(rec);
                     target = this.Clients.Clients(values.ToList());
                     break;
                 default:
@@ -200,13 +160,13 @@ namespace SBICT.Infrastructure.Hubs
                     break;
             }
 
-
             await target.SendAsync("MessageReceived", recipient, user, message, scope);
         }
 
-        public ChatHub(ILoggerFactory loggerFactory)
+        /// <inheritdoc />
+        protected override IStore<IUser, string> GetUserConnectionStore()
         {
-            this._logger = loggerFactory.CreateLogger("ChatHub");
+            return UserConnectionStore;
         }
     }
 }

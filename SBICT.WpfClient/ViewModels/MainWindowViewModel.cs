@@ -10,17 +10,18 @@ namespace SBICT.WpfClient.ViewModels
     using Prism.Mvvm;
     using SBICT.Infrastructure;
     using SBICT.Infrastructure.Connection;
+    using SBICT.Infrastructure.Hubs;
     using SBICT.Infrastructure.Logger;
 
     /// <inheritdoc />
     /// <summary>
     /// ViewModel for MainWindow.
     /// </summary>
+
     // ReSharper disable once ClassNeverInstantiated.Global
     public class MainWindowViewModel : BindableBase
     {
         private readonly IEventAggregator eventAggregator;
-        private readonly IConnectionManager<IConnection> connectionManager;
         private readonly IConnectionFactory connectionFactory;
         private readonly ISettingsManager settingsManager;
         private string title = "SBICT Application";
@@ -32,13 +33,11 @@ namespace SBICT.WpfClient.ViewModels
         /// </summary>
         /// <param name="moduleManager">Prism ModuleManager.</param>
         /// <param name="eventAggregator">Prism EventAggregator.</param>
-        /// <param name="connectionManager">ConnectionManager.</param>
-        /// <param name="connectionFactory"></param>
+        /// <param name="connectionFactory">Instance of IConnectionFactory.</param>
         /// <param name="settingsManager">SettingsManager.</param>
         public MainWindowViewModel(
             IModuleManager moduleManager,
             IEventAggregator eventAggregator,
-            IConnectionManager<IConnection> connectionManager,
             IConnectionFactory connectionFactory,
             ISettingsManager settingsManager)
         {
@@ -50,7 +49,6 @@ namespace SBICT.WpfClient.ViewModels
             this.WindowLoaded = new DelegateCommand(this.OnWindowLoaded);
 
             this.eventAggregator = eventAggregator;
-            this.connectionManager = connectionManager;
             this.connectionFactory = connectionFactory;
             this.settingsManager = settingsManager;
             moduleManager.LoadModuleCompleted += this.ModuleManagerOnLoadModuleCompleted;
@@ -95,7 +93,6 @@ namespace SBICT.WpfClient.ViewModels
 
             this.systemConnection = this.connectionFactory.Create(connection, HubNames.SystemHub);
             this.systemConnection.ConnectionStatusChanged += this.SystemConnectionOnConnectionStatusChanged;
-            this.connectionManager.Set("System", this.systemConnection);
             await this.systemConnection.StartAsync();
             SystemLogger.LogEvent($"Logged in as {user.DisplayName} with id {user.Id.ToString()}", LogLevel.Debug);
         }
@@ -106,7 +103,6 @@ namespace SBICT.WpfClient.ViewModels
         private async void DeInitializeSystemHub()
         {
             await this.systemConnection.StopAsync();
-            this.connectionManager.Unset("System");
         }
 
         /// <summary>

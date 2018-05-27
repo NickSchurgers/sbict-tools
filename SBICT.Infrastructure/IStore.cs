@@ -49,11 +49,18 @@ namespace SBICT.Infrastructure
         TKey GetKey(Func<TKey, bool> func);
 
         /// <summary>
-        /// Get a list of keys.
+        /// Get a list of keys by predicate.
         /// </summary>
         /// <param name="func">Predicate to filter the list with.</param>
         /// <returns>List of keys matching the predicate.</returns>
-        IEnumerable<TKey> GetKeys(Func<TKey, bool> func);
+        IEnumerable<TKey> GetKeys(Func<KeyValuePair<TKey, HashSet<TValue>>, bool> func);
+
+        /// <summary>
+        /// Get a KeyValuePair by predicate.
+        /// </summary>
+        /// <param name="func">Predicate to find the KeyValuePair with.</param>
+        /// <returns>Single KeyValuePair matchin the predicate.</returns>
+        KeyValuePair<TKey, HashSet<TValue>> GetKeyValuePair(Func<KeyValuePair<TKey, HashSet<TValue>>, bool> func);
 
         /// <summary>
         /// Remove a value from the specified key. If a key no longer has any values, it gets deleted.

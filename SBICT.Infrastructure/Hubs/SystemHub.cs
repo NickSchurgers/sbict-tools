@@ -3,74 +3,38 @@
 // </copyright>
 
 // ReSharper disable ClassNeverInstantiated.Global
-
-using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Connections.Features;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging;
-using SBICT.Data;
-using SBICT.Infrastructure.Connection;
-
 namespace SBICT.Infrastructure.Hubs
 {
     using Microsoft.AspNetCore.Authorization;
+    using Microsoft.Extensions.Logging;
+    using SBICT.Data;
 
     /// <inheritdoc />
     /// <summary>
     /// Hub used for system connections.
     /// </summary>
     [Authorize]
-    public class SystemHub : Hub
+    public class SystemHub : HubBase
     {
-        private ILogger _logger;
-
-        public SystemHub(ILoggerFactory loggerFactory)
-        {
-            this._logger = loggerFactory.CreateLogger("SystemHub");
-        }
-
-        private static readonly IStore<IUser, string> _userConnectionStore =
+        private static readonly IStore<IUser, string> UserConnectionStore =
             new InMemoryStore<IUser, string>(new UserComparer());
 
-        /// <inheritdoc />
-        public override async Task OnConnectedAsync()
+        private readonly ILogger logger;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SystemHub"/> class.
+        /// </summary>
+        /// <param name="loggerFactory">Instance of ILoggerFactory</param>
+        public SystemHub(ILoggerFactory loggerFactory)
+            : base(loggerFactory)
         {
-            var query = this.Context.Features.Get<IHttpContextFeature>()?.HttpContext.Request.Query;
-            query?.TryGetValue("guid", out var id);
-            query?.TryGetValue("displayName", out var name);
-
-            var guid = Guid.Parse(id);
-            var user = new User(guid, this.Context.User.Identity.Name)
-            {
-                DisplayName = name,
-            };
-
-            _userConnectionStore.Add(user, this.Context.ConnectionId);
-            if (_userConnectionStore.Count(user) < 2)
-            {
-                await this.Clients.AllExcept(this.Context.ConnectionId)
-                    .SendAsync("Connected", user, ConnectionScope.System);
-            }
-
-            await base.OnConnectedAsync();
+            this.logger = loggerFactory.CreateLogger("SystemHub");
         }
 
         /// <inheritdoc />
-        public override async Task OnDisconnectedAsync(Exception ex)
+        protected override IStore<IUser, string> GetUserConnectionStore()
         {
-            var query = this.Context.Features.Get<IHttpContextFeature>()?.HttpContext.Request.Query;
-            query?.TryGetValue("guid", out var id);
-
-            var guid = Guid.Parse(id);
-            var user = _userConnectionStore.GetKey(u => u.Id == guid);
-            _userConnectionStore.Remove(user, this.Context.ConnectionId);
-            if (_userConnectionStore.Count(user) == 0)
-            {
-                await this.Clients.All.SendAsync("Disconnected", user, ConnectionScope.System);
-            }
-
-            await base.OnDisconnectedAsync(ex);
+            return UserConnectionStore;
         }
     }
 }

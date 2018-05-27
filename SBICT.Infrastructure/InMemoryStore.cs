@@ -4,8 +4,6 @@
 
 namespace SBICT.Infrastructure
 {
-    // http://www.tugberkugurlu.com/archive/mapping-asp-net-signalr-connections-to-real-application-users
-    // https://stackoverflow.com/questions/33031517/prevent-duplicate-users-in-online-users-list-signalr?rq=1
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
@@ -36,7 +34,7 @@ namespace SBICT.Infrastructure
         /// <inheritdoc />
         public void Add(TKey key, TValue value)
         {
-            this.data.AddOrUpdate(key, new HashSet<TValue> { value }, (k, s) =>
+            this.data.AddOrUpdate(key, new HashSet<TValue> {value}, (k, s) =>
             {
                 s.Add(value);
                 return s;
@@ -52,12 +50,7 @@ namespace SBICT.Infrastructure
         /// <inheritdoc />
         public int Count(TKey key)
         {
-            if (this.data.TryGetValue(key, out var values))
-            {
-                return values.Count;
-            }
-
-            return 0;
+            return this.data.TryGetValue(key, out var values) ? values.Count : 0;
         }
 
         /// <inheritdoc />
@@ -71,16 +64,25 @@ namespace SBICT.Infrastructure
         {
             lock (this.data)
             {
-                return this.data.Keys.Single(func);
+                return this.data.Keys.SingleOrDefault(func);
             }
         }
 
         /// <inheritdoc/>
-        public IEnumerable<TKey> GetKeys(Func<TKey, bool> func)
+        public IEnumerable<TKey> GetKeys(Func<KeyValuePair<TKey, HashSet<TValue>>, bool> func)
         {
             lock (this.data)
             {
-                return this.data.Keys.Where(func).ToList();
+                return this.data.Where(func).Select(x => x.Key).ToList();
+            }
+        }
+
+        /// <inheritdoc />
+        public KeyValuePair<TKey, HashSet<TValue>> GetKeyValuePair(Func<KeyValuePair<TKey, HashSet<TValue>>, bool> func)
+        {
+            lock (this.data)
+            {
+                return this.data.SingleOrDefault(func);
             }
         }
 
@@ -89,6 +91,11 @@ namespace SBICT.Infrastructure
         {
             lock (this.data)
             {
+                if (!this.data.ContainsKey(key))
+                {
+                    return;
+                }
+
                 var values = this.data.Single(k => k.Key.Equals(key)).Value;
                 values.Remove(value);
                 if (values.Count == 0)

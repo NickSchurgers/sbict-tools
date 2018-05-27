@@ -4,14 +4,33 @@
 
 namespace SBICT.Infrastructure.Logger
 {
-    using System;
-
+    /// <summary>
+    /// Writes messages to files.
+    /// </summary>
     public interface ILogger
     {
-        event EventHandler<LoggerEventArgs> LogAdded;
+        /// <summary>
+        /// Log item with loglevel info.
+        /// </summary>
+        /// <param name="message">Message to log.</param>
         void Info(string message);
+
+        /// <summary>
+        /// Log item with loglevel debug.
+        /// </summary>
+        /// <param name="message">Message to log.</param>
         void Debug(string message);
+
+        /// <summary>
+        /// Log item with loglevel error.
+        /// </summary>
+        /// <param name="message">Message to log.</param>
         void Error(string message);
+
+        /// <summary>
+        /// Log item with loglevel warning.
+        /// </summary>
+        /// <param name="message">Message to log.</param>
         void Warning(string message);
     }
 }

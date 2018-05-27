@@ -1,8 +1,8 @@
-﻿// <copyright file="RegionNames.cs" company="SBICT">
+﻿// <copyright file="HubNames.cs" company="SBICT">
 // Copyright (c) SBICT. All rights reserved.
 // </copyright>
 
-namespace SBICT.Infrastructure
+namespace SBICT.Infrastructure.Hubs
 {
     /// <summary>
     /// Names of hubs used throughout the app and it's modules.

@@ -4,12 +4,34 @@
 
 namespace SBICT.Infrastructure.Logger
 {
+    /// <summary>
+    /// Enum used to indicite the level of a logmessage.
+    /// </summary>
     public enum LogLevel
     {
+        /// <summary>
+        /// Debug message.
+        /// </summary>
         Debug,
+
+        /// <summary>
+        /// Info message.
+        /// </summary>
         Info,
+
+        /// <summary>
+        /// Warning message.
+        /// </summary>
         Warning,
+
+        /// <summary>
+        /// Error message.
+        /// </summary>
         Error,
-        Broadcast
+
+        /// <summary>
+        /// Broadcast message.
+        /// </summary>
+        Broadcast,
     }
 }
